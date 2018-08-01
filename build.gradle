@@ -27,12 +27,18 @@ repositories {
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-webflux')
+
     runtime('org.springframework.boot:spring-boot-devtools')
+    compile('org.springframework.boot:spring-boot-configuration-processor')
     compileOnly('org.projectlombok:lombok')
+
+    compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
+
 
     testCompile("org.junit.jupiter:junit-jupiter-api")
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('io.projectreactor:reactor-test')
+    testCompile('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
 }
 
 //export test coverage
