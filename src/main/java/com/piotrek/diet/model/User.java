@@ -17,10 +17,17 @@ public class User {
     @Id
     private String id;
 
+    @Indexed(unique = true)
+    private String username;
     private String firstName;
     private String lastName;
 
     @Email
-//    @Indexed(unique = true)
+    @Indexed(unique = true)
     private String email;
+    private String provider;
+    private String picture;
+    private boolean enabled;
+
+    private String role;
 }

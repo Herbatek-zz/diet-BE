@@ -4,3 +4,13 @@ spring:
       username: mongoadmin
       password: admin1
       authentication-database: admin
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 583182112087-gkjrbua9vtvvgkdknsqjho0jdfbod98t.apps.googleusercontent.com
+            client-secret: bDTryxfVOSfz_9QQ3ngB8mrK
+          facebook:
+            client-id: 226509771534684
+            client-secret: 4c29a748d8777b72a03e079449c13f08
