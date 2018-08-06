@@ -8,12 +8,19 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping
 public class TestController {
 
     @GetMapping
     @ResponseStatus(OK)
+    public String dashBoard() {
+        return "Siemanko! </ br>" +
+                "Zobacz <a href=\"/users/1\">usera</a>";
+    }
+
+    @GetMapping("/login")
+    @ResponseStatus(OK)
     public String successfulLogin() {
-        return "Udało sie zalogować!";
+        return "Zaloguj się na: <a href=\"/login/facebook\">Facebook</a>";
     }
 }
