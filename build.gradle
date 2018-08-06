@@ -31,9 +31,11 @@ repositories {
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-webflux')
 
-    compile('org.springframework.security:spring-security-config')
-    compile('org.springframework.security:spring-security-oauth2-client')
-    compile('org.springframework.security:spring-security-oauth2-jose')
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security'
+    compile group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.0.1.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+
+
 
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok')
@@ -44,15 +46,6 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('io.projectreactor:reactor-test')
     testCompile('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
-
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.3.3.RELEASE'
-    compile('org.springframework.boot:spring-boot-configuration-processor')
-    compile('org.springframework.boot:spring-boot-autoconfigure')
-    compile("org.apache.commons:commons-lang3")
-
-
-
 }
 
 //export test coverage
