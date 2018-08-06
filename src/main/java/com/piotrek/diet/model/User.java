@@ -18,16 +18,17 @@ public class User {
     private String id;
 
     @Indexed(unique = true)
+    private Long facebookId;
+
+    @Indexed(unique = true)
     private String username;
-    private String firstName;
-    private String lastName;
 
     @Email
     @Indexed(unique = true)
     private String email;
-    private String provider;
-    private String picture;
-    private boolean enabled;
 
+    private String firstName;
+    private String lastName;
+    private String picture;
     private String role;
 }
