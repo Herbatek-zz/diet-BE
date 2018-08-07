@@ -8,8 +8,6 @@ import java.util.Optional;
 
 public interface UserRepository extends ReactiveMongoRepository<User, String> {
 
-    Optional<User> findByEmail(String email);
-
     Mono<User> findByFacebookId(Long facebookId);
 
 }
