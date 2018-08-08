@@ -7,6 +7,9 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -15,9 +18,11 @@ import javax.validation.constraints.Email;
 public class User {
 
     @Id
+    @NotNull
     private String id;
 
     @Indexed(unique = true)
+    @NotNull
     private Long facebookId;
 
     @Indexed(unique = true)
@@ -27,8 +32,11 @@ public class User {
     @Indexed(unique = true)
     private String email;
 
+    private LocalDateTime createdAt;
+    private LocalDateTime lastVisit;
+
     private String firstName;
     private String lastName;
-    private String picture;
+    private String picture_url;
     private String role;
 }

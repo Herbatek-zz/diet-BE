@@ -1,5 +1,6 @@
-package com.piotrek.diet.config;
+package com.piotrek.diet.security.config;
 
+import com.piotrek.diet.security.handler.AuthSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
@@ -28,7 +29,7 @@ import javax.servlet.Filter;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final OAuth2ClientContext oauth2ClientContext;
-    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final AuthSuccessHandler customAuthenticationSuccessHandler;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
