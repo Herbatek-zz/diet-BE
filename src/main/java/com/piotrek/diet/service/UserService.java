@@ -40,10 +40,10 @@ public class UserService {
     }
 
     public User createUser(Long facebookId, String firstAndLastName[]) {
-        String firstName = firstAndLastName[0];
-        String lastName = firstAndLastName[1];
+        var firstName = firstAndLastName[0];
+        var lastName = firstAndLastName[1];
 
-        User user = new User();
+        var user = new User();
         user.setFacebookId(facebookId);
         user.setFirstName(firstName);
         user.setLastName(lastName);

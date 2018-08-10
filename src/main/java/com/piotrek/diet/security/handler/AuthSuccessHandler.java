@@ -1,7 +1,6 @@
 package com.piotrek.diet.security.handler;
 
 import com.piotrek.diet.model.User;
-import com.piotrek.diet.model.enumeration.Role;
 import com.piotrek.diet.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
