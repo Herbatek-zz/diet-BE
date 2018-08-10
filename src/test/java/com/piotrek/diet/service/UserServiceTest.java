@@ -16,6 +16,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 class UserServiceTest {
 
@@ -34,11 +38,12 @@ class UserServiceTest {
     }
 
     @Test
-    void findById() {
+    void findById_validId_shouldReturnUser() {
         Mockito.when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
 
         User userById = userService.findById(user.getId()).block();
 
+        assertNotNull(userById);
         assertAll(
                 () -> assertEquals(user.getFirstName(), userById.getFirstName()),
                 () -> assertEquals(user.getLastName(), userById.getLastName()),
@@ -48,6 +53,14 @@ class UserServiceTest {
                 () -> assertEquals(user.getUsername(), userById.getUsername()),
                 () -> assertEquals(user.getRole(), userById.getRole())
         );
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void findById_invalidId_shouldThrowNotFoundException() {
+
     }
 
     @Test
@@ -56,10 +69,14 @@ class UserServiceTest {
 
         List<User> users = userService.findAll().collectSortedList().block();
 
+        assertNotNull(users);
         assertAll(
                 () -> assertEquals(1, users.size()),
                 () -> assertEquals(user, users.get(0))
         );
+
+        verify(userRepository, times(1)).findAll();
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -68,6 +85,7 @@ class UserServiceTest {
 
         User userByFacebookId = userService.findByFacebookId(user.getFacebookId()).block();
 
+        assertNotNull(userByFacebookId);
         assertAll(
                 () -> assertEquals(user.getFirstName(), userByFacebookId.getFirstName()),
                 () -> assertEquals(user.getLastName(), userByFacebookId.getLastName()),
@@ -77,6 +95,9 @@ class UserServiceTest {
                 () -> assertEquals(user.getUsername(), userByFacebookId.getUsername()),
                 () -> assertEquals(user.getRole(), userByFacebookId.getRole())
         );
+
+        verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -85,6 +106,7 @@ class UserServiceTest {
 
         User savedUser = userService.save(user).block();
 
+        assertNotNull(savedUser);
         assertAll(
                 () -> assertEquals(user.getFirstName(), savedUser.getFirstName()),
                 () -> assertEquals(user.getLastName(), savedUser.getLastName()),
@@ -94,6 +116,9 @@ class UserServiceTest {
                 () -> assertEquals(user.getUsername(), savedUser.getUsername()),
                 () -> assertEquals(user.getRole(), savedUser.getRole())
         );
+
+        verify(userRepository, times(1)).save(user);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -107,6 +132,7 @@ class UserServiceTest {
                 () -> assertEquals(user.getLastName(), createdUser.getLastName()),
                 () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
         );
+        verifyNoMoreInteractions(userRepository);
     }
 
     private void createUser() {
