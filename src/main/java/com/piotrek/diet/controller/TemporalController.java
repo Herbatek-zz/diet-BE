@@ -9,7 +9,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping
-public class TestController {
+public class TemporalController {
 
     @GetMapping
     @ResponseStatus(OK)

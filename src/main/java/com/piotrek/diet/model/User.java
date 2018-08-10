@@ -2,6 +2,7 @@ package com.piotrek.diet.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Document
+@ToString
 public class User {
 
     @Id
@@ -37,6 +39,6 @@ public class User {
 
     private String firstName;
     private String lastName;
-    private String picture_url;
+    private String pictureUrl;
     private String role;
 }

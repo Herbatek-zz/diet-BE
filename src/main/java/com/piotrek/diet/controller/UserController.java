@@ -1,6 +1,7 @@
 package com.piotrek.diet.controller;
 
-import com.piotrek.diet.model.User;
+import com.piotrek.diet.model.dto.UserDto;
+import com.piotrek.diet.model.dto.converter.UserDtoConverter;
 import com.piotrek.diet.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +15,12 @@ import static org.springframework.http.HttpStatus.OK;
 public class UserController {
 
     private final UserService userService;
+    private final UserDtoConverter userDtoConverter;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<User> findUserById(@PathVariable String id) {
-        return userService.findById(id);
+    Mono<UserDto> findUserById(@PathVariable String id) {
+        return userService.findById(id)
+                .map(userDtoConverter::toDto);
     }
 }
