@@ -4,6 +4,7 @@ import com.piotrek.diet.exception.NotFoundException;
 import com.piotrek.diet.model.User;
 import com.piotrek.diet.model.enumeration.Role;
 import com.piotrek.diet.repository.UserRepository;
+import com.piotrek.diet.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserValidator userValidator;
 
     public Mono<User> findById(String id) {
         return userRepository.findById(id)
@@ -40,16 +42,17 @@ public class UserService {
     }
 
     public User createUser(Long facebookId, String firstAndLastName[]) {
-        var firstName = firstAndLastName[0];
-        var lastName = firstAndLastName[1];
-
+        userValidator.checkFacebookId(facebookId);
         var user = new User();
         user.setFacebookId(facebookId);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
         user.setRole(Role.ROLE_USER.name());
         user.setCreatedAt(LocalDateTime.now());
+
+        if(userValidator.isUserHasFirstName(firstAndLastName)) {
+            user.setFirstName(firstAndLastName[0]);
+            if(userValidator.isUserHasLastName(firstAndLastName))
+                user.setLastName(firstAndLastName[1]);
+        }
         return user;
     }
-
 }

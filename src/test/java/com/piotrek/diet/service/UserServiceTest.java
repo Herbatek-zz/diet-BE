@@ -1,8 +1,11 @@
 package com.piotrek.diet.service;
 
+import com.piotrek.diet.exception.BadRequestException;
+import com.piotrek.diet.exception.NotFoundException;
 import com.piotrek.diet.model.User;
 import com.piotrek.diet.model.enumeration.Role;
 import com.piotrek.diet.repository.UserRepository;
+import com.piotrek.diet.validator.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,17 +17,16 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserValidator userValidator;
 
     @InjectMocks
     private UserService userService;
@@ -60,11 +62,17 @@ class UserServiceTest {
 
     @Test
     void findById_invalidId_shouldThrowNotFoundException() {
+        var id = "unknown#id";
+        Mockito.when(userRepository.findById(id)).thenReturn(Mono.empty());
 
+        assertThrows(NotFoundException.class, () -> userService.findById(id).block());
+
+        verify(userRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void findAll() {
+    void findAll_whenOnlyOneUserIsAvailable_ThenReturnListWithOneUser() {
         Mockito.when(userRepository.findAll()).thenReturn(Flux.just(user));
 
         List<User> users = userService.findAll().collectSortedList().block();
@@ -80,7 +88,19 @@ class UserServiceTest {
     }
 
     @Test
-    void findByFacebookId() {
+    void findAll_whenFluxEmpty_ThenReturnListSizeZero() {
+        Mockito.when(userRepository.findAll()).thenReturn(Flux.empty());
+
+        List<User> users = userService.findAll().collectSortedList().block();
+
+        assertEquals(0, users.size());
+
+        verify(userRepository, times(1)).findAll();
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void findByFacebookId_whenValidFacebookId_thenReturnSpecificUser() {
         Mockito.when(userRepository.findByFacebookId(user.getFacebookId())).thenReturn(Mono.just(user));
 
         User userByFacebookId = userService.findByFacebookId(user.getFacebookId()).block();
@@ -95,6 +115,18 @@ class UserServiceTest {
                 () -> assertEquals(user.getUsername(), userByFacebookId.getUsername()),
                 () -> assertEquals(user.getRole(), userByFacebookId.getRole())
         );
+
+        verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void findByFacebookId_whenInvalidFacebookId_thenReturnNull() {
+        Mockito.when(userRepository.findByFacebookId(user.getFacebookId())).thenReturn(Mono.empty());
+
+        User userByFacebookId = userService.findByFacebookId(user.getFacebookId()).block();
+
+        assertNull(userByFacebookId);
 
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
         verifyNoMoreInteractions(userRepository);
@@ -122,8 +154,11 @@ class UserServiceTest {
     }
 
     @Test
-    void createUserTest() {
+    void createUserTest_whenAllValid_thenCreateUser() {
         String[] names = {user.getFirstName(), user.getLastName()};
+
+        Mockito.when(userValidator.isUserHasFirstName(names)).thenReturn(true);
+        Mockito.when(userValidator.isUserHasLastName(names)).thenReturn(true);
 
         User createdUser = userService.createUser(this.user.getFacebookId(), names);
 
@@ -132,6 +167,65 @@ class UserServiceTest {
                 () -> assertEquals(user.getLastName(), createdUser.getLastName()),
                 () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
         );
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void createUserTest_whenOnlyOneName_thenCreateUserWithFirstName() {
+        String[] names = {user.getFirstName()};
+
+        Mockito.when(userValidator.isUserHasFirstName(names)).thenReturn(true);
+        Mockito.when(userValidator.isUserHasLastName(names)).thenReturn(false);
+
+        User createdUser = userService.createUser(user.getFacebookId(), names);
+
+        assertAll(
+                () -> assertEquals(user.getFirstName(), createdUser.getFirstName()),
+                () -> assertNull(createdUser.getLastName()),
+                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
+        );
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void createUserTest_whenUserHasEmptyArray_thenCreateUserWithoutNames() {
+        String[] names = {};
+
+        Mockito.when(userValidator.isUserHasFirstName(names)).thenReturn(false);
+
+        User createdUser = userService.createUser(user.getFacebookId(), names);
+
+        assertAll(
+                () -> assertNull(createdUser.getFirstName()),
+                () -> assertNull(createdUser.getLastName()),
+                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
+        );
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void createUserTest_whenUserHasNullNames_thenCreateUserWithoutNames() {
+        String[] names = null;
+
+        Mockito.when(userValidator.isUserHasFirstName(names)).thenReturn(false);
+
+        User createdUser = userService.createUser(user.getFacebookId(), names);
+
+        assertAll(
+                () -> assertNull(createdUser.getFirstName()),
+                () -> assertNull(createdUser.getLastName()),
+                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
+        );
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void createUserTest_whenUserHasNoFacebookId_thenThrowBadRequestException() {
+
+        doThrow(new BadRequestException("Cannot create user without facebook id"))
+                .when(userValidator).checkFacebookId(null);
+
+        assertThrows(BadRequestException.class, () -> userService.createUser(null, null));
         verifyNoMoreInteractions(userRepository);
     }
 
