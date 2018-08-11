@@ -1,5 +1,6 @@
 package com.piotrek.diet.service;
 
+import com.piotrek.diet.exception.NotFoundException;
 import com.piotrek.diet.model.Product;
 import com.piotrek.diet.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +60,13 @@ class ProductServiceTest {
 
     @Test
     void findById_invalidId_shouldThrowNotFoundException() {
+        var id = "invalid@#@#@ID";
+        Mockito.when(productRepository.findById(id)).thenReturn(Mono.empty());
 
+        assertThrows(NotFoundException.class, () -> productService.findById(id).block());
+
+        verify(productRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test

@@ -13,10 +13,12 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.http.MediaType.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
@@ -44,12 +46,18 @@ class ProductControllerTest {
     }
 
     @AfterAll
-    void tearDown() {
+    void afterAll() {
         productService.deleteAll().block();
     }
 
     @Test
     void findById() {
+        webTestClient.get().uri("/products/" + product1.getId())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(ProductDto.class)
+                .isEqualTo(productDto1);
     }
 
     @Test

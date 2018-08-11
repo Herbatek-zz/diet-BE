@@ -21,7 +21,8 @@ public class ProductController {
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     Mono<ProductDto> findById(@PathVariable String id) {
-        return null;
+        return productService.findById(id)
+                .map(productDtoConverter::toDto);
     }
 
     @DeleteMapping("{id}")

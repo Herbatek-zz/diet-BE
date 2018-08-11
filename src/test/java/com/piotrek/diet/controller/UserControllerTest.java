@@ -20,6 +20,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.springframework.http.MediaType.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
@@ -47,7 +48,7 @@ class UserControllerTest {
     }
 
     @AfterAll
-    void tearDown() {
+    void afterAll() {
         userService.deleteAll().block();
     }
 
@@ -56,7 +57,7 @@ class UserControllerTest {
         webTestClient.get().uri("/users/" + user1.getId())
                 .exchange()
                 .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
                 .expectBody(UserDto.class)
                 .isEqualTo(userDto1);
     }

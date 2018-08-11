@@ -13,21 +13,18 @@ class UserValidatorTest {
     @Test
     void isUserHasFirstName_whenArrayWithTwoString_returnTrue() {
         String[] firstAndLast = {"first", "last"};
-
         assertTrue(userValidator.isUserHasFirstName(firstAndLast));
     }
 
     @Test
     void isUserHasFirstName_whenArrayWithOneString_returnFalse() {
         String[] firstAndLast = {"first"};
-
         assertTrue(userValidator.isUserHasFirstName(firstAndLast));
     }
 
     @Test
     void isUserHasFirstName_whenArrayWithEmptyArray_returnFalse() {
         String[] firstAndLast = {};
-
         assertFalse(userValidator.isUserHasFirstName(firstAndLast));
     }
 
@@ -39,21 +36,18 @@ class UserValidatorTest {
     @Test
     void isUserHasLastName_whenArrayWithTwoString_returnTrue() {
         String[] firstAndLast = {"first", "last"};
-
         assertTrue(userValidator.isUserHasLastName(firstAndLast));
     }
 
     @Test
     void isUserHasLastName_whenArrayWithOneString_returnFalse() {
         String[] firstAndLast = {"first"};
-
         assertFalse(userValidator.isUserHasLastName(firstAndLast));
     }
 
     @Test
     void isUserHasLastName_whenArrayWithEmptyArray_returnFalse() {
         String[] firstAndLast = {};
-
         assertFalse(userValidator.isUserHasLastName(firstAndLast));
     }
 

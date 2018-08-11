@@ -19,7 +19,7 @@ public class ProductService {
     }
 
     public Mono<Product> save(Product product) {
-        return null;
+        return productRepository.save(product);
     }
 
     public Mono<Void> deleteById(String id) {
