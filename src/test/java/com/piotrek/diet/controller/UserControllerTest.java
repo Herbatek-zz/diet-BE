@@ -2,9 +2,15 @@ package com.piotrek.diet.controller;
 
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.config.DataBaseConfigIntegrationTests;
+import com.piotrek.diet.facade.ProductFacade;
+import com.piotrek.diet.model.Product;
 import com.piotrek.diet.model.User;
+import com.piotrek.diet.model.dto.ProductDto;
 import com.piotrek.diet.model.dto.UserDto;
+import com.piotrek.diet.model.dto.converter.ProductDtoConverter;
 import com.piotrek.diet.model.dto.converter.UserDtoConverter;
+import com.piotrek.diet.sample.SampleProduct;
+import com.piotrek.diet.sample.SampleUser;
 import com.piotrek.diet.service.UserService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,14 +19,12 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserter;
+import org.springframework.web.reactive.function.BodyInserters;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.springframework.http.MediaType.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
@@ -33,6 +37,12 @@ class UserControllerTest {
     @Autowired
     private UserDtoConverter userDtoConverter;
 
+    @Autowired
+    private ProductFacade productFacade;
+
+    @Autowired
+    private ProductDtoConverter productDtoConverter;
+
     private WebTestClient webTestClient;
 
     private User user1;
@@ -44,7 +54,9 @@ class UserControllerTest {
     void setUp() {
         userService.deleteAll().block();
         createUsers();
-        webTestClient = WebTestClient.bindToController(new UserController(userService, userDtoConverter)).build();
+        webTestClient = WebTestClient
+                .bindToController(new UserController(userService, userDtoConverter, productFacade))
+                .build();
     }
 
     @AfterAll
@@ -62,20 +74,23 @@ class UserControllerTest {
                 .isEqualTo(userDto1);
     }
 
-    private void createUsers() {
-        user1 = new User();
-        user1.setUsername("username1");
-        user1.setFacebookId(123456L);
-        user1.setEmail("email1@email.com");
-        user1.setFirstName("Name1");
-        user1.setLastName("Surname1");
+    @Test
+    void saveProduct() {
+        Product productToSave = SampleProduct.bananaWithId();
+        ProductDto productDto = productDtoConverter.toDto(productToSave);
 
-        user2 = new User();
-        user2.setUsername("username2");
-        user2.setFacebookId(123123L);
-        user2.setEmail("email2@email.com");
-        user2.setFirstName("Name2");
-        user2.setLastName("Surname2");
+        webTestClient.post().uri("/users/" + user1.getId() + "/products")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(productDto))
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(ProductDto.class)
+                .isEqualTo(productDto);
+    }
+
+    private void createUsers() {
+        user1 = SampleUser.baileyWithoutId();
+        user2 = SampleUser.johnWithoutId();
 
         user1 = userService.save(user1).block();
         user2 = userService.save(user2).block();

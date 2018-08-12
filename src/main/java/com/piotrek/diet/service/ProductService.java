@@ -4,9 +4,11 @@ import com.piotrek.diet.exception.NotFoundException;
 import com.piotrek.diet.model.Product;
 import com.piotrek.diet.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -28,7 +30,6 @@ public class ProductService {
     }
 
     public Mono<Void> deleteAll() {
-        productRepository.deleteAll();
-        return Mono.empty();
+        return productRepository.deleteAll();
     }
 }

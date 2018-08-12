@@ -11,14 +11,14 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/products/")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
     private final ProductDtoConverter productDtoConverter;
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     @ResponseStatus(OK)
     Mono<ProductDto> findById(@PathVariable String id) {
         return productService.findById(id)
@@ -28,7 +28,6 @@ public class ProductController {
     @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
     Mono<Void> deleteById(@PathVariable String id) {
-        productService.deleteById(id);
-        return Mono.empty();
+        return productService.deleteById(id);
     }
 }

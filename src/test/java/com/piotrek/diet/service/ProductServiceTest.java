@@ -3,6 +3,7 @@ package com.piotrek.diet.service;
 import com.piotrek.diet.exception.NotFoundException;
 import com.piotrek.diet.model.Product;
 import com.piotrek.diet.repository.ProductRepository;
+import com.piotrek.diet.sample.SampleProduct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,7 +13,6 @@ import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -77,18 +77,17 @@ class ProductServiceTest {
         verifyNoMoreInteractions(productRepository);
     }
 
+    @Test
+    void save() {
+        Mockito.when(productRepository.save(product)).thenReturn(Mono.just(product));
+
+        assertEquals(product, productService.save(product).block());
+
+        verify(productRepository, times(1)).save(product);
+        verifyNoMoreInteractions(productRepository);
+    }
+
     private void createProduct() {
-        product = new Product();
-        product.setId("ProductWow123");
-        product.setName("Banana");
-        product.setDescription("Very yellow, so sweet, such tasty");
-        product.setImageUrl("http://banana-so-good.com");
-        product.setProtein(1.0);
-        product.setCarbohydrate(21.8);
-        product.setFat(0.3);
-        product.setFibre(1.7);
-        product.setKcal(97.0);
-        product.setCarbohydrateExchange(2.1);
-        product.setProteinAndFatEquivalent(0.067);
+        product = SampleProduct.bananaWithId();
     }
 }

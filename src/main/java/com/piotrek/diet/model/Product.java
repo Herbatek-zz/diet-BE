@@ -34,4 +34,6 @@ public class Product {
 
     private Double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
     private Double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+
+    private String userId;
 }

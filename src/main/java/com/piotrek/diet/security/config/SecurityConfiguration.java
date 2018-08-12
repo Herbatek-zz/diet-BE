@@ -36,14 +36,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/", "/login**").permitAll()
-                .anyRequest().authenticated()
+//                .anyRequest().authenticated() // need to be enabled in final version
+                .anyRequest().permitAll() // need be deleted in final version
                 .and()
                 .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 .and()
                 .logout().logoutSuccessUrl("/").permitAll()
                 .and()
-                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .and()
+//                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version
+//                .and()
+                .csrf().disable() // should be deleted in final version
                 .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
     }
 

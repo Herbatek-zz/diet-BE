@@ -3,8 +3,8 @@ package com.piotrek.diet.service;
 import com.piotrek.diet.exception.BadRequestException;
 import com.piotrek.diet.exception.NotFoundException;
 import com.piotrek.diet.model.User;
-import com.piotrek.diet.model.enumeration.Role;
 import com.piotrek.diet.repository.UserRepository;
+import com.piotrek.diet.sample.SampleUser;
 import com.piotrek.diet.validator.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -230,13 +230,6 @@ class UserServiceTest {
     }
 
     private void createUser() {
-        user = new User();
-        user.setFacebookId(12351L);
-        user.setId("idSuchLong123");
-        user.setFirstName("John");
-        user.setLastName("TheGamer");
-        user.setRole(Role.ROLE_USER.name());
-        user.setEmail("JTG@email.com");
-        user.setUsername("jtGAMER");
+        user = SampleUser.johnWithId();
     }
 }

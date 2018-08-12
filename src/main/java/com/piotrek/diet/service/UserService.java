@@ -6,12 +6,14 @@ import com.piotrek.diet.model.enumeration.Role;
 import com.piotrek.diet.repository.UserRepository;
 import com.piotrek.diet.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -24,12 +26,12 @@ public class UserService {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found user [id = " + id + "]"))));
     }
 
-    public Flux<User> findAll() {
-        return userRepository.findAll();
-    }
-
     public Mono<User> findByFacebookId(Long facebookId) {
         return userRepository.findByFacebookId(facebookId);
+    }
+
+    public Flux<User> findAll() {
+        return userRepository.findAll();
     }
 
     public Mono<User> save(User user) {
@@ -37,8 +39,7 @@ public class UserService {
     }
 
     public Mono<Void> deleteAll() {
-        userRepository.deleteAll();
-        return Mono.empty();
+        return userRepository.deleteAll();
     }
 
     public User createUser(Long facebookId, String firstAndLastName[]) {
