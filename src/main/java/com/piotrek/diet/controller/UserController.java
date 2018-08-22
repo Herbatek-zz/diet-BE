@@ -1,7 +1,6 @@
 package com.piotrek.diet.controller;
 
 import com.piotrek.diet.facade.ProductFacade;
-import com.piotrek.diet.model.Product;
 import com.piotrek.diet.model.dto.ProductDto;
 import com.piotrek.diet.model.dto.UserDto;
 import com.piotrek.diet.model.dto.converter.UserDtoConverter;
@@ -41,7 +40,6 @@ public class UserController {
     @PostMapping("{id}/products")
     @ResponseStatus(CREATED)
     Mono<ProductDto> saveProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
-        System.out.println(productDto);
         return productFacade.saveProduct(id, productDto);
     }
 }

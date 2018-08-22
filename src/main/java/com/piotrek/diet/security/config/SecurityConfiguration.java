@@ -43,9 +43,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout().logoutSuccessUrl("/").permitAll()
                 .and()
-//                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version
-//                .and()
-                .csrf().disable() // should be deleted in final version
+                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version
+                .and()
+//                .csrf().disable() // should be deleted in final version
                 .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
     }
 

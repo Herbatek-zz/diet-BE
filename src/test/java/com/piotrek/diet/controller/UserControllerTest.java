@@ -2,6 +2,7 @@ package com.piotrek.diet.controller;
 
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.config.DataBaseConfigIntegrationTests;
+import com.piotrek.diet.exception.GlobalExceptionHandler;
 import com.piotrek.diet.facade.ProductFacade;
 import com.piotrek.diet.model.Product;
 import com.piotrek.diet.model.User;
@@ -43,6 +44,9 @@ class UserControllerTest {
     @Autowired
     private ProductDtoConverter productDtoConverter;
 
+    @Autowired
+    private GlobalExceptionHandler globalExceptionHandler;
+
     private WebTestClient webTestClient;
 
     private User user1;
@@ -56,6 +60,7 @@ class UserControllerTest {
         createUsers();
         webTestClient = WebTestClient
                 .bindToController(new UserController(userService, userDtoConverter, productFacade))
+                .controllerAdvice(globalExceptionHandler)
                 .build();
     }
 
@@ -65,7 +70,7 @@ class UserControllerTest {
     }
 
     @Test
-    void findUserById() {
+    void findUserById_whenUserExists_thenReturnUserDto() {
         webTestClient.get().uri("/users/" + user1.getId())
                 .exchange()
                 .expectStatus().isOk()
@@ -75,9 +80,17 @@ class UserControllerTest {
     }
 
     @Test
-    void saveProduct() {
-        Product productToSave = SampleProduct.bananaWithId();
-        ProductDto productDto = productDtoConverter.toDto(productToSave);
+    void findUserById_whenUserDoesNotExist_thenReturn404() {
+        var invalidId = "iDoesNotExist";
+
+        webTestClient.get().uri("/users/" + invalidId)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void saveProduct_whenAllRequiredField_thenSaveProductAndReturnDto() {
+        ProductDto productDto = productDtoConverter.toDto(SampleProduct.bananaWithId());
 
         webTestClient.post().uri("/users/" + user1.getId() + "/products")
                 .contentType(APPLICATION_JSON_UTF8)
@@ -86,6 +99,20 @@ class UserControllerTest {
                 .expectStatus().isCreated()
                 .expectBody(ProductDto.class)
                 .isEqualTo(productDto);
+    }
+
+    @Test
+    void findUserProducts_whenUserHasNoProducts_thenReturnEmptyArray() {
+        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .isEmpty();
+    }
+
+    @Test
+    void findUserProducts_whenUserHasProducts_thenReturnArray() {
+
     }
 
     private void createUsers() {

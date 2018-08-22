@@ -2,6 +2,7 @@ package com.piotrek.diet.controller;
 
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.config.DataBaseConfigIntegrationTests;
+import com.piotrek.diet.exception.GlobalExceptionHandler;
 import com.piotrek.diet.model.Product;
 import com.piotrek.diet.model.dto.ProductDto;
 import com.piotrek.diet.model.dto.converter.ProductDtoConverter;
@@ -30,6 +31,9 @@ class ProductControllerTest {
     @Autowired
     private ProductDtoConverter productDtoConverter;
 
+    @Autowired
+    private GlobalExceptionHandler globalExceptionHandler;
+
     private WebTestClient webTestClient;
 
     private Product product1;
@@ -41,7 +45,10 @@ class ProductControllerTest {
     void setUp() {
         productService.deleteAll().block();
         createUsers();
-        webTestClient = WebTestClient.bindToController(new ProductController(productService, productDtoConverter)).build();
+        webTestClient = WebTestClient
+                .bindToController(new ProductController(productService, productDtoConverter))
+                .controllerAdvice(globalExceptionHandler)
+                .build();
     }
 
     @AfterAll
@@ -61,6 +68,9 @@ class ProductControllerTest {
 
     @Test
     void deleteById() {
+        webTestClient.delete().uri("/products/" + product1.getId())
+                .exchange()
+                .expectStatus().isNoContent();
     }
 
     private void createUsers() {
