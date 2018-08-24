@@ -41,8 +41,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/", "/login**").permitAll()
-//                .anyRequest().authenticated() // need to be enabled in final version
-                .anyRequest().permitAll() // need be deleted in final version
+                .anyRequest().authenticated() // need to be enabled in final version
+//                .anyRequest().permitAll() // need be deleted in final version
                 .and()
                 .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/facebook"))
                 .and()

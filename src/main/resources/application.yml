@@ -9,13 +9,13 @@ facebook:
   client:
     clientId: 226509771534684
     clientSecret: 4c29a748d8777b72a03e079449c13f08
-    accessTokenUri: https://graph.facebook.com/oauth/access_token
-    userAuthorizationUri: https://www.facebook.com/dialog/oauth
-    tokenName: oauth_token
+    accessTokenUri: https://graph.facebook.com/v3.1/oauth/access_token
+    userAuthorizationUri: https://www.facebook.com/v3.1/dialog/oauth
+    tokenName: access_token
     authenticationScheme: query
     clientAuthenticationScheme: form
   resource:
-    userInfoUri: https://graph.facebook.com/me
+    userInfoUri: https://graph.facebook.com/v3.1/me?fields=id,email,birthday,first_name,last_name
 
 security:
   oauth2:

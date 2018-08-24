@@ -42,18 +42,15 @@ public class UserService {
         return userRepository.deleteAll();
     }
 
-    public User createUser(Long facebookId, String firstAndLastName[]) {
+    public User createUser(Long facebookId, String email, String firstName, String lastName) {
         userValidator.checkFacebookId(facebookId);
         var user = new User();
         user.setFacebookId(facebookId);
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
         user.setRole(Role.ROLE_USER.name());
         user.setCreatedAt(LocalDateTime.now());
-
-        if(userValidator.isUserHasFirstName(firstAndLastName)) {
-            user.setFirstName(firstAndLastName[0]);
-            if(userValidator.isUserHasLastName(firstAndLastName))
-                user.setLastName(firstAndLastName[1]);
-        }
         return user;
     }
 }

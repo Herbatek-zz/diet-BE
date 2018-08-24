@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
@@ -31,13 +32,17 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
         Long facebookId = Long.valueOf(userDetails.get("id").toString());
         User user = userService.findByFacebookId(facebookId).block();
         if (user == null) {
-            String[] firstAndLastName = ((String) userDetails.get("name")).split(" ");
-            user = userService.createUser(facebookId, firstAndLastName);
+            var email = userDetails.get("email").toString();
+            var firstName = userDetails.get("first_name").toString();
+            var lastName = userDetails.get("last_name").toString();
+            user = userService.createUser(facebookId, email, firstName, lastName);
         }
         user.setLastVisit(LocalDateTime.now());
         user = userService.save(user).block();
 
         setCookie(response, "id", user.getId());
+
+        response.sendRedirect("http://localhost:3000");
 
         super.onAuthenticationSuccess(request, response, authentication);
     }
