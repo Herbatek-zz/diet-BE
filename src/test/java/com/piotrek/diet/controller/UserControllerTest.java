@@ -4,7 +4,6 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.exception.GlobalExceptionHandler;
 import com.piotrek.diet.facade.ProductFacade;
-import com.piotrek.diet.model.Product;
 import com.piotrek.diet.model.User;
 import com.piotrek.diet.model.dto.ProductDto;
 import com.piotrek.diet.model.dto.UserDto;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -59,7 +57,7 @@ class UserControllerTest {
         userService.deleteAll().block();
         createUsers();
         webTestClient = WebTestClient
-                .bindToController(new UserController(userService, userDtoConverter, productFacade))
+                .bindToController(new UserController(userService, userDtoConverter, productDtoConverter, productFacade))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }

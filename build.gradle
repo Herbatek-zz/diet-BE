@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.1.0.M1'
+        springBootVersion = '2.0.4.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -24,8 +24,6 @@ sourceCompatibility = 10
 
 repositories {
     mavenCentral()
-    maven { url "https://repo.spring.io/snapshot" }
-    maven { url "https://repo.spring.io/milestone" }
 }
 
 dependencies {
@@ -40,6 +38,12 @@ dependencies {
     compileOnly('org.projectlombok:lombok')
 
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
+
+    // java 10 missing dependencies needed for oauth2
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.0.1'
+    compile group: 'javax.activation', name: 'javax.activation-api', version: '1.2.0'
 
     testCompile("org.junit.jupiter:junit-jupiter-api")
     testCompile('org.springframework.boot:spring-boot-starter-test')

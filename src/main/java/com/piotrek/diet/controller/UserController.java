@@ -3,6 +3,7 @@ package com.piotrek.diet.controller;
 import com.piotrek.diet.facade.ProductFacade;
 import com.piotrek.diet.model.dto.ProductDto;
 import com.piotrek.diet.model.dto.UserDto;
+import com.piotrek.diet.model.dto.converter.ProductDtoConverter;
 import com.piotrek.diet.model.dto.converter.UserDtoConverter;
 import com.piotrek.diet.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserDtoConverter userDtoConverter;
+    private final ProductDtoConverter productDtoConverter;
     private final ProductFacade productFacade;
 
     @GetMapping("{id}")
@@ -40,6 +42,7 @@ public class UserController {
     @PostMapping("{id}/products")
     @ResponseStatus(CREATED)
     Mono<ProductDto> saveProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
-        return productFacade.saveProduct(id, productDto);
+        return productFacade.saveProduct(id, productDtoConverter.fromDto(productDto))
+                .map(productDtoConverter::toDto);
     }
 }

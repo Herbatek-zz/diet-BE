@@ -4,6 +4,7 @@ spring:
       username: mongoadmin
       password: admin1
       authentication-database: admin
+
 facebook:
   client:
     clientId: 226509771534684
@@ -15,3 +16,11 @@ facebook:
     clientAuthenticationScheme: form
   resource:
     userInfoUri: https://graph.facebook.com/me
+
+security:
+  oauth2:
+    client:
+      client-id: diemy
+      client-secret: diemy2secret
+      scope: read,write
+      auto-approve-scopes: '.*'

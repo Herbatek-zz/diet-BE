@@ -63,6 +63,6 @@ class UserValidatorTest {
 
     @Test
     void checkFacebookId_whenLong_thenDoNothing() {
-        assertDoesNotThrow(() -> userValidator.checkFacebookId(123131L));
+        userValidator.checkFacebookId(123131L);
     }
 }
