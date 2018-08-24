@@ -1,7 +1,7 @@
 package com.piotrek.diet.security.handler;
 
-import com.piotrek.diet.model.User;
-import com.piotrek.diet.service.UserService;
+import com.piotrek.diet.user.User;
+import com.piotrek.diet.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
