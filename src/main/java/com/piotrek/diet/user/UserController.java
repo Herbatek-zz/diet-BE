@@ -39,7 +39,7 @@ public class UserController {
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return productFacade.findAllByUser(id, PageRequest.of(page, size));
+        return productFacade.findAllByUserId(id, PageRequest.of(page, size));
     }
 
     @PostMapping("/{id}/products")

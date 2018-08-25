@@ -1,26 +1,30 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageRequest;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+import static com.piotrek.diet.sample.ProductSample.bananaWithId;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
 
-    @InjectMocks
+    private ProductDtoConverter productDtoConverter = new ProductDtoConverter();
+
     private ProductService productService;
 
     private Product product;
@@ -29,6 +33,7 @@ class ProductServiceTest {
     void setup() {
         createProduct();
         MockitoAnnotations.initMocks(this);
+        productService = new ProductService(productRepository, productDtoConverter);
     }
 
     @Test
@@ -85,7 +90,71 @@ class ProductServiceTest {
         verifyNoMoreInteractions(productRepository);
     }
 
+    @Test
+    void findAll_whenTotalElements20AndPageSize10AndPage0_shouldReturnFirstPage() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 20;
+        var productList = createProductList(totalElements);
+        var expected = new PageSupport<>(productDtoConverter.listToDto(productList)
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
+
+        PageSupport<ProductDto> firstPage = productService.findAll(PageRequest.of(page, pageSize)).block();
+
+        assertEquals(expected, firstPage);
+    }
+
+    @Test
+    void findAll_whenTotalElements20AndPageSize10AndPage1_shouldReturnSecondPage() {
+        var page = 1;
+        var pageSize = 10;
+        var totalElements = 20;
+        var productList = createProductList(totalElements);
+        var expected = new PageSupport<>(productDtoConverter.listToDto(productList)
+                .stream()
+                .skip(pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
+
+        PageSupport<ProductDto> firstPage = productService.findAll(PageRequest.of(page, pageSize)).block();
+
+        assertEquals(expected, firstPage);
+    }
+
+    @Test
+    void findAll_whenTotalElements0AndPageSize10AndPage0_thenReturnFirstPageWithEmptyList() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 0;
+        var productList = createProductList(totalElements);
+        var expected = new PageSupport<>(productDtoConverter.listToDto(productList)
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
+
+        PageSupport<ProductDto> secondPage = productService.findAll(PageRequest.of(page, pageSize)).block();
+
+        assertEquals(expected, secondPage);
+    }
+
     private void createProduct() {
-        product = ProductSample.bananaWithId();
+        product = bananaWithId();
+    }
+
+    private ArrayList<Product> createProductList(int size) {
+        ArrayList<Product> arrayList = new ArrayList<>();
+
+        for (int i = 0; i < size; i++)
+            arrayList.add(bananaWithId());
+
+        return arrayList;
     }
 }

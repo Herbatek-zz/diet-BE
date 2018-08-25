@@ -2,21 +2,19 @@ package com.piotrek.diet.sample;
 
 import com.piotrek.diet.product.Product;
 
+import java.util.UUID;
+
 public class ProductSample {
 
     public static Product bananaWithId() {
-        var product = new Product();
-        product.setId("ProductWow123");
-        product.setName("Banana");
-        product.setDescription("Very yellow, so sweet, such tasty");
-        product.setImageUrl("http://bananaWithId-so-good.com");
-        product.setProtein(1.0);
-        product.setCarbohydrate(21.8);
-        product.setFat(0.3);
-        product.setFibre(1.7);
-        product.setKcal(97.0);
-        product.setCarbohydrateExchange(2.1);
-        product.setProteinAndFatEquivalent(0.067);
+        var product = bananaWithoutId();
+        product.setId(UUID.randomUUID().toString());
+        return product;
+    }
+
+    public static Product breadWithId() {
+        var product = breadWithoutId();
+        product.setId(UUID.randomUUID().toString());
         return product;
     }
 

@@ -2,6 +2,9 @@ package com.piotrek.diet.product;
 
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class ProductDtoConverter {
 
@@ -35,5 +38,12 @@ public class ProductDtoConverter {
         product.setCarbohydrateExchange(productDto.getCarbohydrateExchange());
         product.setProteinAndFatEquivalent(productDto.getProteinAndFatEquivalent());
         return product;
+    }
+
+    public List<ProductDto> listToDto(List<Product> products) {
+        return products
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 }

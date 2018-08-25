@@ -44,6 +44,7 @@ public class UserService {
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
+        user.setUsername(firstName + " " + lastName);
         user.setRole(Role.ROLE_USER.name());
         user.setCreatedAt(LocalDateTime.now());
         return user;

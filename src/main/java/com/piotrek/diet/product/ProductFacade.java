@@ -26,7 +26,7 @@ public class ProductFacade {
         return productService.save(product);
     }
 
-    public Mono<PageSupport<ProductDto>> findAllByUser(String userId, Pageable pageable) {
+    public Mono<PageSupport<ProductDto>> findAllByUserId(String userId, Pageable pageable) {
         userService.findById(userId).block();
 
         return productService

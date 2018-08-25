@@ -1,6 +1,9 @@
 package com.piotrek.diet.product;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
+import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.sample.ProductSample;
@@ -13,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
@@ -32,6 +38,8 @@ class ProductControllerTest {
 
     private WebTestClient webTestClient;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private Product product1;
     private Product product2;
     private ProductDto productDto1;
@@ -40,7 +48,7 @@ class ProductControllerTest {
     @BeforeEach
     void setUp() {
         productService.deleteAll().block();
-        createUsers();
+        createProducts();
         webTestClient = WebTestClient
                 .bindToController(new ProductController(productService, productDtoConverter))
                 .controllerAdvice(globalExceptionHandler)
@@ -63,13 +71,60 @@ class ProductControllerTest {
     }
 
     @Test
+    void findAllWithDefaultParams_whenNoProducts_returnPageSupportWithoutContent() throws JsonProcessingException {
+        var expected = new PageSupport<ProductDto>(new ArrayList<>(), 0, 10, 0);
+
+        productService.deleteAll().block();
+
+        webTestClient.get().uri("/products")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void findAllWithDefaultParams_when2Products_returnPageSupportWith2Products() throws JsonProcessingException {
+        var products = new ArrayList<Product>();
+        products.add(product1);
+        products.add(product2);
+        var productsDto = productDtoConverter.listToDto(products);
+        var expected = new PageSupport<>(productsDto, 0, 10, products.size());
+
+        webTestClient.get().uri("/products")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void findAllSecondPageAndPageSizeOne_when2Products_returnSecondPageWithOneProduct() throws JsonProcessingException {
+        var products = new ArrayList<Product>();
+        products.add(product1);
+        products.add(product2);
+        var productsDto = productDtoConverter.listToDto(products);
+        var expected = new PageSupport<>(productsDto
+                .stream()
+                .skip(1)
+                .limit(1)
+                .collect(Collectors.toList()), 1, 1, products.size());
+
+        webTestClient.get().uri("/products?page=1&size=1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
     void deleteById() {
         webTestClient.delete().uri("/products/" + product1.getId())
                 .exchange()
                 .expectStatus().isNoContent();
     }
 
-    private void createUsers() {
+    private void createProducts() {
         product1 = ProductSample.bananaWithoutId();
         product2 = ProductSample.breadWithoutId();
 
