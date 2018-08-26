@@ -36,6 +36,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             throws IOException, ServletException {
 
         System.out.println("Siemanko jestem w filtrze JwtAuthorizationFilter !");
+        request.getHeaderNames().asIterator().forEachRemaining(System.out::println);
         String header = request.getHeader(HEADER_STRING);
         if (header == null || !header.startsWith(TOKEN_PREFIX)) {
             System.out.println("Albo header był nullem, albo nie zaczynał się od barera...");

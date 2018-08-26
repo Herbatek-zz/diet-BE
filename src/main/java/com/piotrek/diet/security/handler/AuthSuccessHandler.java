@@ -70,7 +70,7 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
         user = userService.save(user).block();
 
         System.out.println("Dodawanie tokena do nagłówka");
-        response.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+        response.addHeader(HEADER_STRING, TOKEN_PREFIX + token.getToken());
         setCookie(response, "id", user.getId());
 
 //        response.sendRedirect("http://localhost:3000");
