@@ -47,9 +47,7 @@ class UserControllerTest {
     private WebTestClient webTestClient;
 
     private User user1;
-    private User user2;
     private UserDto userDto1;
-    private UserDto userDto2;
 
     @BeforeEach
     void setUp() {
@@ -104,7 +102,7 @@ class UserControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(PageSupport.class)
-                .isEqualTo(new PageSupport(new ArrayList<>(), 0, 10, 0));
+                .isEqualTo(new PageSupport<>(new ArrayList<>(), 0, 10, 0));
     }
 
     @Test
@@ -114,12 +112,9 @@ class UserControllerTest {
 
     private void createUsers() {
         user1 = UserSample.baileyWithoutId();
-        user2 = UserSample.johnWithoutId();
 
         user1 = userService.save(user1).block();
-        user2 = userService.save(user2).block();
 
         userDto1 = userDtoConverter.toDto(user1);
-        userDto2 = userDtoConverter.toDto(user2);
     }
 }
