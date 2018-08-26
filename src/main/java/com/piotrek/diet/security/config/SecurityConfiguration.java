@@ -1,6 +1,8 @@
 package com.piotrek.diet.security.config;
 
+import com.piotrek.diet.security.filter.JwtAuthorizationFilter;
 import com.piotrek.diet.security.handler.AuthSuccessHandler;
+import com.piotrek.diet.security.helpers.ClientResources;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
@@ -18,12 +21,10 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.web.filter.CompositeFilter;
 
 import javax.servlet.Filter;
-import java.util.ArrayList;
-import java.util.List;
+
+import static com.piotrek.diet.security.helpers.SecurityConstants.*;
 
 
 @Order(200)
@@ -40,18 +41,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/", "/login**").permitAll()
+                .antMatchers("/", "/login/**").permitAll()
                 .anyRequest().authenticated() // need to be enabled in final version
-//                .anyRequest().permitAll() // need be deleted in final version
                 .and()
-                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/facebook"))
+                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 .and()
                 .logout().logoutSuccessUrl("/").permitAll()
                 .and()
 //                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version
 //                .and()
                 .csrf().disable() // should be deleted in final version
-                .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
+                .addFilterAfter(ssoFilter(), BasicAuthenticationFilter.class)
+                .addFilter(jwtAuthorizationFilter())
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    }
+
+    @Bean
+    public JwtAuthorizationFilter jwtAuthorizationFilter() throws Exception {
+        return new JwtAuthorizationFilter(authenticationManager());
     }
 
     @Bean
@@ -63,18 +70,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private Filter ssoFilter() {
-        var filter = new CompositeFilter();
-        List<Filter> filters = new ArrayList<>();
-        filters.add(ssoFilter(facebook()));
-        filter.setFilters(filters);
-        return filter;
-    }
-
-    private Filter ssoFilter(ClientResources client) {
-        var filter = new OAuth2ClientAuthenticationProcessingFilter("/login/facebook");
-        var template = new OAuth2RestTemplate(client.getClient(), oauth2ClientContext);
+        var filter = new OAuth2ClientAuthenticationProcessingFilter(SIGN_IN_URL);
+        var template = new OAuth2RestTemplate(facebook().getClient(), oauth2ClientContext);
         filter.setRestTemplate(template);
-        var tokenServices = new UserInfoTokenServices(client.getResource().getUserInfoUri(), client.getClient().getClientId());
+        var tokenServices = new UserInfoTokenServices(facebook().getResource().getUserInfoUri(), facebook().getClient().getClientId());
         tokenServices.setRestTemplate(template);
         filter.setTokenServices(tokenServices);
 

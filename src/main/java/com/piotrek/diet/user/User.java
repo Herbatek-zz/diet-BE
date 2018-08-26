@@ -1,6 +1,8 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.helpers.enums.Role;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,8 +21,9 @@ public class User {
 
     @NotNull
     @Indexed(unique = true)
-    private Long facebookId;
+    private long facebookId;
 
+    @NotNull
     @Indexed(unique = true)
     private String username;
 
@@ -35,4 +38,16 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime lastVisit;
     private String role;
+
+    public User() {}
+
+    public User(long facebookId, String email, String firstName, String lastName) {
+        this.facebookId = facebookId;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = firstName + " " + lastName;
+        this.role = Role.ROLE_USER.name();
+        this.createdAt = LocalDateTime.now();
+    }
 }

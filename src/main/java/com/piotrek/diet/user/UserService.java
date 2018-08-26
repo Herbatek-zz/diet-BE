@@ -26,6 +26,10 @@ public class UserService {
         return userRepository.findByFacebookId(facebookId);
     }
 
+    public Mono<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     Flux<User> findAll() {
         return userRepository.findAll();
     }
@@ -36,17 +40,5 @@ public class UserService {
 
     Mono<Void> deleteAll() {
         return userRepository.deleteAll();
-    }
-
-    public User createUser(Long facebookId, String email, String firstName, String lastName) {
-        var user = new User();
-        user.setFacebookId(facebookId);
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUsername(firstName + " " + lastName);
-        user.setRole(Role.ROLE_USER.name());
-        user.setCreatedAt(LocalDateTime.now());
-        return user;
     }
 }

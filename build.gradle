@@ -32,6 +32,10 @@ dependencies {
 
     compile ('org.springframework.boot:spring-boot-starter-security')
     compile ('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.3.RELEASE')
+    compile ('org.springframework.security:spring-security-oauth2-client')
+    compile ('com.auth0:java-jwt:3.4.0')
+
+
 
     compile('org.springframework.boot:spring-boot-starter-aop')
     runtime('org.springframework.boot:spring-boot-devtools')
