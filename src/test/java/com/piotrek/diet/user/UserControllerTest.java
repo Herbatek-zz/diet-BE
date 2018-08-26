@@ -104,7 +104,7 @@ class UserControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(PageSupport.class)
-                .isEqualTo(new PageSupport(new ArrayList(), 0, 10, 0));
+                .isEqualTo(new PageSupport(new ArrayList<>(), 0, 10, 0));
     }
 
     @Test

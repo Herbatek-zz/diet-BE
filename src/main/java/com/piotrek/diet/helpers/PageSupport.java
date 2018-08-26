@@ -1,20 +1,27 @@
 package com.piotrek.diet.helpers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Value
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode
+@NoArgsConstructor
 public class PageSupport<T> {
 
     public static final String FIRST_PAGE_NUM = "0";
     public static final String DEFAULT_PAGE_SIZE = "10";
 
-    List<T> content;
-    int pageNumber;
-    int pageSize;
-    long totalElements;
+    private List<T> content;
+    private int pageNumber;
+    private int pageSize;
+    private long totalElements;
+
 
     @JsonProperty
     public long totalPages() {

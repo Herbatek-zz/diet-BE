@@ -38,7 +38,8 @@ dependencies {
     // other
     compile('org.springframework.boot:spring-boot-starter-aop')
     runtime('org.springframework.boot:spring-boot-devtools')
-    compileOnly('org.projectlombok:lombok')
+    compileOnly('org.projectlombok:lombok:1.18.2')
+
 
     // data
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
