@@ -148,8 +148,7 @@ class UserServiceTest {
 
     @Test
     void createUserTest_whenAllValid_thenCreateUser() {
-        User createdUser = userService
-                .createUser(user.getFacebookId(), user.getEmail(), user.getFirstName(), user.getLastName());
+        User createdUser = new User(user.getFacebookId(), user.getEmail(), user.getFirstName(), user.getLastName());
 
         assertAll(
                 () -> assertEquals(user.getFirstName(), createdUser.getFirstName()),
@@ -162,7 +161,7 @@ class UserServiceTest {
 
     @Test
     void createUserTest_whenOnlyOneName_thenCreateUserWithFirstName() {
-        User createdUser = userService.createUser(user.getFacebookId(), user.getEmail(), user.getFirstName(), null);
+        User createdUser = new User(user.getFacebookId(), user.getEmail(), user.getFirstName(), null);
 
         assertAll(
                 () -> assertEquals(user.getFirstName(), createdUser.getFirstName()),
@@ -175,7 +174,7 @@ class UserServiceTest {
 
     @Test
     void createUserTest_whenUserHasNoNames_thenCreateUserWithoutNames() {
-        User createdUser = userService.createUser(user.getFacebookId(), user.getEmail(), null, null);
+        User createdUser = new User(user.getFacebookId(), user.getEmail(), null, null);
 
         assertAll(
                 () -> assertNull(createdUser.getFirstName()),
