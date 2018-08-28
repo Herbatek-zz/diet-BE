@@ -8,6 +8,7 @@ import com.piotrek.diet.security.token.TokenService;
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -24,6 +25,7 @@ import java.util.LinkedHashMap;
 
 import static com.piotrek.diet.security.helpers.SecurityConstants.*;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -35,45 +37,37 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
 
-        System.out.println("Siemanko jestem w SuccessfulHandler");
-
         LinkedHashMap userDetails = (LinkedHashMap) ((OAuth2Authentication) authentication).getUserAuthentication().getDetails();
 
         long facebookId = Long.valueOf(userDetails.get("id").toString());
         User user = userService.findByFacebookId(facebookId).block();
+
         Token token;
         if (user == null) {
-            System.out.println("Tworzymy nowego usera");
             user = createUser(userDetails);
-            System.out.println("Stworzyliśmy nowego usera: " + user.getUsername());
             user = userService.save(user).block();
-            System.out.println("Zapisaliśmy usera: " + user.getUsername());
-
-            System.out.println("Tworzymy nowy token dla usera: " + user.getUsername());
             token = new Token(tokenService.generateToken(user), user.getId());
             token = tokenService.save(token).block();
-            System.out.println("Stworzyliśmy i zapisaliśmy token dla usera: " + user.getUsername());
+            log.info("New user '" + user.getUsername() + "' has been created with new token");
         } else {
-            System.out.println("Zalogował się istniejący usere: " + user.getUsername());
+            log.info("User '" + user.getUsername() + "' just log in to the application");
             token = tokenService.findByUserId(user.getId()).block();
-            System.out.println("Teraz sprawdzimy token usera: " + user.getUsername());
             try {
                 JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
                         .build()
                         .verify(token.getToken().replace(TOKEN_PREFIX, ""));
             } catch (JWTVerificationException e) {
-                System.out.println("Niestety podczas sprawdzania wystąpił problem, wygenerujemy nowy token dla usera: " + user.getUsername());
                 token = tokenService.update(tokenService.generateToken(user), token.getId()).block();
+                log.info("User '" + user.getUsername() + "' had expired token, so we have generated a new one");
             }
         }
         user.setLastVisit(LocalDateTime.now());
         user = userService.save(user).block();
 
-        System.out.println("Dodawanie tokena do nagłówka");
-        response.addHeader(HEADER_STRING, TOKEN_PREFIX + token.getToken());
+        setCookie(response, "Token", token.getToken());
         setCookie(response, "id", user.getId());
 
-//        response.sendRedirect("http://localhost:3000");
+        response.sendRedirect("http://localhost:3000");
 
         super.onAuthenticationSuccess(request, response, authentication);
     }

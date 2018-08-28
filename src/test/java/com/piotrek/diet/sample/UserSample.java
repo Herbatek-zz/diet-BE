@@ -1,7 +1,7 @@
 package com.piotrek.diet.sample;
 
-import com.piotrek.diet.user.User;
 import com.piotrek.diet.helpers.enums.Role;
+import com.piotrek.diet.user.User;
 
 public class UserSample {
 

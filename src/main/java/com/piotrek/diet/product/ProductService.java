@@ -1,7 +1,7 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;

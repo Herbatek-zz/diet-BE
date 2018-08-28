@@ -1,9 +1,9 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.product.ProductFacade;
+import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.product.ProductFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;

@@ -1,12 +1,12 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.DietApplication;
+import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
-import com.piotrek.diet.product.ProductFacade;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.product.ProductFacade;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.AfterAll;

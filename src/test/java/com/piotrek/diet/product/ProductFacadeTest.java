@@ -1,8 +1,8 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.user.User;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProductFacadeTest {
 

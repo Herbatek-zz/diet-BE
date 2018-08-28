@@ -1,14 +1,11 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.helpers.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
