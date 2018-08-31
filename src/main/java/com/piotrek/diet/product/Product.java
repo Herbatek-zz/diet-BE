@@ -20,20 +20,24 @@ public class Product {
     private String imageUrl;
 
     @NotNull
-    private Double protein;
+    private double protein;
 
     @NotNull
-    private Double carbohydrate;
+    private double carbohydrate;
 
     @NotNull
-    private Double fat;
-    private Double fibre = 0.0;
+    private double fat;
 
     @NotNull
-    private Double kcal;
+    private double fibre;
 
-    private Double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
-    private Double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+    @NotNull
+    private double kcal;
+
+    private int amount;
+
+    private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
+    private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
     private String userId;
 }

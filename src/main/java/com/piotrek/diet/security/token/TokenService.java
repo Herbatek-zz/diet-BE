@@ -42,6 +42,8 @@ public class TokenService {
         return JWT.create()
                 .withSubject(user.getId())
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .withClaim("username", user.getUsername())
+                .withClaim("pictureUrl", user.getPictureUrl())
                 .sign(HMAC512(SECRET.getBytes()));
     }
 

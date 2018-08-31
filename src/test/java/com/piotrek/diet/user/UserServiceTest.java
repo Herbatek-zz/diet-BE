@@ -46,7 +46,9 @@ class UserServiceTest {
                 () -> assertEquals(user.getFacebookId(), userById.getFacebookId()),
                 () -> assertEquals(user.getEmail(), userById.getEmail()),
                 () -> assertEquals(user.getUsername(), userById.getUsername()),
-                () -> assertEquals(user.getRole(), userById.getRole())
+                () -> assertEquals(user.getRole(), userById.getRole()),
+                () -> assertEquals(user.getCreatedAt(), userById.getCreatedAt()),
+                () -> assertEquals(user.getLastVisit(), userById.getLastVisit())
         );
 
         verify(userRepository, times(1)).findById(user.getId());
@@ -106,7 +108,9 @@ class UserServiceTest {
                 () -> assertEquals(user.getFacebookId(), userByFacebookId.getFacebookId()),
                 () -> assertEquals(user.getEmail(), userByFacebookId.getEmail()),
                 () -> assertEquals(user.getUsername(), userByFacebookId.getUsername()),
-                () -> assertEquals(user.getRole(), userByFacebookId.getRole())
+                () -> assertEquals(user.getRole(), userByFacebookId.getRole()),
+                () -> assertEquals(user.getCreatedAt(), userByFacebookId.getCreatedAt()),
+                () -> assertEquals(user.getLastVisit(), userByFacebookId.getLastVisit())
         );
 
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
@@ -139,7 +143,10 @@ class UserServiceTest {
                 () -> assertEquals(user.getFacebookId(), savedUser.getFacebookId()),
                 () -> assertEquals(user.getEmail(), savedUser.getEmail()),
                 () -> assertEquals(user.getUsername(), savedUser.getUsername()),
-                () -> assertEquals(user.getRole(), savedUser.getRole())
+                () -> assertEquals(user.getRole(), savedUser.getRole()),
+                () -> assertEquals(user.getCreatedAt(), savedUser.getCreatedAt()),
+                () -> assertEquals(user.getLastVisit(), savedUser.getLastVisit())
+
         );
 
         verify(userRepository, times(1)).save(user);
@@ -154,33 +161,8 @@ class UserServiceTest {
                 () -> assertEquals(user.getFirstName(), createdUser.getFirstName()),
                 () -> assertEquals(user.getLastName(), createdUser.getLastName()),
                 () -> assertEquals(user.getEmail(), createdUser.getEmail()),
-                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
-        );
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void createUserTest_whenOnlyOneName_thenCreateUserWithFirstName() {
-        User createdUser = new User(user.getFacebookId(), user.getEmail(), user.getFirstName(), null);
-
-        assertAll(
-                () -> assertEquals(user.getFirstName(), createdUser.getFirstName()),
-                () -> assertNull(createdUser.getLastName()),
-                () -> assertEquals(user.getEmail(), createdUser.getEmail()),
-                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
-        );
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void createUserTest_whenUserHasNoNames_thenCreateUserWithoutNames() {
-        User createdUser = new User(user.getFacebookId(), user.getEmail(), null, null);
-
-        assertAll(
-                () -> assertNull(createdUser.getFirstName()),
-                () -> assertNull(createdUser.getLastName()),
-                () -> assertEquals(user.getEmail(), createdUser.getEmail()),
-                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId())
+                () -> assertEquals(user.getFacebookId(), createdUser.getFacebookId()),
+                () -> assertEquals(user.getRole(), createdUser.getRole())
         );
         verifyNoMoreInteractions(userRepository);
     }

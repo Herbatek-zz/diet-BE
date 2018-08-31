@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -27,6 +26,7 @@ import javax.servlet.Filter;
 import java.util.List;
 
 import static com.piotrek.diet.security.helpers.SecurityConstants.SIGN_IN_URL;
+import static org.springframework.http.HttpMethod.GET;
 
 
 @Configuration
@@ -40,19 +40,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors()
-                .and()
                 .authorizeRequests()
-                .antMatchers("/", "/login/**").permitAll()
+                .antMatchers("/login/**").permitAll()
+                .antMatchers(GET, "/products/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/facebook"))
-                .and()
-                .logout().logoutSuccessUrl("/").permitAll()
-                .and()
 //                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version
-//                .and()
-                .csrf().disable() // should be deleted in final version
+                .csrf().disable()
+                .cors()
+                .and()
                 .addFilterAfter(ssoFilter(), BasicAuthenticationFilter.class)
                 .addFilter(jwtAuthorizationFilter())
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

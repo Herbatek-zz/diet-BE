@@ -1,5 +1,6 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
 
+import static com.piotrek.diet.helpers.enums.Macronutrient.Fat;
+import static com.piotrek.diet.helpers.enums.Macronutrient.Protein;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductDtoConverter productDtoConverter;
+    private final DiabetesCalculator diabetesCalculator;
 
     Mono<Product> findById(String id) {
         return productRepository.findById(id)
@@ -42,7 +47,13 @@ public class ProductService {
         return productRepository.findAllByUserId(userId);
     }
 
-    Mono<Product> save(Product product) {
+    public Mono<Product> save(Product product) {
+        double carbohydrateExchange = diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
+        product.setCarbohydrateExchange(carbohydrateExchange);
+
+        double proteinAndFatEquivalent = diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
+        product.setProteinAndFatEquivalent(proteinAndFatEquivalent);
+
         return productRepository.save(product);
     }
 

@@ -1,6 +1,7 @@
 package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,11 @@ public class ProductFacade {
     private final ProductDtoConverter productDtoConverter;
 
     public Mono<Product> saveProduct(String userId, Product product) {
-        User user = userService.findById(userId).block();
 
+        if (!userService.isPrincipalIdEqualUserId(userId))
+            throw new BadRequestException("You cannot save the product, because your id does not match with id from your token");
+
+        User user = userService.findById(userId).block();
         product.setUserId(user.getId());
 
         return productService.save(product);

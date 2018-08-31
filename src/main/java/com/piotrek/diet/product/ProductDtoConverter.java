@@ -19,6 +19,7 @@ public class ProductDtoConverter {
         productDto.setFat(product.getFat());
         productDto.setFibre(product.getFibre());
         productDto.setKcal(product.getKcal());
+        productDto.setAmount(product.getAmount());
         productDto.setCarbohydrateExchange(product.getCarbohydrateExchange());
         productDto.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent());
         return productDto;
@@ -35,6 +36,7 @@ public class ProductDtoConverter {
         product.setFat(productDto.getFat());
         product.setFibre(productDto.getFibre());
         product.setKcal(productDto.getKcal());
+        product.setAmount(productDto.getAmount());
         product.setCarbohydrateExchange(productDto.getCarbohydrateExchange());
         product.setProteinAndFatEquivalent(productDto.getProteinAndFatEquivalent());
         return product;

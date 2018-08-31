@@ -15,19 +15,21 @@ public class ProductDto {
     private String imageUrl;
 
     @NotNull
-    private Double protein;
+    private double protein;
 
     @NotNull
-    private Double carbohydrate;
+    private double carbohydrate;
 
     @NotNull
-    private Double fat;
+    private double fat;
 
-    private Double fibre;
+    private double fibre;
 
     @NotNull
-    private Double kcal;
+    private double kcal;
 
-    private Double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
-    private Double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+    private int amount;
+
+    private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
+    private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 }

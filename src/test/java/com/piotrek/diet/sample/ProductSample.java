@@ -1,19 +1,19 @@
 package com.piotrek.diet.sample;
 
+import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.product.Product;
+import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.product.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
 
 public class ProductSample {
 
+    private static DiabetesCalculator diabetesCalculator = new DiabetesCalculator();
+
     public static Product bananaWithId() {
         var product = bananaWithoutId();
-        product.setId(UUID.randomUUID().toString());
-        return product;
-    }
-
-    public static Product breadWithId() {
-        var product = breadWithoutId();
         product.setId(UUID.randomUUID().toString());
         return product;
     }
@@ -28,6 +28,35 @@ public class ProductSample {
         product.setFat(0.3);
         product.setFibre(1.7);
         product.setKcal(97.0);
+        product.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre()));
+        product.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat()));
+        return product;
+    }
+
+    public static ProductDto bananaWithIdDto() {
+        var product = bananaWithoutIdDto();
+        product.setId(UUID.randomUUID().toString());
+        return product;
+    }
+
+    public static ProductDto bananaWithoutIdDto() {
+        var productDto = new ProductDto();
+        productDto.setName("Banana");
+        productDto.setDescription("Very yellow, so sweet, such tasty");
+        productDto.setImageUrl("http://bananaWithId-so-good.com");
+        productDto.setProtein(1.0);
+        productDto.setCarbohydrate(21.8);
+        productDto.setFat(0.3);
+        productDto.setFibre(1.7);
+        productDto.setKcal(97.0);
+        productDto.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre()));
+        productDto.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat()));
+        return productDto;
+    }
+
+    public static Product breadWithId() {
+        var product = breadWithoutId();
+        product.setId(UUID.randomUUID().toString());
         return product;
     }
 
@@ -41,6 +70,29 @@ public class ProductSample {
         product.setFat(1.6);
         product.setFibre(0.0);
         product.setKcal(216.0);
+        product.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre()));
+        product.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat()));
         return product;
+    }
+
+    public static ProductDto breadWithIdDto() {
+        var product = breadWithoutIdDto();
+        product.setId(UUID.randomUUID().toString());
+        return product;
+    }
+
+    public static ProductDto breadWithoutIdDto() {
+        var productDto = new ProductDto();
+        productDto.setName("Tesco Chleb Razowy");
+        productDto.setDescription("gwarancja 100% satysfakcji, 100% żytni, wypiekany na naturalnym zakwasie, bez substancji konserwujących i polepszaczy, Jestem z Polski");
+        productDto.setImageUrl("https://secure.ce-tescoassets.com/assets/PL/924/5051007036924/ShotType1_328x328.jpg");
+        productDto.setProtein(4.9);
+        productDto.setCarbohydrate(43.0);
+        productDto.setFat(1.6);
+        productDto.setFibre(0.0);
+        productDto.setKcal(216.0);
+        productDto.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre()));
+        productDto.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat()));
+        return productDto;
     }
 }

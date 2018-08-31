@@ -1,5 +1,6 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,8 @@ class ProductServiceTest {
 
     private ProductDtoConverter productDtoConverter = new ProductDtoConverter();
 
+    private DiabetesCalculator diabetesCalculator = new DiabetesCalculator();
+
     private ProductService productService;
 
     private Product product;
@@ -33,7 +36,7 @@ class ProductServiceTest {
     void setup() {
         createProduct();
         MockitoAnnotations.initMocks(this);
-        productService = new ProductService(productRepository, productDtoConverter);
+        productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test

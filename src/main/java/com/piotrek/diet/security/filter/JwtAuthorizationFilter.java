@@ -39,10 +39,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
         String tokenValue = request.getHeader(HEADER_STRING);
         if (tokenValue == null) {
-            log.info(HEADER_STRING + " is null");
+            log.debug(HEADER_STRING + " is null");
             chain.doFilter(request, response);
         } else if (!tokenValue.startsWith(TOKEN_PREFIX)) {
-            log.info(HEADER_STRING + " does not starts with '" + TOKEN_PREFIX + "'");
+            log.warn(HEADER_STRING + " does not starts with '" + TOKEN_PREFIX + "'");
             chain.doFilter(request, response);
         } else {
             UsernamePasswordAuthenticationToken authentication = getAuthentication(request);
@@ -80,12 +80,11 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                 log.warn("User from token does not exist in database");
                 return null;
             }
-            log.info("User '" + userFromDB.getUsername() + "' properly sign in");
+            log.info("User '" + userFromDB.getUsername() + "' has been authenticated");
             return new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
         }
         return null;
     }
-
 
     @Autowired
     public void setUserService(UserService userService) {

@@ -48,24 +48,23 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
             user = userService.save(user).block();
             token = new Token(tokenService.generateToken(user), user.getId());
             token = tokenService.save(token).block();
-            log.info("New user '" + user.getUsername() + "' has been created with new token");
+            log.debug("New user '" + user.getUsername() + "' has been created with new token");
         } else {
-            log.info("User '" + user.getUsername() + "' just log in to the application");
+            log.debug("User '" + user.getUsername() + "' has been successfully authenticated");
             token = tokenService.findByUserId(user.getId()).block();
             try {
                 JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
                         .build()
-                        .verify(token.getToken().replace(TOKEN_PREFIX, ""));
+                        .verify(token.getToken());
             } catch (JWTVerificationException e) {
                 token = tokenService.update(tokenService.generateToken(user), token.getId()).block();
                 log.info("User '" + user.getUsername() + "' had expired token, so we have generated a new one");
             }
         }
         user.setLastVisit(LocalDateTime.now());
-        user = userService.save(user).block();
+        userService.save(user).block();
 
         setCookie(response, "Token", token.getToken());
-        setCookie(response, "id", user.getId());
 
         response.sendRedirect("http://localhost:3000");
 
@@ -83,6 +82,8 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
         String firstName = userDetails.get("first_name").toString();
         String lastName = userDetails.get("last_name").toString();
         long facebookId = Long.valueOf(userDetails.get("id").toString());
-        return new User(facebookId, email, firstName, lastName);
+        User user = new User(facebookId, email, firstName, lastName);
+        user.setPictureUrl("https://api.adorable.io/avatars/75/" + email + ".png");
+        return user;
     }
 }
