@@ -27,15 +27,26 @@ public class User {
     private String username;
 
     @Email
+    @NotNull
     @Indexed(unique = true)
     private String email;
 
+    @NotNull
     private String firstName;
+
+    @NotNull
     private String lastName;
+
+    @NotNull
     private String pictureUrl;
 
+    @NotNull
     private LocalDateTime createdAt;
+
+    @NotNull
     private LocalDateTime lastVisit;
+
+    @NotNull
     private String role;
 
     public User() {}

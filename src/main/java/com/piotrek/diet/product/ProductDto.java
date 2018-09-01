@@ -23,6 +23,7 @@ public class ProductDto {
     @NotNull
     private double fat;
 
+    @NotNull
     private double fibre;
 
     @NotNull

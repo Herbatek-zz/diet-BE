@@ -1,4 +1,4 @@
-package com.piotrek.diet.product;
+package com.piotrek.diet.meal;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Document
-public class Product {
+public class Meal {
 
     @Id
     @NotNull
@@ -16,8 +16,12 @@ public class Product {
 
     @NotNull
     private String name;
+
+    @NotNull
     private String description;
-    private String imageUrl;
+
+    @NotNull
+    private String recipe;
 
     @NotNull
     private double protein;
@@ -34,13 +38,7 @@ public class Product {
     @NotNull
     private double kcal;
 
-    private int amount;
-
-    @NotNull
-    private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
-
-    @NotNull
-    private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+    private String imageUrl;
 
     @NotNull
     private String userId;

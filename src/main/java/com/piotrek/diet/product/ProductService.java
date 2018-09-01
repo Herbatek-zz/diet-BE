@@ -29,7 +29,7 @@ public class ProductService {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found product [id = " + id + "]"))));
     }
 
-    Mono<PageSupport<ProductDto>> findAll(Pageable pageable) {
+    Mono<PageSupport<ProductDto>> findAllPageable(Pageable pageable) {
         return productRepository
                 .findAll()
                 .map(productDtoConverter::toDto)
@@ -48,18 +48,17 @@ public class ProductService {
     }
 
     public Mono<Product> save(Product product) {
-        double carbohydrateExchange = diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
+        var carbohydrateExchange = diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
         product.setCarbohydrateExchange(carbohydrateExchange);
 
-        double proteinAndFatEquivalent = diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
+        var proteinAndFatEquivalent = diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         product.setProteinAndFatEquivalent(proteinAndFatEquivalent);
 
         return productRepository.save(product);
     }
 
     Mono<Void> deleteById(String id) {
-        productRepository.deleteById(id);
-        return Mono.empty();
+        return productRepository.deleteById(id);
     }
 
     Mono<Void> deleteAll() {

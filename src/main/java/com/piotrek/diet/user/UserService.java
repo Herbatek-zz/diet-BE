@@ -1,5 +1,6 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +41,9 @@ public class UserService {
         return userRepository.deleteAll();
     }
 
-    public boolean isPrincipalIdEqualUserId(String userId) {
+    public void validateUserWithPrincipal(String userId) {
         String principalId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        return userId.equals(principalId);
+        if (!userId.equals(principalId))
+            throw new BadRequestException("You cannot save the product, because your id does not match with id from your token");
     }
 }

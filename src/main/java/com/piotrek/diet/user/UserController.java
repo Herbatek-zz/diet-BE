@@ -1,6 +1,10 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.meal.Meal;
+import com.piotrek.diet.meal.MealDto;
+import com.piotrek.diet.meal.MealDtoConverter;
+import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductFacade;
@@ -23,8 +27,8 @@ public class UserController {
 
     private final UserService userService;
     private final UserDtoConverter userDtoConverter;
-    private final ProductDtoConverter productDtoConverter;
     private final ProductFacade productFacade;
+    private final MealFacade mealFacade;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
@@ -44,8 +48,22 @@ public class UserController {
 
     @PostMapping("/{id}/products")
     @ResponseStatus(CREATED)
-    Mono<ProductDto> saveProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
-        return productFacade.saveProduct(id, productDtoConverter.fromDto(productDto))
-                .map(productDtoConverter::toDto);
+    Mono<ProductDto> createProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
+        return productFacade.createProduct(id, productDto);
+    }
+
+    @GetMapping("/{id}/meals")
+    @ResponseStatus(OK)
+    Mono<PageSupport<MealDto>> findUserMeals(
+            @PathVariable String id,
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        return mealFacade.findAllByUserId(id, PageRequest.of(page, size));
+    }
+
+    @PostMapping("/{id}/meals")
+    @ResponseStatus(CREATED)
+    Mono<MealDto> createMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
+        return mealFacade.createMeal(id, mealDto);
     }
 }

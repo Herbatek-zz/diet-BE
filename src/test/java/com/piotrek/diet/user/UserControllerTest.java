@@ -6,9 +6,8 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
-import com.piotrek.diet.product.Product;
+import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductFacade;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
@@ -44,7 +43,7 @@ class UserControllerTest {
     private ProductFacade productFacade;
 
     @Autowired
-    private ProductDtoConverter productDtoConverter;
+    private MealFacade mealFacade;
 
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
@@ -61,7 +60,7 @@ class UserControllerTest {
         userService.deleteAll().block();
         createUsers();
         webTestClient = WebTestClient
-                .bindToController(new UserController(userService, userDtoConverter, productDtoConverter, productFacade))
+                .bindToController(new UserController(userService, userDtoConverter, productFacade, mealFacade))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
@@ -92,7 +91,7 @@ class UserControllerTest {
 
     @Test
     void saveProduct_whenAllRequiredField_thenSaveProductAndReturnDto() {
-        ProductDto productDto = productDtoConverter.toDto(ProductSample.bananaWithId());
+        ProductDto productDto = ProductSample.bananaWithIdDto();
 
         TestingAuthenticationToken testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
@@ -121,12 +120,10 @@ class UserControllerTest {
         TestingAuthenticationToken testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
-        Product banana = productFacade.saveProduct(user1.getId(), ProductSample.bananaWithoutId()).block();
-        Product bread = productFacade.saveProduct(user1.getId(), ProductSample.breadWithoutId()).block();
-
         ArrayList<ProductDto> products = new ArrayList<>(2);
-        products.add(productDtoConverter.toDto(banana));
-        products.add(productDtoConverter.toDto(bread));
+        products.add(productFacade.createProduct(user1.getId(), ProductSample.bananaWithoutIdDto()).block());
+        products.add(productFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
+
 
         var expected = new PageSupport<>(products, 0, 10, products.size());
 

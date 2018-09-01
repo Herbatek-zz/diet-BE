@@ -106,7 +106,7 @@ class ProductServiceTest {
 
         Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
 
-        PageSupport<ProductDto> firstPage = productService.findAll(PageRequest.of(page, pageSize)).block();
+        PageSupport<ProductDto> firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
     }
@@ -125,7 +125,7 @@ class ProductServiceTest {
 
         Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
 
-        PageSupport<ProductDto> firstPage = productService.findAll(PageRequest.of(page, pageSize)).block();
+        PageSupport<ProductDto> firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
     }
@@ -143,7 +143,7 @@ class ProductServiceTest {
 
         Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
 
-        PageSupport<ProductDto> secondPage = productService.findAll(PageRequest.of(page, pageSize)).block();
+        PageSupport<ProductDto> secondPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, secondPage);
     }

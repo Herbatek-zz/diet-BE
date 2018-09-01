@@ -24,9 +24,13 @@ class ProductFacadeTest {
     @Mock
     private ProductService productService;
 
+    @Mock
+    private ProductDtoConverter productDtoConverter;
+
     @InjectMocks
     private ProductFacade productFacade;
 
+    private ProductDto productDto;
     private Product product;
     private User user;
 
@@ -38,28 +42,31 @@ class ProductFacadeTest {
     }
 
     @Test
-    void saveProduct_whenPrincipalEqualUserId_thenSuccess() {
+    void createProduct_whenPrincipalEqualUserId_thenSuccess() {
 
         Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        Mockito.when(userService.validateUserWithPrincipal(user.getId())).thenReturn(true);
         Mockito.when(productService.save(product)).thenReturn(Mono.just(product));
-        Mockito.when(userService.isPrincipalIdEqualUserId(user.getId())).thenReturn(true);
+        Mockito.when(productDtoConverter.fromDto(productDto)).thenReturn(product);
+        Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
 
-        Product created = productFacade.saveProduct(user.getId(), product).block();
+        ProductDto created = productFacade.createProduct(user.getId(), productDto).block();
 
-        assertEquals(product, created);
+        assertEquals(productDto, created);
     }
 
     @Test
-    void saveProduct_whenPrincipalNotEqualUserId_thenFailure() {
+    void createProduct_whenPrincipalNotEqualUserId_thenFailure() {
 
         Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         Mockito.when(productService.save(product)).thenReturn(Mono.just(product));
-        Mockito.when(userService.isPrincipalIdEqualUserId(user.getId())).thenReturn(false);
+        Mockito.when(userService.validateUserWithPrincipal(user.getId())).thenReturn(false);
 
-        assertThrows(BadRequestException.class, () -> productFacade.saveProduct(user.getId(), product).block());
+        assertThrows(BadRequestException.class, () -> productFacade.createProduct(user.getId(), productDto).block());
     }
 
     private void createProducts() {
+        productDto = ProductSample.bananaWithIdDto();
         product = ProductSample.bananaWithId();
     }
 

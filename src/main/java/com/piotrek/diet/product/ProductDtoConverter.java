@@ -1,13 +1,15 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.helpers.DtoConverter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class ProductDtoConverter {
+public class ProductDtoConverter implements DtoConverter<Product, ProductDto> {
 
+    @Override
     public ProductDto toDto(Product product) {
         var productDto = new ProductDto();
         productDto.setId(product.getId());
@@ -25,6 +27,7 @@ public class ProductDtoConverter {
         return productDto;
     }
 
+    @Override
     public Product fromDto(ProductDto productDto) {
         var product = new Product();
         product.setId(productDto.getId());

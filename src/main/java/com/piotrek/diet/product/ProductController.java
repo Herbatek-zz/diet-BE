@@ -31,7 +31,7 @@ public class ProductController {
     Mono<PageSupport<ProductDto>> findAll(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return productService.findAll(PageRequest.of(page, size));
+        return productService.findAllPageable(PageRequest.of(page, size));
     }
 
     @DeleteMapping("/{id}")

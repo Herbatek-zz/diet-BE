@@ -1,10 +1,12 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.helpers.DtoConverter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserDtoConverter {
+public class UserDtoConverter implements DtoConverter<User, UserDto> {
 
+    @Override
     public UserDto toDto(User user) {
         var userDto = new UserDto();
         userDto.setUsername(user.getUsername());
@@ -17,6 +19,7 @@ public class UserDtoConverter {
         return userDto;
     }
 
+    @Override
     public User fromDto(UserDto userDto) {
         var user = new User();
         user.setUsername(userDto.getUsername());

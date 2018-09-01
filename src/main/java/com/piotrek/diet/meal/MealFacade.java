@@ -1,7 +1,6 @@
-package com.piotrek.diet.product;
+package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.PageSupport;
-import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -12,27 +11,22 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class ProductFacade {
+public class MealFacade {
 
+    private final MealService mealService;
     private final UserService userService;
-    private final ProductService productService;
-    private final ProductDtoConverter productDtoConverter;
+    private final MealDtoConverter mealDtoConverter;
 
-    public Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
-        userService.validateUserWithPrincipal(userId);
-        var user = userService.findById(userId).block();
-        var product = productDtoConverter.fromDto(productDto);
-        product.setUserId(user.getId());
-
-        return productService.save(product).map(productDtoConverter::toDto);
+    public Mono<MealDto> createMeal(String id, MealDto mealDto) {
+        return null;
     }
 
-    public Mono<PageSupport<ProductDto>> findAllByUserId(String userId, Pageable pageable) {
+    public Mono<PageSupport<MealDto>> findAllByUserId(String userId, Pageable pageable) {
         userService.findById(userId).block();
 
-        return productService
+        return mealService
                 .findAllByUserId(userId)
-                .map(productDtoConverter::toDto)
+                .map(mealDtoConverter::toDto)
                 .collectList()
                 .map(list -> new PageSupport<>(
                         list
