@@ -24,5 +24,9 @@ public class MealDto {
     private double fibre;
     private double kcal;
 
+    private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
+
+    private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+
     private String imageUrl;
 }

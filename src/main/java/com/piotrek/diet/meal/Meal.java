@@ -1,10 +1,13 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.product.Product;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Data
 @Document
@@ -39,6 +42,14 @@ public class Meal {
     private double kcal;
 
     private String imageUrl;
+
+    @NotNull
+    private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
+
+    @NotNull
+    private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+
+    private HashMap<String, String> products;
 
     @NotNull
     private String userId;

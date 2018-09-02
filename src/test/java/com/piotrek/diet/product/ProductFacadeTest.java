@@ -45,7 +45,6 @@ class ProductFacadeTest {
     void createProduct_whenPrincipalEqualUserId_thenSuccess() {
 
         Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(userService.validateUserWithPrincipal(user.getId())).thenReturn(true);
         Mockito.when(productService.save(product)).thenReturn(Mono.just(product));
         Mockito.when(productDtoConverter.fromDto(productDto)).thenReturn(product);
         Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
@@ -60,7 +59,7 @@ class ProductFacadeTest {
 
         Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         Mockito.when(productService.save(product)).thenReturn(Mono.just(product));
-        Mockito.when(userService.validateUserWithPrincipal(user.getId())).thenReturn(false);
+        Mockito.doThrow(BadRequestException.class).when(userService).validateUserWithPrincipal(user.getId());
 
         assertThrows(BadRequestException.class, () -> productFacade.createProduct(user.getId(), productDto).block());
     }

@@ -77,7 +77,7 @@ class ProductServiceTest {
 
     @Test
     void deleteById() {
-        assertEquals(Mono.empty(), productService.deleteById(product.getId()));
+        assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
 
         verify(productRepository, times(1)).deleteById(product.getId());
         verifyNoMoreInteractions(productRepository);
