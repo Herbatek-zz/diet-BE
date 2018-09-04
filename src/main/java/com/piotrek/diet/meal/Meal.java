@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 @Data
 @Document
@@ -49,7 +48,7 @@ public class Meal {
     @NotNull
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
-    private HashMap<String, String> products;
+    private ArrayList<Product> products = new ArrayList<>();
 
     @NotNull
     private String userId;

@@ -14,7 +14,7 @@ class UserDtoConverterTest {
 
     @Test
     void toDto() {
-        UserDto convertedUser = userDtoConverter.toDto(user);
+        var convertedUser = userDtoConverter.toDto(user);
 
         assertAll(
                 () -> assertEquals(user.getFirstName(), convertedUser.getFirstName()),
@@ -22,13 +22,14 @@ class UserDtoConverterTest {
                 () -> assertEquals(user.getId(), convertedUser.getId()),
                 () -> assertEquals(user.getEmail(), convertedUser.getEmail()),
                 () -> assertEquals(user.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(user.getRole(), convertedUser.getRole())
+                () -> assertEquals(user.getRole(), convertedUser.getRole()),
+                () -> assertEquals(user.getPictureUrl(), convertedUser.getPicture_url())
         );
     }
 
     @Test
     void fromDto() {
-        User convertedUser = userDtoConverter.fromDto(userDto);
+        var convertedUser = userDtoConverter.fromDto(userDto);
 
         assertAll(
                 () -> assertEquals(userDto.getFirstName(), convertedUser.getFirstName()),
@@ -36,7 +37,8 @@ class UserDtoConverterTest {
                 () -> assertEquals(userDto.getId(), convertedUser.getId()),
                 () -> assertEquals(userDto.getEmail(), convertedUser.getEmail()),
                 () -> assertEquals(userDto.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(userDto.getRole(), convertedUser.getRole())
+                () -> assertEquals(userDto.getRole(), convertedUser.getRole()),
+                () -> assertEquals(userDto.getPicture_url(), convertedUser.getPictureUrl())
         );
     }
 }

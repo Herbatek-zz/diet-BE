@@ -12,9 +12,12 @@ public class ProductSample {
 
     private static DiabetesCalculator diabetesCalculator = new DiabetesCalculator();
 
+    private final static String BANANA_ID = UUID.randomUUID().toString();
+    private final static String BREAD_ID = UUID.randomUUID().toString();
+
     public static Product bananaWithId() {
         var product = bananaWithoutId();
-        product.setId(UUID.randomUUID().toString());
+        product.setId(BANANA_ID);
         return product;
     }
 
@@ -35,7 +38,7 @@ public class ProductSample {
 
     public static ProductDto bananaWithIdDto() {
         var product = bananaWithoutIdDto();
-        product.setId(UUID.randomUUID().toString());
+        product.setId(BANANA_ID);
         return product;
     }
 
@@ -56,7 +59,7 @@ public class ProductSample {
 
     public static Product breadWithId() {
         var product = breadWithoutId();
-        product.setId(UUID.randomUUID().toString());
+        product.setId(BREAD_ID);
         return product;
     }
 
@@ -77,7 +80,7 @@ public class ProductSample {
 
     public static ProductDto breadWithIdDto() {
         var product = breadWithoutIdDto();
-        product.setId(UUID.randomUUID().toString());
+        product.setId(BREAD_ID);
         return product;
     }
 
