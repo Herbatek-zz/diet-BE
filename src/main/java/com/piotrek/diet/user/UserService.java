@@ -1,10 +1,8 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,13 +35,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    Mono<Void> deleteAll() {
-        return userRepository.deleteAll();
+    Mono<Void> deleteById(String userId) {
+        return userRepository.deleteById(userId);
     }
 
-    public void validateUserWithPrincipal(String userId) {
-        String principalId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        if (!userId.equals(principalId))
-            throw new BadRequestException("You cannot save the product, because your id does not match with id from your token");
+    Mono<Void> deleteAll() {
+        return userRepository.deleteAll();
     }
 }

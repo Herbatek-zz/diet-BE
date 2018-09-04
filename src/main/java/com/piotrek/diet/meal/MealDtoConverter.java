@@ -22,6 +22,7 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         mealDto.setImageUrl(meal.getImageUrl());
         mealDto.setCarbohydrateExchange(meal.getCarbohydrateExchange());
         mealDto.setProteinAndFatEquivalent(meal.getProteinAndFatEquivalent());
+        mealDto.setProducts(meal.getProducts());
 
         return mealDto;
     }
@@ -42,6 +43,7 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         meal.setImageUrl(mealDto.getImageUrl());
         meal.setCarbohydrateExchange(mealDto.getCarbohydrateExchange());
         meal.setProteinAndFatEquivalent(mealDto.getProteinAndFatEquivalent());
+        meal.setProducts(mealDto.getProducts());
 
         return meal;
     }

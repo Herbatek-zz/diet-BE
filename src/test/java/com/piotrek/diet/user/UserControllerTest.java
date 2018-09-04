@@ -92,6 +92,7 @@ class UserControllerTest {
     @Test
     void saveProduct_whenAllRequiredField_thenSaveProductAndReturnDto() {
         ProductDto productDto = ProductSample.bananaWithIdDto();
+        productDto.setUserId(user1.getId());
 
         TestingAuthenticationToken testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);

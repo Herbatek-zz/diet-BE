@@ -32,13 +32,13 @@ public class ProductService {
     Mono<PageSupport<ProductDto>> findAllPageable(Pageable pageable) {
         return productRepository
                 .findAll()
-                .map(productDtoConverter::toDto)
                 .collectList()
                 .map(list -> new PageSupport<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())
                                 .limit(pageable.getPageSize())
+                                .map(productDtoConverter::toDto)
                                 .collect(Collectors.toList()),
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }

@@ -1,8 +1,10 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.product.Product;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 
 @Data
 public class MealDto {
@@ -29,4 +31,6 @@ public class MealDto {
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
     private String imageUrl;
+
+    private ArrayList<Product> products = new ArrayList<>();
 }

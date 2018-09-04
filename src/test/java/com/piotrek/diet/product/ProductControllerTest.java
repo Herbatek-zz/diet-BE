@@ -6,6 +6,7 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +44,8 @@ class ProductControllerTest {
     private Product product1;
     private Product product2;
     private ProductDto productDto1;
-    private ProductDto productDto2;
+
+    private final String INCORRECT_ID = "badIDXD";
 
     @BeforeEach
     void setUp() {
@@ -61,7 +63,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void findById() {
+    void findById_whenFound_thenReturnProduct() {
         webTestClient.get().uri("/products/" + product1.getId())
                 .exchange()
                 .expectStatus().isOk()
@@ -71,7 +73,15 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAllWithDefaultParams_whenNoProducts_returnPageSupportWithoutContent() throws JsonProcessingException {
+    void findById_whenNotFound_thenThrowNotFoundException() throws JsonProcessingException {
+        webTestClient.get().uri("/products/" + INCORRECT_ID)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8);
+    }
+
+    @Test
+    void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
         var expected = new PageSupport<ProductDto>(new ArrayList<>(), 0, 10, 0);
 
         productService.deleteAll().block();
@@ -84,7 +94,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAllWithDefaultParams_when2Products_returnPageSupportWith2Products() throws JsonProcessingException {
+    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Products() throws JsonProcessingException {
         var products = new ArrayList<Product>();
         products.add(product1);
         products.add(product2);
@@ -99,7 +109,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAllSecondPageAndPageSizeOne_when2Products_returnSecondPageWithOneProduct() throws JsonProcessingException {
+    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneProduct() throws JsonProcessingException {
         var products = new ArrayList<Product>();
         products.add(product1);
         products.add(product2);
@@ -132,6 +142,5 @@ class ProductControllerTest {
         product2 = productService.save(product2).block();
 
         productDto1 = productDtoConverter.toDto(product1);
-        productDto2 = productDtoConverter.toDto(product2);
     }
 }

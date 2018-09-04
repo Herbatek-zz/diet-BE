@@ -24,6 +24,7 @@ public class ProductDtoConverter implements DtoConverter<Product, ProductDto> {
         productDto.setAmount(product.getAmount());
         productDto.setCarbohydrateExchange(product.getCarbohydrateExchange());
         productDto.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent());
+        productDto.setUserId(product.getUserId());
         return productDto;
     }
 
@@ -42,6 +43,7 @@ public class ProductDtoConverter implements DtoConverter<Product, ProductDto> {
         product.setAmount(productDto.getAmount());
         product.setCarbohydrateExchange(productDto.getCarbohydrateExchange());
         product.setProteinAndFatEquivalent(productDto.getProteinAndFatEquivalent());
+        product.setUserId(productDto.getUserId());
         return product;
     }
 

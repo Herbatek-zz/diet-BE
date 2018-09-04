@@ -3,6 +3,7 @@ package com.piotrek.diet.product;
 import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -13,9 +14,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.ProductSample.bananaWithId;
+import static com.piotrek.diet.sample.ProductSample.bananaWithIdDto;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -24,7 +27,8 @@ class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
 
-    private ProductDtoConverter productDtoConverter = new ProductDtoConverter();
+    @Mock
+    private ProductDtoConverter productDtoConverter;
 
     private DiabetesCalculator diabetesCalculator = new DiabetesCalculator();
 
@@ -34,30 +38,32 @@ class ProductServiceTest {
 
     @BeforeEach
     void setup() {
-        createProduct();
+        product = bananaWithId();
         MockitoAnnotations.initMocks(this);
         productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
-    void findById_validId_shouldReturnProduct() {
+    void findById_whenIdIsValid_thenReturnProduct() {
         Mockito.when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
-        Product productFromDB = productService.findById(product.getId()).block();
+        var productById = productService.findById(product.getId()).block();
 
-        assertNotNull(productFromDB);
+        assertNotNull(productById);
         assertAll(
-                () -> assertEquals(product.getId(), productFromDB.getId()),
-                () -> assertEquals(product.getName(), productFromDB.getName()),
-                () -> assertEquals(product.getDescription(), productFromDB.getDescription()),
-                () -> assertEquals(product.getImageUrl(), productFromDB.getImageUrl()),
-                () -> assertEquals(product.getProtein(), productFromDB.getProtein()),
-                () -> assertEquals(product.getCarbohydrate(), productFromDB.getCarbohydrate()),
-                () -> assertEquals(product.getFat(), productFromDB.getFat()),
-                () -> assertEquals(product.getFibre(), productFromDB.getFibre()),
-                () -> assertEquals(product.getKcal(), productFromDB.getKcal()),
-                () -> assertEquals(product.getCarbohydrateExchange(), productFromDB.getCarbohydrateExchange()),
-                () -> assertEquals(product.getProteinAndFatEquivalent(), productFromDB.getProteinAndFatEquivalent())
+                () -> assertEquals(product.getId(), productById.getId()),
+                () -> assertEquals(product.getName(), productById.getName()),
+                () -> assertEquals(product.getDescription(), productById.getDescription()),
+                () -> assertEquals(product.getImageUrl(), productById.getImageUrl()),
+                () -> assertEquals(product.getProtein(), productById.getProtein()),
+                () -> assertEquals(product.getCarbohydrate(), productById.getCarbohydrate()),
+                () -> assertEquals(product.getFat(), productById.getFat()),
+                () -> assertEquals(product.getFibre(), productById.getFibre()),
+                () -> assertEquals(product.getKcal(), productById.getKcal()),
+                () -> assertEquals(product.getCarbohydrateExchange(), productById.getCarbohydrateExchange()),
+                () -> assertEquals(product.getProteinAndFatEquivalent(), productById.getProteinAndFatEquivalent()),
+                () -> assertEquals(product.getUserId(), productById.getUserId()),
+                () -> assertEquals(product.getAmount(), productById.getAmount())
         );
 
         verify(productRepository, times(1)).findById(product.getId());
@@ -65,7 +71,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void findById_invalidId_shouldThrowNotFoundException() {
+    void findById_whenIdIsInvalid_thenThrowNotFoundException() {
         var id = "invalid@#@#@ID";
         Mockito.when(productRepository.findById(id)).thenReturn(Mono.empty());
 
@@ -76,10 +82,107 @@ class ProductServiceTest {
     }
 
     @Test
-    void deleteById() {
-        assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
+    void findAllPageable_whenTotalElements20PageSize10Page0_thenReturnFirstPageWith10Products() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 20;
+        var productList = createProductList(totalElements);
+        var productDtoList = createProductDtoList(totalElements);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        verify(productRepository, times(1)).deleteById(product.getId());
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+
+        var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(productRepository, times(1)).findAll();
+        verify(productDtoConverter, times(10)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productDtoConverter);
+    }
+
+    @Test
+    void findAllPageable_whenTotalElements20PageSize10Page1_thenReturnSecondPageWith10Products() {
+        var page = 1;
+        var pageSize = 10;
+        var totalElements = 20;
+        var productList = createProductList(totalElements);
+        var productDtoList = createProductDtoList(totalElements);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .skip(pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+
+        var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(productRepository, times(1)).findAll();
+        verify(productDtoConverter, times(10)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productDtoConverter);
+    }
+
+    @Test
+    void findAllPageable_whenTotalElements0PageSize10Page0_thenReturnFirstPageWithEmptyList() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 0;
+        var productList = createProductList(totalElements);
+        var productDtoList = createProductDtoList(totalElements);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
+
+        var secondPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
+
+        assertEquals(expected, secondPage);
+
+        verify(productRepository, times(1)).findAll();
+        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productDtoConverter);
+    }
+
+    @Test
+    void findAllByUserId_whenUserHas5Products_thenReturn5Product() {
+        var productList = createProductList(5);
+        var user = UserSample.johnWithId();
+
+        when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
+
+        productService.findAllByUserId(user.getId()).toStream().collect(Collectors.toList());
+
+        verify(productRepository, times(1)).findAllByUserId(user.getId());
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void findAllByUserId_whenTotalProducts1AndUserHas0_thenReturn1Product() {
+        var productList = new ArrayList<Product>();
+        var user = UserSample.johnWithId();
+
+        when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.empty());
+
+        var allByUserId = productService.findAllByUserId(user.getId()).toStream().collect(Collectors.toList());
+
+        assertAll(
+                () -> assertEquals(productList, allByUserId),
+                () -> assertEquals(productList.size(), allByUserId.size())
+        );
+
+        verify(productRepository, times(1)).findAllByUserId(user.getId());
         verifyNoMoreInteractions(productRepository);
     }
 
@@ -94,69 +197,36 @@ class ProductServiceTest {
     }
 
     @Test
-    void findAll_whenTotalElements20AndPageSize10AndPage0_shouldReturnFirstPage() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 20;
-        var productList = createProductList(totalElements);
-        var expected = new PageSupport<>(productDtoConverter.listToDto(productList)
-                .stream()
-                .limit(pageSize)
-                .collect(Collectors.toList()), page, pageSize, totalElements);
+    void deleteById() {
+        assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
 
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
-
-        PageSupport<ProductDto> firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
-
-        assertEquals(expected, firstPage);
+        verify(productRepository, times(1)).deleteById(product.getId());
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
-    void findAll_whenTotalElements20AndPageSize10AndPage1_shouldReturnSecondPage() {
-        var page = 1;
-        var pageSize = 10;
-        var totalElements = 20;
-        var productList = createProductList(totalElements);
-        var expected = new PageSupport<>(productDtoConverter.listToDto(productList)
-                .stream()
-                .skip(pageSize)
-                .limit(pageSize)
-                .collect(Collectors.toList()), page, pageSize, totalElements);
+    void deleteAll() {
+        assertEquals(Mono.empty().block(), productService.deleteAll());
 
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
-
-        PageSupport<ProductDto> firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
-
-        assertEquals(expected, firstPage);
+        verify(productRepository, times(1)).deleteAll();
+        verifyNoMoreInteractions(productRepository);
     }
 
-    @Test
-    void findAll_whenTotalElements0AndPageSize10AndPage0_thenReturnFirstPageWithEmptyList() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 0;
-        var productList = createProductList(totalElements);
-        var expected = new PageSupport<>(productDtoConverter.listToDto(productList)
-                .stream()
-                .limit(pageSize)
-                .collect(Collectors.toList()), page, pageSize, totalElements);
-
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromStream(productList.stream()));
-
-        PageSupport<ProductDto> secondPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
-
-        assertEquals(expected, secondPage);
-    }
-
-    private void createProduct() {
-        product = bananaWithId();
-    }
 
     private ArrayList<Product> createProductList(int size) {
-        ArrayList<Product> arrayList = new ArrayList<>();
+        var arrayList = new ArrayList<Product>();
 
         for (int i = 0; i < size; i++)
             arrayList.add(bananaWithId());
+
+        return arrayList;
+    }
+
+    private ArrayList<ProductDto> createProductDtoList(int size) {
+        var arrayList = new ArrayList<ProductDto>();
+
+        for (int i = 0; i < size; i++)
+            arrayList.add(bananaWithIdDto());
 
         return arrayList;
     }

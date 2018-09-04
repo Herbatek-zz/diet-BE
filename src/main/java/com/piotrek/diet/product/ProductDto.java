@@ -11,7 +11,10 @@ public class ProductDto {
 
     @NotNull
     private String name;
+
+    @NotNull
     private String description;
+
     private String imageUrl;
 
     @NotNull
@@ -31,6 +34,12 @@ public class ProductDto {
 
     private int amount;
 
+    @NotNull
     private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
+
+    @NotNull
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+
+    @NotNull
+    private String userId;
 }

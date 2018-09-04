@@ -33,7 +33,8 @@ class ProductDtoConverterTest {
                 () -> assertEquals(productDto.getKcal(), convertedProduct.getKcal()),
                 () -> assertEquals(productDto.getAmount(), convertedProduct.getAmount()),
                 () -> assertEquals(productDto.getCarbohydrateExchange(), convertedProduct.getCarbohydrateExchange()),
-                () -> assertEquals(productDto.getProteinAndFatEquivalent(), convertedProduct.getProteinAndFatEquivalent())
+                () -> assertEquals(productDto.getProteinAndFatEquivalent(), convertedProduct.getProteinAndFatEquivalent()),
+                () -> assertEquals(productDto.getUserId(), convertedProduct.getUserId())
         );
     }
 
@@ -53,7 +54,8 @@ class ProductDtoConverterTest {
                 () -> assertEquals(product.getKcal(), convertedProduct.getKcal()),
                 () -> assertEquals(product.getAmount(), convertedProduct.getAmount()),
                 () -> assertEquals(product.getCarbohydrateExchange(), convertedProduct.getCarbohydrateExchange()),
-                () -> assertEquals(product.getProteinAndFatEquivalent(), convertedProduct.getProteinAndFatEquivalent())
+                () -> assertEquals(product.getProteinAndFatEquivalent(), convertedProduct.getProteinAndFatEquivalent()),
+                () -> assertEquals(productDto.getUserId(), convertedProduct.getUserId())
         );
     }
 

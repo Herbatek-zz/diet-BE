@@ -29,7 +29,8 @@ class MealDtoConverterTest {
                 () -> assertEquals(meaLDto.getKcal(), convertedMeal.getKcal()),
                 () -> assertEquals(meaLDto.getCarbohydrateExchange(), convertedMeal.getCarbohydrateExchange()),
                 () -> assertEquals(meaLDto.getProteinAndFatEquivalent(), convertedMeal.getProteinAndFatEquivalent()),
-                () -> assertEquals(meaLDto.getImageUrl(), convertedMeal.getImageUrl())
+                () -> assertEquals(meaLDto.getImageUrl(), convertedMeal.getImageUrl()),
+                () -> assertEquals(meaLDto.getProducts(), convertedMeal.getProducts())
         );
     }
 
@@ -50,7 +51,8 @@ class MealDtoConverterTest {
                 () -> assertEquals(meal.getKcal(), convertedMeal.getKcal()),
                 () -> assertEquals(meal.getCarbohydrateExchange(), convertedMeal.getCarbohydrateExchange()),
                 () -> assertEquals(meal.getProteinAndFatEquivalent(), convertedMeal.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal.getImageUrl(), convertedMeal.getImageUrl())
+                () -> assertEquals(meal.getImageUrl(), convertedMeal.getImageUrl()),
+                () -> assertEquals(meal.getProducts(), convertedMeal.getProducts())
         );
     }
 }
