@@ -44,6 +44,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login/**").permitAll()
                 .antMatchers(GET, "/products/**").permitAll()
                 .antMatchers(GET, "/meals/**").permitAll()
+                .antMatchers(GET, "/users/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
 //                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version

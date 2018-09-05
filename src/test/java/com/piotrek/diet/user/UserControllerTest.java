@@ -6,9 +6,11 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
+import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductFacade;
+import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.AfterAll;
@@ -26,6 +28,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
 
+import static com.piotrek.diet.sample.MealSample.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
@@ -90,11 +93,40 @@ class UserControllerTest {
     }
 
     @Test
-    void saveProduct_whenAllRequiredField_thenSaveProductAndReturnDto() {
-        ProductDto productDto = ProductSample.bananaWithIdDto();
+    void findUserProducts_whenUserHasNoProducts_thenReturnPageSupportWithoutElements() {
+        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(PageSupport.class)
+                .isEqualTo(new PageSupport<>(new ArrayList<>(), 0, 10, 0));
+    }
+
+    @Test
+    void findUserProducts_whenUserHasProducts_thenReturnArray() throws JsonProcessingException {
+
+        // this need be added because below we create products using facade
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        var products = new ArrayList<ProductDto>(2);
+        products.add(productFacade.createProduct(user1.getId(), ProductSample.bananaWithoutIdDto()).block());
+        products.add(productFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
+
+
+        var expected = new PageSupport<>(products, 0, 10, products.size());
+
+        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void createProduct_whenAllRequiredField_thenSaveProductAndReturnDto() {
+        var productDto = ProductSample.bananaWithIdDto();
         productDto.setUserId(user1.getId());
 
-        TestingAuthenticationToken testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
         webTestClient.post().uri("/users/" + user1.getId() + "/products")
@@ -107,8 +139,38 @@ class UserControllerTest {
     }
 
     @Test
-    void findUserProducts_whenUserHasNoProducts_thenReturnPageSupportWithoutElements() {
-        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+    void createProduct_whenNameIsMissing_thenReturn400() {
+        var productDto = ProductSample.bananaWithIdDto();
+        productDto.setName(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.post().uri("/users/" + user1.getId() + "/products")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(productDto))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void createProduct_whenDescriptionIsNull_thenReturn400() {
+        ProductDto productDto = ProductSample.bananaWithIdDto();
+        productDto.setDescription(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.post().uri("/users/" + user1.getId() + "/products")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(productDto))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void findUserMeals_whenUserHasNoMeals_thenReturnPageSupportWithoutElements() {
+        webTestClient.get().uri("/users/" + user1.getId() + "/meals")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(PageSupport.class)
@@ -116,22 +178,85 @@ class UserControllerTest {
     }
 
     @Test
-    void findUserProducts_whenUserHasProducts_thenReturnArray() throws JsonProcessingException {
+    void findUserMeals_whenUserHasMeals_thenReturnArray() throws JsonProcessingException {
 
-        TestingAuthenticationToken testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        // this need be added because below we create products using facade
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
-        ArrayList<ProductDto> products = new ArrayList<>(2);
-        products.add(productFacade.createProduct(user1.getId(), ProductSample.bananaWithoutIdDto()).block());
-        products.add(productFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
+        var meals = new ArrayList<MealDto>(2);
+        meals.add(mealFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
+        meals.add(mealFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
 
 
-        var expected = new PageSupport<>(products, 0, 10, products.size());
+        var expected = new PageSupport<>(meals, 0, 10, meals.size());
 
-        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+        webTestClient.get().uri("/users/" + user1.getId() + "/meals")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void createMeal_whenAllRequiredField_thenSaveMealAndReturnDto() {
+        var mealDto = dumplingsWithIdDto();
+        mealDto.setUserId(user1.getId());
+
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(mealDto))
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(MealDto.class)
+                .isEqualTo(mealDto);
+    }
+
+    @Test
+    void createMeal_whenNameIsMissing_thenReturn400() {
+        var mealDto = dumplingsWithIdDto();
+        mealDto.setName(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(mealDto))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void createMeal_whenDescriptionIsNull_thenReturn400() {
+        var mealDto = dumplingsWithIdDto();
+        mealDto.setDescription(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(mealDto))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void createMeal_whenRecipeIsNull_thenReturn400() {
+        var mealDto = dumplingsWithIdDto();
+        mealDto.setRecipe(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+                .contentType(APPLICATION_JSON_UTF8)
+                .body(BodyInserters.fromObject(mealDto))
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     private void createUsers() {

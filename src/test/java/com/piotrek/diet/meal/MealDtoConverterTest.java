@@ -3,14 +3,18 @@ package com.piotrek.diet.meal;
 import com.piotrek.diet.sample.MealSample;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.piotrek.diet.sample.MealSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MealDtoConverterTest {
 
     private MealDtoConverter mealDtoConverter = new MealDtoConverter();
 
-    private Meal meal = MealSample.dumplingsWithId();
-    private MealDto meaLDto = MealSample.dumplingsWithIdDto();
+    private Meal meal = dumplingsWithId();
+    private MealDto meaLDto = dumplingsWithIdDto();
 
     @Test
     void toDto() {
@@ -30,7 +34,8 @@ class MealDtoConverterTest {
                 () -> assertEquals(meaLDto.getCarbohydrateExchange(), convertedMeal.getCarbohydrateExchange()),
                 () -> assertEquals(meaLDto.getProteinAndFatEquivalent(), convertedMeal.getProteinAndFatEquivalent()),
                 () -> assertEquals(meaLDto.getImageUrl(), convertedMeal.getImageUrl()),
-                () -> assertEquals(meaLDto.getProducts(), convertedMeal.getProducts())
+                () -> assertEquals(meaLDto.getProducts(), convertedMeal.getProducts()),
+                () -> assertEquals(meaLDto.getUserId(), convertedMeal.getUserId())
         );
     }
 
@@ -52,7 +57,26 @@ class MealDtoConverterTest {
                 () -> assertEquals(meal.getCarbohydrateExchange(), convertedMeal.getCarbohydrateExchange()),
                 () -> assertEquals(meal.getProteinAndFatEquivalent(), convertedMeal.getProteinAndFatEquivalent()),
                 () -> assertEquals(meal.getImageUrl(), convertedMeal.getImageUrl()),
-                () -> assertEquals(meal.getProducts(), convertedMeal.getProducts())
+                () -> assertEquals(meal.getProducts(), convertedMeal.getProducts()),
+                () -> assertEquals(meal.getUserId(), convertedMeal.getUserId())
+        );
+    }
+
+    @Test
+    void listToDto() {
+        var products = new ArrayList<Meal>(2);
+        products.add(dumplingsWithId());
+        products.add(coffeeWithId());
+
+        List<MealDto> convertedList = mealDtoConverter.listToDto(products);
+
+        assertNotNull(convertedList);
+        assertNotNull(convertedList.get(0));
+        assertNotNull(convertedList.get(1));
+        assertAll(
+                () -> assertEquals(products.size(), convertedList.size()),
+                () -> assertEquals(products.get(0).getId(), convertedList.get(0).getId()),
+                () -> assertEquals(products.get(1).getId(), convertedList.get(1).getId())
         );
     }
 }

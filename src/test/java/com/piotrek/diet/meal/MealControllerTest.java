@@ -1,4 +1,4 @@
-package com.piotrek.diet.product;
+package com.piotrek.diet.meal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,7 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
-import com.piotrek.diet.sample.ProductSample;
+import com.piotrek.diet.sample.MealSample;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,24 +14,27 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import static com.piotrek.diet.sample.MealSample.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ProductControllerTest {
+class MealControllerTest {
 
     @Autowired
-    private ProductService productService;
+    private MealService mealService;
 
     @Autowired
-    private ProductDtoConverter productDtoConverter;
+    private MealDtoConverter mealDtoConverter;
 
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
@@ -40,40 +43,40 @@ class ProductControllerTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private Product product1;
-    private Product product2;
-    private ProductDto productDto1;
+    private Meal meal1;
+    private Meal meal2;
+    private MealDto mealDto1;
 
     private final String INCORRECT_ID = "badIDXD";
 
     @BeforeEach
     void setUp() {
-        productService.deleteAll().block();
-        createProducts();
+        mealService.deleteAll().block();
+        createMeals();
         webTestClient = WebTestClient
-                .bindToController(new ProductController(productService, productDtoConverter))
+                .bindToController(new MealController(mealService, mealDtoConverter))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
 
     @AfterAll
     void afterAll() {
-        productService.deleteAll().block();
+        mealService.deleteAll().block();
     }
 
     @Test
-    void findById_whenFound_thenReturnProduct() {
-        webTestClient.get().uri("/products/" + product1.getId())
+    void findById_whenFound_thenReturnMeal() {
+        webTestClient.get().uri("/meals/" + meal1.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(ProductDto.class)
-                .isEqualTo(productDto1);
+                .expectBody(MealDto.class)
+                .isEqualTo(mealDto1);
     }
 
     @Test
-    void findById_whenNotFound_thenThrowNotFoundException() throws JsonProcessingException {
-        webTestClient.get().uri("/products/" + INCORRECT_ID)
+    void findById_whenNotFound_thenThrowNotFoundException() {
+        webTestClient.get().uri("/meals/" + INCORRECT_ID)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8);
@@ -81,11 +84,11 @@ class ProductControllerTest {
 
     @Test
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
-        var expected = new PageSupport<ProductDto>(new ArrayList<>(), 0, 10, 0);
+        var expected = new PageSupport<MealDto>(new ArrayList<>(), 0, 10, 0);
 
-        productService.deleteAll().block();
+        mealService.deleteAll().block();
 
-        webTestClient.get().uri("/products")
+        webTestClient.get().uri("/meals")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -93,14 +96,14 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Products() throws JsonProcessingException {
-        var products = new ArrayList<Product>();
-        products.add(product1);
-        products.add(product2);
-        var productsDto = productDtoConverter.listToDto(products);
-        var expected = new PageSupport<>(productsDto, 0, 10, products.size());
+    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Meals() throws JsonProcessingException {
+        var meals = new ArrayList<Meal>();
+        meals.add(meal1);
+        meals.add(meal2);
+        var mealsDto = mealDtoConverter.listToDto(meals);
+        var expected = new PageSupport<>(mealsDto, 0, 10, meals.size());
 
-        webTestClient.get().uri("/products")
+        webTestClient.get().uri("/meals")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -108,18 +111,18 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneProduct() throws JsonProcessingException {
-        var products = new ArrayList<Product>();
-        products.add(product1);
-        products.add(product2);
-        var productsDto = productDtoConverter.listToDto(products);
-        var expected = new PageSupport<>(productsDto
+    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
+        var meals = new ArrayList<Meal>();
+        meals.add(meal1);
+        meals.add(meal2);
+        var mealDtos = mealDtoConverter.listToDto(meals);
+        var expected = new PageSupport<>(mealDtos
                 .stream()
                 .skip(1)
                 .limit(1)
-                .collect(Collectors.toList()), 1, 1, products.size());
+                .collect(Collectors.toList()), 1, 1, meals.size());
 
-        webTestClient.get().uri("/products?page=1&size=1")
+        webTestClient.get().uri("/meals?page=1&size=1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -128,18 +131,18 @@ class ProductControllerTest {
 
     @Test
     void deleteById() {
-        webTestClient.delete().uri("/products/" + product1.getId())
+        webTestClient.delete().uri("/meals/" + meal1.getId())
                 .exchange()
                 .expectStatus().isNoContent();
     }
 
-    private void createProducts() {
-        product1 = ProductSample.bananaWithoutId();
-        product2 = ProductSample.breadWithoutId();
+    private void createMeals() {
+        meal1 = dumplingsWithId();
+        meal2 = coffeeWithId();
 
-        product1 = productService.save(product1).block();
-        product2 = productService.save(product2).block();
+        meal1 = mealService.save(meal1).block();
+        meal2 = mealService.save(meal2).block();
 
-        productDto1 = productDtoConverter.toDto(product1);
+        mealDto1 = mealDtoConverter.toDto(meal1);
     }
 }

@@ -40,6 +40,5 @@ public class ProductDto {
     @NotNull
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
-    @NotNull
     private String userId;
 }

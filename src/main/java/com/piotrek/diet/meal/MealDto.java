@@ -33,4 +33,6 @@ public class MealDto {
     private String imageUrl;
 
     private ArrayList<Product> products = new ArrayList<>();
+
+    private String userId;
 }

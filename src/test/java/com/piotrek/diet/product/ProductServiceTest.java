@@ -30,7 +30,8 @@ class ProductServiceTest {
     @Mock
     private ProductDtoConverter productDtoConverter;
 
-    private DiabetesCalculator diabetesCalculator = new DiabetesCalculator();
+    @Mock
+    private DiabetesCalculator diabetesCalculator;
 
     private ProductService productService;
 
@@ -193,7 +194,10 @@ class ProductServiceTest {
         assertEquals(product, productService.save(product).block());
 
         verify(productRepository, times(1)).save(product);
+        verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
+        verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
         verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(diabetesCalculator);
     }
 
     @Test

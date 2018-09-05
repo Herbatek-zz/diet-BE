@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.nio.channels.MembershipKey;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,14 +30,26 @@ public class MealService {
     Mono<PageSupport<MealDto>> findAllPageable(Pageable pageable) {
         return mealRepository
                 .findAll()
-                .map(mealDtoConverter::toDto)
                 .collectList()
                 .map(list -> new PageSupport<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())
                                 .limit(pageable.getPageSize())
+                                .map(mealDtoConverter::toDto)
                                 .collect(Collectors.toList()),
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
+    }
+
+    public Mono<Meal> save(Meal meal) {
+        return mealRepository.save(meal);
+    }
+
+    Mono<Void> deleteAll() {
+        return mealRepository.deleteAll();
+    }
+
+    Mono<Void> deleteById(String id) {
+        return mealRepository.deleteById(id);
     }
 }
