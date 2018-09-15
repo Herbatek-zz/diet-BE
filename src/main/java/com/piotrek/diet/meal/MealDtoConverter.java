@@ -1,13 +1,18 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.DtoConverter;
+import com.piotrek.diet.product.ProductDtoConverter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
+
+    private final ProductDtoConverter productDtoConverter;
 
     @Override
     public MealDto toDto(Meal meal) {
@@ -25,7 +30,7 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         mealDto.setImageUrl(meal.getImageUrl());
         mealDto.setCarbohydrateExchange(meal.getCarbohydrateExchange());
         mealDto.setProteinAndFatEquivalent(meal.getProteinAndFatEquivalent());
-        mealDto.setProducts(meal.getProducts());
+        mealDto.setProducts(productDtoConverter.listToDto(meal.getProducts()));
         mealDto.setUserId(meal.getUserId());
 
         return mealDto;
@@ -47,7 +52,7 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         meal.setImageUrl(mealDto.getImageUrl());
         meal.setCarbohydrateExchange(mealDto.getCarbohydrateExchange());
         meal.setProteinAndFatEquivalent(mealDto.getProteinAndFatEquivalent());
-        meal.setProducts(mealDto.getProducts());
+        meal.setProducts(productDtoConverter.listFromDto(mealDto.getProducts()));
         meal.setUserId(mealDto.getUserId());
 
         return meal;

@@ -24,6 +24,7 @@ public class MealSample {
         );
         meal.setRecipe("Rób dobre pierogi, to cały przepis");
         meal.setImageUrl("https://www.kwestiasmaku.com/sites/kwestiasmaku.com/files/img_1013_0.jpg");
+        meal.setUserId("123four");
         return meal;
     }
 
@@ -41,6 +42,7 @@ public class MealSample {
         );
         meal.setRecipe("Rób dobre pierogi, to cały przepis");
         meal.setImageUrl("https://www.kwestiasmaku.com/sites/kwestiasmaku.com/files/img_1013_0.jpg");
+        meal.setUserId("123four");
         return meal;
     }
 

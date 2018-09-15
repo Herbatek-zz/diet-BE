@@ -76,4 +76,22 @@ class ProductDtoConverterTest {
                 () -> assertEquals(products.get(1).getId(), convertedList.get(1).getId())
         );
     }
+
+    @Test
+    void listFromDto() {
+        var dtos = new ArrayList<ProductDto>(2);
+        dtos.add(ProductSample.bananaWithIdDto());
+        dtos.add(ProductSample.breadWithIdDto());
+
+        List<Product> convertedList = productDtoConverter.listFromDto(dtos);
+
+        assertNotNull(convertedList);
+        assertNotNull(convertedList.get(0));
+        assertNotNull(convertedList.get(1));
+        assertAll(
+                () -> assertEquals(dtos.size(), convertedList.size()),
+                () -> assertEquals(dtos.get(0).getId(), convertedList.get(0).getId()),
+                () -> assertEquals(dtos.get(1).getId(), convertedList.get(1).getId())
+        );
+    }
 }

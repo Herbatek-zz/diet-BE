@@ -6,4 +6,5 @@ import reactor.core.publisher.Flux;
 public interface ProductRepository extends ReactiveMongoRepository<Product, String> {
 
     Flux<Product> findAllByUserId(String userId);
+    Flux<Product> findAllByNameIgnoreCaseContaining(String name);
 }

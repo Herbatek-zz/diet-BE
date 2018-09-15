@@ -3,6 +3,7 @@ package com.piotrek.diet.product;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Data
 public class ProductDto {
@@ -10,6 +11,7 @@ public class ProductDto {
     private String id;
 
     @NotNull
+    @Size(min = 2, max = 80)
     private String name;
 
     @NotNull

@@ -2,6 +2,10 @@ package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
+import com.piotrek.diet.product.Product;
+import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.product.ProductDtoConverter;
+import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
@@ -21,8 +25,7 @@ import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.MealSample.dumplingsWithId;
 import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MealFacadeTest {
@@ -35,6 +38,9 @@ class MealFacadeTest {
 
     @Mock
     private MealDtoConverter mealDtoConverter;
+
+    @Mock
+    private ProductDtoConverter productDtoConverter;
 
     @Mock
     private UserValidation userValidation;
@@ -145,6 +151,98 @@ class MealFacadeTest {
 
         assertThrows(BadRequestException.class,
                 () -> mealFacade.findAllByUserId(user.getId(), PageRequest.of(1, 10)).block());
+    }
+
+    @Test
+    void addProductsToMeal_whenEmptyListWithProducts_thenReturnMealWithEmptyList() {
+        ArrayList<Product> products = new ArrayList<>();
+        ArrayList<ProductDto> productDtos = new ArrayList<>();
+
+        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        Mockito.when(mealService.save(meal)).thenReturn(Mono.just(meal));
+        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+
+        MealDto mealWithProducts = mealFacade.addProductsToMeal(meal.getId(), productDtos).block();
+
+        assertNotNull(mealWithProducts);
+        assertAll(
+                () -> assertEquals(0, mealWithProducts.getProducts().size()),
+                () -> assertEquals(0, mealWithProducts.getProtein()),
+                () -> assertEquals(0, mealWithProducts.getKcal()),
+                () -> assertEquals(0, mealWithProducts.getFibre()),
+                () -> assertEquals(0, mealWithProducts.getFat()),
+                () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
+                () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
+                () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
+                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
+                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
+                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
+                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
+                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
+                () -> assertEquals(meal.getId(), mealWithProducts.getId())
+        );
+
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
+        verify(mealDtoConverter, times(1)).toDto(meal);
+        verify(productDtoConverter, times(1)).listFromDto(productDtos);
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
+        verifyNoMoreInteractions(userService);
+        verifyNoMoreInteractions(mealService);
+        verifyNoMoreInteractions(mealDtoConverter);
+        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(userValidation);
+    }
+
+    @Test
+    void addProductsToMeal_whenListWith2ProductsAsParameter_thenReturnMealWith2Products() {
+        ArrayList<Product> products = new ArrayList<>();
+        products.add(ProductSample.breadWithId());
+        products.add(ProductSample.bananaWithId());
+
+        ArrayList<ProductDto> productDtos = new ArrayList<>();
+        productDtos.add(ProductSample.breadWithIdDto());
+        productDtos.add(ProductSample.bananaWithIdDto());
+
+        meal.setProducts(products);
+        mealDto.setProducts(productDtos);
+
+        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        Mockito.when(mealService.save(meal)).thenReturn(Mono.just(meal));
+        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+
+        MealDto mealWithProducts = mealFacade.addProductsToMeal(meal.getId(), productDtos).block();
+
+        assertNotNull(mealWithProducts);
+        assertAll(
+                () -> assertEquals(2, mealWithProducts.getProducts().size()),
+                () -> assertEquals(0, mealWithProducts.getProtein()),
+                () -> assertEquals(0, mealWithProducts.getKcal()),
+                () -> assertEquals(0, mealWithProducts.getFibre()),
+                () -> assertEquals(0, mealWithProducts.getFat()),
+                () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
+                () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
+                () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
+                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
+                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
+                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
+                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
+                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
+                () -> assertEquals(meal.getId(), mealWithProducts.getId())
+        );
+
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
+        verify(mealDtoConverter, times(1)).toDto(meal);
+        verify(productDtoConverter, times(1)).listFromDto(productDtos);
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
+        verifyNoMoreInteractions(userService);
+        verifyNoMoreInteractions(mealService);
+        verifyNoMoreInteractions(mealDtoConverter);
+        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(userValidation);
     }
 
     private void createMeals() {

@@ -1,10 +1,13 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.product.ProductDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 import static com.piotrek.diet.helpers.PageSupport.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.PageSupport.FIRST_PAGE_NUM;
@@ -17,6 +20,7 @@ import static org.springframework.http.HttpStatus.OK;
 public class MealController {
 
     private final MealService mealService;
+    private final MealFacade mealFacade;
     private final MealDtoConverter mealDtoConverter;
 
     @GetMapping("/{id}")
@@ -32,6 +36,12 @@ public class MealController {
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
         return mealService.findAllPageable(PageRequest.of(page, size));
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(OK)
+    Mono<MealDto> addProduct(@PathVariable String id, @RequestBody List<ProductDto> productDtos) {
+        return mealFacade.addProductsToMeal(id, productDtos);
     }
 
     @DeleteMapping("/{id}")

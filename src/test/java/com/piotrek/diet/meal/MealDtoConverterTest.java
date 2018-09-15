@@ -1,7 +1,12 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.sample.MealSample;
+import com.piotrek.diet.product.Product;
+import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.product.ProductDtoConverter;
+import com.piotrek.diet.sample.ProductSample;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +14,34 @@ import java.util.List;
 import static com.piotrek.diet.sample.MealSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MealDtoConverterTest {
 
-    private MealDtoConverter mealDtoConverter = new MealDtoConverter();
+    private MealDtoConverter mealDtoConverter;
 
-    private Meal meal = dumplingsWithId();
-    private MealDto meaLDto = dumplingsWithIdDto();
+    private Meal meal;
+    private MealDto meaLDto;
+
+    @BeforeAll
+    void setup() {
+        ProductDtoConverter productDtoConverter = new ProductDtoConverter();
+        mealDtoConverter = new MealDtoConverter(productDtoConverter);
+
+        var listProducts = new ArrayList<Product>(2);
+        listProducts.add(ProductSample.breadWithId());
+        listProducts.add(ProductSample.bananaWithId());
+
+        meal = dumplingsWithId();
+        meal.setProducts(listProducts);
+
+
+        var listProductsDto = new ArrayList<ProductDto>(2);
+        listProductsDto.add(ProductSample.breadWithIdDto());
+        listProductsDto.add(ProductSample.bananaWithIdDto());
+
+        meaLDto = dumplingsWithIdDto();
+        meaLDto.setProducts(listProductsDto);
+    }
 
     @Test
     void toDto() {

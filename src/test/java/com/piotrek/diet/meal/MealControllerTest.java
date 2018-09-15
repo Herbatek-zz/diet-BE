@@ -6,7 +6,9 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
+import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.sample.MealSample;
+import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -32,6 +35,9 @@ class MealControllerTest {
 
     @Autowired
     private MealService mealService;
+
+    @Autowired
+    private MealFacade mealFacade;
 
     @Autowired
     private MealDtoConverter mealDtoConverter;
@@ -54,7 +60,7 @@ class MealControllerTest {
         mealService.deleteAll().block();
         createMeals();
         webTestClient = WebTestClient
-                .bindToController(new MealController(mealService, mealDtoConverter))
+                .bindToController(new MealController(mealService, mealFacade, mealDtoConverter))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
@@ -134,6 +140,34 @@ class MealControllerTest {
         webTestClient.delete().uri("/meals/" + meal1.getId())
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    void addProducts() throws JsonProcessingException {
+        var productDtos = new ArrayList<ProductDto>(2);
+        productDtos.add(ProductSample.bananaWithIdDto());
+        productDtos.add(ProductSample.breadWithIdDto());
+
+        var expected = dumplingsWithIdDto();
+        expected.setProducts(productDtos);
+
+        expected.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        expected.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        expected.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        expected.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        expected.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        expected.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        expected.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
+
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.put().uri("/meals/" + meal1.getId())
+                .body(BodyInserters.fromObject(productDtos))
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
     }
 
     private void createMeals() {

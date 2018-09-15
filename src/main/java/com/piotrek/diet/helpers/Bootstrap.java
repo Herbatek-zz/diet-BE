@@ -1,5 +1,7 @@
 package com.piotrek.diet.helpers;
 
+import com.piotrek.diet.meal.Meal;
+import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.user.User;
@@ -14,6 +16,7 @@ public class Bootstrap implements CommandLineRunner {
 
     private final UserService userService;
     private final ProductService productService;
+    private final MealService mealService;
 
     @Override
     public void run(String... args) {
@@ -24,7 +27,7 @@ public class Bootstrap implements CommandLineRunner {
             user = userService.save(user).block();
         }
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 33; i++) {
             Product product = new Product();
             product.setName("Chlebek");
             product.setDescription("Dobry chlebek, jeszcze ciepły, bardzo pyszny i ładnie pachnie.");
@@ -37,5 +40,21 @@ public class Bootstrap implements CommandLineRunner {
             product.setUserId(user.getId());
             productService.save(product).block();
         }
+
+        for (int i = 0; i < 11; i++) {
+            Meal meal = new Meal();
+            meal.setName("Kanapki");
+            meal.setDescription("Dobry chlebek, dobra szyneczka i twarożek");
+            meal.setRecipe("Rób dobre kanpaki jak chcesz lel");
+            meal.setFat(1.7);
+            meal.setKcal(227.0);
+            meal.setProtein(6.3);
+            meal.setCarbohydrate(42.9);
+            meal.setFibre(8.4);
+            meal.setImageUrl("http://static.ilewazy.pl/wp-content/uploads/chleb-zytni-razowy-600g.jpg");
+            meal.setUserId(user.getId());
+            mealService.save(meal).block();
+        }
+
     }
 }

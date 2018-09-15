@@ -1,6 +1,7 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.product.Product;
+import com.piotrek.diet.product.ProductDto;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -32,7 +33,7 @@ public class MealDto {
 
     private String imageUrl;
 
-    private ArrayList<Product> products = new ArrayList<>();
+    private ArrayList<ProductDto> products = new ArrayList<>();
 
     private String userId;
 }

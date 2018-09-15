@@ -3,6 +3,7 @@ package com.piotrek.diet.product;
 import com.piotrek.diet.helpers.DtoConverter;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,10 +48,17 @@ public class ProductDtoConverter implements DtoConverter<Product, ProductDto> {
         return product;
     }
 
-    public List<ProductDto> listToDto(List<Product> products) {
+    public ArrayList<ProductDto> listToDto(List<Product> products) {
         return products
                 .stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<Product> listFromDto(List<ProductDto> productDtos) {
+        return productDtos
+                .stream()
+                .map(this::fromDto)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 }
