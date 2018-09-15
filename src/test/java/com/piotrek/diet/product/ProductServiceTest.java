@@ -14,11 +14,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.piotrek.diet.sample.ProductSample.bananaWithId;
-import static com.piotrek.diet.sample.ProductSample.bananaWithIdDto;
+import static com.piotrek.diet.sample.ProductSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -83,12 +81,94 @@ class ProductServiceTest {
     }
 
     @Test
+    void searchByName_whenNoProductsAndNoResult_thenReturnEmptyPagable() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 0;
+        var query = "name";
+        var productList = createProductList(totalElements, BANANA);
+        var productDtoList = createProductDtoList(totalElements, BANANA);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+
+        var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(productDtoConverter, times(0)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productDtoConverter);
+    }
+
+    @Test
+    void searchByName_when2ProductsAnd2Results_thenReturnPagableWith2Results() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 2;
+        var query = bananaWithId().getName();
+        var productList = createProductList(totalElements, BANANA);
+        var productDtoList = createProductDtoList(totalElements, BANANA);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+
+        var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(productDtoConverter, times(2)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productDtoConverter);
+
+    }
+
+    @Test
+    void searchByName_when22productsAnd12Results_thenReturnPagableWith10ResultsInFirstPage() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 22;
+        var query = bananaWithId().getName();
+        var productList = createProductList(12, BANANA);
+        productList.addAll(createProductList(10, BREAD));
+        var productDtoList = createProductDtoList(12, BANANA);
+        productDtoList.addAll(createProductDtoList(10, BREAD));
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+
+        var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(productDtoConverter, times(pageSize)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productDtoConverter);
+    }
+
+
+    @Test
     void findAllPageable_whenTotalElements20PageSize10Page0_thenReturnFirstPageWith10Products() {
         var page = 0;
         var pageSize = 10;
         var totalElements = 20;
-        var productList = createProductList(totalElements);
-        var productDtoList = createProductDtoList(totalElements);
+        var productList = createProductList(totalElements, BANANA);
+        var productDtoList = createProductDtoList(totalElements, BANANA);
         var expected = new PageSupport<>(productDtoList
                 .stream()
                 .limit(pageSize)
@@ -112,8 +192,8 @@ class ProductServiceTest {
         var page = 1;
         var pageSize = 10;
         var totalElements = 20;
-        var productList = createProductList(totalElements);
-        var productDtoList = createProductDtoList(totalElements);
+        var productList = createProductList(totalElements, BANANA);
+        var productDtoList = createProductDtoList(totalElements, BANANA);
         var expected = new PageSupport<>(productDtoList
                 .stream()
                 .skip(pageSize)
@@ -138,8 +218,8 @@ class ProductServiceTest {
         var page = 0;
         var pageSize = 10;
         var totalElements = 0;
-        var productList = createProductList(totalElements);
-        var productDtoList = createProductDtoList(totalElements);
+        var productList = createProductList(totalElements, BANANA);
+        var productDtoList = createProductDtoList(totalElements, BANANA);
         var expected = new PageSupport<>(productDtoList
                 .stream()
                 .limit(pageSize)
@@ -158,7 +238,7 @@ class ProductServiceTest {
 
     @Test
     void findAllByUserId_whenUserHas5Products_thenReturn5Product() {
-        var productList = createProductList(5);
+        var productList = createProductList(5, BANANA);
         var user = UserSample.johnWithId();
 
         when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
@@ -217,21 +297,35 @@ class ProductServiceTest {
     }
 
 
-    private ArrayList<Product> createProductList(int size) {
+    private ArrayList<Product> createProductList(int size, String product) {
         var arrayList = new ArrayList<Product>();
 
-        for (int i = 0; i < size; i++)
-            arrayList.add(bananaWithId());
-
+        switch (product) {
+            case BANANA:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(bananaWithId());
+                break;
+            case BREAD:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(breadWithId());
+                break;
+        }
         return arrayList;
     }
 
-    private ArrayList<ProductDto> createProductDtoList(int size) {
+    private ArrayList<ProductDto> createProductDtoList(int size, String product) {
         var arrayList = new ArrayList<ProductDto>();
 
-        for (int i = 0; i < size; i++)
-            arrayList.add(bananaWithIdDto());
-
+        switch (product) {
+            case BANANA:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(bananaWithIdDto());
+                break;
+            case BREAD:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(breadWithIdDto());
+                break;
+        }
         return arrayList;
     }
 }

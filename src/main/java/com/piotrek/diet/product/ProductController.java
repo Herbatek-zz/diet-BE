@@ -4,6 +4,7 @@ import com.piotrek.diet.helpers.PageSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.piotrek.diet.helpers.PageSupport.DEFAULT_PAGE_SIZE;
@@ -24,6 +25,15 @@ public class ProductController {
     Mono<ProductDto> findById(@PathVariable String id) {
         return productService.findById(id)
                 .map(productDtoConverter::toDto);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(OK)
+    Mono<PageSupport<ProductDto>> searchByName(
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
+            @RequestParam(defaultValue = "") String query) {
+        return productService.searchByName(PageRequest.of(page, size), query);
     }
 
     @GetMapping

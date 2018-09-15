@@ -47,7 +47,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(GET, "/users/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-//                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // need to be enabled in final version
                 .csrf().disable()
                 .cors()
                 .and()

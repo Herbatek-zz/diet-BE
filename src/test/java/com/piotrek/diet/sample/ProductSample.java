@@ -14,6 +14,8 @@ public class ProductSample {
 
     private final static String BANANA_ID = UUID.randomUUID().toString();
     private final static String BREAD_ID = UUID.randomUUID().toString();
+    public final static String BANANA = "banana";
+    public final static String BREAD = "bread";
 
     public static Product bananaWithId() {
         var product = bananaWithoutId();

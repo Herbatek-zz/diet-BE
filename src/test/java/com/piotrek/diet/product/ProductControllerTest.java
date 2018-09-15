@@ -18,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -78,6 +79,72 @@ class ProductControllerTest {
                 .expectStatus().isNotFound()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8);
     }
+
+    @Test
+    void searchByName_when2ProductsAndQueryOneOfThem_thenReturnPageableWithOneProduct() throws JsonProcessingException {
+        var expected = new PageSupport<>(List.of(productDtoConverter.toDto(product1)), 0, 10, 1);
+
+        webTestClient.get().uri("/products/search?query=" + product1.getName())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void searchByName_when2ProductsAndNoQuery_thenReturnPageableWithAllProduct() throws JsonProcessingException {
+        var products = new ArrayList<Product>();
+        products.add(product1);
+        products.add(product2);
+        var productsDto = productDtoConverter.listToDto(products);
+        var expected = new PageSupport<>(productsDto, 0, 10, products.size());
+
+        webTestClient.get().uri("/products/search")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void searchByName_when0ProductsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
+
+        var expected = new PageSupport<>(new ArrayList<>(), 0, 10, 0);
+
+        productService.deleteAll().block();
+
+        webTestClient.get().uri("/products/search")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void searchByName_when2ProductsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
+        var expected = new PageSupport<>(new ArrayList<>(), 0, 10, 0);
+
+        webTestClient.get().uri("/products/search?query=lol123")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    void searchByName_when2ProductsAndNoQueryAndPageSize1_thenReturnFirstPageWithOneProduct() throws JsonProcessingException {
+        var products = new ArrayList<Product>();
+        products.add(product1);
+        products.add(product2);
+        var expected = new PageSupport<>(List.of(product1), 0, 1, products.size());
+
+        webTestClient.get().uri("/products/search?size=1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
 
     @Test
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {

@@ -64,17 +64,13 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
         user.setLastVisit(LocalDateTime.now());
         userService.save(user).block();
 
-        setCookie(response, "Token", token.getToken());
+        Cookie cookie = new Cookie("Token", token.getToken());
+        cookie.setPath("/");
+        response.addCookie(cookie);
 
         response.sendRedirect("http://localhost:3000");
 
         super.onAuthenticationSuccess(request, response, authentication);
-    }
-
-    private void setCookie(HttpServletResponse response, String name, String value) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        response.addCookie(cookie);
     }
 
     private User createUser(LinkedHashMap userDetails) {

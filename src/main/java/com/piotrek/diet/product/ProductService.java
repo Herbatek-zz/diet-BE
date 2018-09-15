@@ -12,9 +12,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
 
-import static com.piotrek.diet.helpers.enums.Macronutrient.Fat;
-import static com.piotrek.diet.helpers.enums.Macronutrient.Protein;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,6 +24,20 @@ public class ProductService {
     Mono<Product> findById(String id) {
         return productRepository.findById(id)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found product [id = " + id + "]"))));
+    }
+
+    Mono<PageSupport<ProductDto>> searchByName(Pageable pageable, String query) {
+        return productRepository
+                .findAllByNameIgnoreCaseContaining(query)
+                .collectList()
+                .map(list -> new PageSupport<>(
+                        list
+                                .stream()
+                                .skip(pageable.getPageNumber() * pageable.getPageSize())
+                                .limit(pageable.getPageSize())
+                                .map(productDtoConverter::toDto)
+                                .collect(Collectors.toList()),
+                        pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
     Mono<PageSupport<ProductDto>> findAllPageable(Pageable pageable) {
