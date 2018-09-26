@@ -54,6 +54,10 @@ public class ProductService {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
+    public Flux<Product> findAll(long skipNumber, int limitNumber) {
+        return Flux.fromStream(productRepository.findAll().skip(skipNumber).toStream().limit(limitNumber));
+    }
+
     Flux<Product> findAllByUserId(String userId) {
         return productRepository.findAllByUserId(userId);
     }

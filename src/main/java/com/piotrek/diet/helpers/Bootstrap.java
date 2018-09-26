@@ -10,6 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
+
 @Component
 @RequiredArgsConstructor
 public class Bootstrap implements CommandLineRunner {
@@ -27,9 +32,11 @@ public class Bootstrap implements CommandLineRunner {
             user = userService.save(user).block();
         }
 
+        Random random = new Random();
+
         for (int i = 0; i < 33; i++) {
             Product product = new Product();
-            product.setName("Chlebek");
+            product.setName("Chlebek " + random.nextInt(100));
             product.setDescription("Dobry chlebek, jeszcze ciepły, bardzo pyszny i ładnie pachnie.");
             product.setFat(1.7);
             product.setKcal(227.0);
@@ -43,7 +50,7 @@ public class Bootstrap implements CommandLineRunner {
 
         for (int i = 0; i < 11; i++) {
             Meal meal = new Meal();
-            meal.setName("Kanapki");
+            meal.setName("Kanapki" + random.nextInt(100));
             meal.setDescription("Dobry chlebek, dobra szyneczka i twarożek");
             meal.setRecipe("Rób dobre kanpaki jak chcesz lel");
             meal.setFat(1.7);
@@ -53,6 +60,12 @@ public class Bootstrap implements CommandLineRunner {
             meal.setFibre(8.4);
             meal.setImageUrl("http://static.ilewazy.pl/wp-content/uploads/chleb-zytni-razowy-600g.jpg");
             meal.setUserId(user.getId());
+
+            ArrayList<Product> products = new ArrayList<>();
+            int randomNumber = random.nextInt(33);
+            products.addAll(productService.findAll(randomNumber, 33 - randomNumber).collectList().block());
+
+            meal.setProducts(products);
             mealService.save(meal).block();
         }
 
