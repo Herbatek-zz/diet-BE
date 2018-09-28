@@ -1,12 +1,9 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.PageSupport;
-import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
-import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

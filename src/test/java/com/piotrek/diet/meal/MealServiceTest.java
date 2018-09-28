@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.MealSample.*;
+import static com.piotrek.diet.sample.ProductSample.BANANA;
+import static com.piotrek.diet.sample.ProductSample.BREAD;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -78,8 +80,89 @@ class MealServiceTest {
     }
 
     @Test
+    void searchByName_whenNoMealsAndNoResult_thenReturnEmptyPagable() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 0;
+        var query = "name";
+        var mealList = createMealList(totalElements, COFFEE);
+        var productDtoList = createMealDtoList(totalElements, COFFEE);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList));
+        Mockito.when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+
+        var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(mealDtoConverter, times(0)).toDto(coffeeWithId());
+        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealDtoConverter);
+    }
+
+    @Test
+    void searchByName_when2ProductsAnd2Results_thenReturnPagableWith2Results() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 2;
+        var query = coffeeWithId().getName();
+        var productList = createMealList(totalElements, COFFEE);
+        var productDtoList = createMealDtoList(totalElements, COFFEE);
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+
+        var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
+        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealDtoConverter);
+
+    }
+
+    @Test
+    void searchByName_when22MealsAnd12Results_thenReturnPagableWith10ResultsInFirstPage() {
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 22;
+        var query = coffeeWithId().getName();
+        var productList = createMealList(12, COFFEE);
+        productList.addAll(createMealList(10, DUMPLINGS));
+        var productDtoList = createMealDtoList(12, COFFEE);
+        productDtoList.addAll(createMealDtoList(10, DUMPLINGS));
+        var expected = new PageSupport<>(productDtoList
+                .stream()
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
+
+        Mockito.when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        Mockito.when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+
+        var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+
+        verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(mealDtoConverter, times(pageSize)).toDto(coffeeWithId());
+        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealDtoConverter);
+    }
+
+    @Test
     void findAllByUserId_whenUserHas5Meals_thenReturn5Meals() {
-        var mealList = createMealList(5);
+        var mealList = createMealList(5, DUMPLINGS);
         var user = UserSample.johnWithId();
 
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
@@ -113,8 +196,8 @@ class MealServiceTest {
         var page = 0;
         var pageSize = 10;
         var totalElements = 20;
-        var mealList = createMealList(totalElements);
-        var mealDtoList = createMealDtoList(totalElements);
+        var mealList = createMealList(totalElements, DUMPLINGS);
+        var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
         var expected = new PageSupport<>(mealDtoList
                 .stream()
                 .limit(pageSize)
@@ -138,8 +221,8 @@ class MealServiceTest {
         var page = 1;
         var pageSize = 10;
         var totalElements = 20;
-        var mealList = createMealList(totalElements);
-        var mealDtoList = createMealDtoList(totalElements);
+        var mealList = createMealList(totalElements, DUMPLINGS);
+        var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
         var expected = new PageSupport<>(mealDtoList
                 .stream()
                 .skip(pageSize)
@@ -164,8 +247,8 @@ class MealServiceTest {
         var page = 0;
         var pageSize = 10;
         var totalElements = 0;
-        var mealLis = createMealList(totalElements);
-        var meaLDtoList = createMealDtoList(totalElements);
+        var mealLis = createMealList(totalElements, DUMPLINGS);
+        var meaLDtoList = createMealDtoList(totalElements, DUMPLINGS);
         var expected = new PageSupport<>(meaLDtoList
                 .stream()
                 .limit(pageSize)
@@ -208,20 +291,36 @@ class MealServiceTest {
         verifyNoMoreInteractions(mealRepository);
     }
 
-    private ArrayList<Meal> createMealList(int size) {
+    private ArrayList<Meal> createMealList(int size, String meal) {
         var arrayList = new ArrayList<Meal>();
 
-        for (int i = 0; i < size; i++)
-            arrayList.add(dumplingsWithId());
+        switch (meal) {
+            case DUMPLINGS:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(dumplingsWithId());
+                break;
+            case COFFEE:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(coffeeWithId());
+                break;
+        }
 
         return arrayList;
     }
 
-    private ArrayList<MealDto> createMealDtoList(int size) {
+    private ArrayList<MealDto> createMealDtoList(int size, String meal) {
         var arrayList = new ArrayList<MealDto>();
 
-        for (int i = 0; i < size; i++)
-            arrayList.add(dumplingsWithIdDto());
+        switch (meal) {
+            case DUMPLINGS:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(dumplingsWithIdDto());
+                break;
+            case COFFEE:
+                for (int i = 0; i < size; i++)
+                    arrayList.add(coffeeWithIdDto());
+                break;
+        }
 
         return arrayList;
     }

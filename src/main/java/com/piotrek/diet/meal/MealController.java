@@ -30,6 +30,15 @@ public class MealController {
                 .map(mealDtoConverter::toDto);
     }
 
+    @GetMapping("/search")
+    @ResponseStatus(OK)
+    Mono<PageSupport<MealDto>> searchByName(
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
+            @RequestParam(defaultValue = "") String query) {
+        return mealService.searchByName(PageRequest.of(page, size), query);
+    }
+
     @GetMapping
     @ResponseStatus(OK)
     Mono<PageSupport<MealDto>> findAll(
@@ -40,7 +49,7 @@ public class MealController {
 
     @PutMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<MealDto> addProduct(@PathVariable String id, @RequestBody List<ProductDto> productDtos) {
+    Mono<MealDto> addProducts(@PathVariable String id, @RequestBody List<ProductDto> productDtos) {
         return mealFacade.addProductsToMeal(id, productDtos);
     }
 

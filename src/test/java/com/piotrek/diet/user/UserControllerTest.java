@@ -10,7 +10,6 @@ import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductFacade;
-import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.AfterAll;
@@ -28,7 +27,8 @@ import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
 
-import static com.piotrek.diet.sample.MealSample.*;
+import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
+import static com.piotrek.diet.sample.MealSample.dumplingsWithoutIdDto;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)

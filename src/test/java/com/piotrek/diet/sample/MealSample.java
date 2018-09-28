@@ -9,6 +9,8 @@ public class MealSample {
 
     private static final String DUMPLINGS_ID = UUID.randomUUID().toString();
     private static final String COFFEE_ID = UUID.randomUUID().toString();
+    public final static String DUMPLINGS = "dumplings";
+    public final static String COFFEE = "coffee";
 
     public static Meal dumplingsWithId() {
         var meal = dumplingsWithoutId();
@@ -54,6 +56,24 @@ public class MealSample {
 
     public static Meal coffeeWithoutId() {
         var meal = new Meal();
+        meal.setName("Kawa z czekoladą");
+        meal.setDescription("Kawa i czekolada. Czy istnieje lepsza kombinacja smakowa? To sposób na deserową małą czarną," +
+                " która skutecznie dodaje ernergii oraz zaspokaja apetyt na słodycze. Ten zgrany duet można udoskonalić" +
+                " szczyptą cynamonu, mlekiem migdałowym oraz odrobiną likieru amaretto."
+        );
+        meal.setRecipe("Rób tą kawę");
+        meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
+        return meal;
+    }
+
+    public static MealDto coffeeWithIdDto() {
+        var meal = coffeeWithoutIdDto();
+        meal.setId(COFFEE_ID);
+        return meal;
+    }
+
+    public static MealDto coffeeWithoutIdDto() {
+        var meal = new MealDto();
         meal.setName("Kawa z czekoladą");
         meal.setDescription("Kawa i czekolada. Czy istnieje lepsza kombinacja smakowa? To sposób na deserową małą czarną," +
                 " która skutecznie dodaje ernergii oraz zaspokaja apetyt na słodycze. Ten zgrany duet można udoskonalić" +

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 
-import static com.piotrek.diet.security.helpers.SecurityConstants.*;
+import static com.piotrek.diet.security.helpers.SecurityConstants.SECRET;
 
 @Slf4j
 @Component

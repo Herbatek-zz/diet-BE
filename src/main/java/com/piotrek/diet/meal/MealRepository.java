@@ -6,4 +6,6 @@ import reactor.core.publisher.Flux;
 public interface MealRepository extends ReactiveMongoRepository<Meal, String> {
 
     Flux<Meal> findAllByUserId(String userId);
+
+    Flux<Meal> findAllByNameIgnoreCaseContaining(String name);
 }

@@ -1,12 +1,11 @@
 package com.piotrek.diet.security.token;
 
-import lombok.*;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
-import java.util.Objects;
 
 @Data
 @Document

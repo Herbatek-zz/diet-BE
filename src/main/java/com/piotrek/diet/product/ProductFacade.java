@@ -1,7 +1,6 @@
 package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.PageSupport;
-import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;

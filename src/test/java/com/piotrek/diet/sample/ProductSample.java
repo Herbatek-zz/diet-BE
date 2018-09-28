@@ -3,8 +3,6 @@ package com.piotrek.diet.sample;
 import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.product.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
 
