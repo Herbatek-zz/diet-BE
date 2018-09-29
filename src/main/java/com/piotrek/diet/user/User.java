@@ -1,6 +1,7 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.enums.Role;
+import com.piotrek.diet.meal.Meal;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -9,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Data
 @Document
@@ -48,6 +50,8 @@ public class User {
 
     @NotNull
     private String role;
+
+    private ArrayList<String> favouriteMeals = new ArrayList<>();
 
     public User() {}
 

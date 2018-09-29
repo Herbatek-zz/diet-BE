@@ -4,6 +4,7 @@ import com.piotrek.diet.helpers.PageSupport;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
+import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,6 +51,21 @@ public class MealFacade {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
+    public Mono<PageSupport<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
+        ArrayList<String> favouriteMealListId = userService.findById(userId).block().getFavouriteMeals();
+
+        List<MealDto> collect = favouriteMealListId
+                .stream()
+                .skip(pageable.getPageNumber() * pageable.getPageSize())
+                .limit(pageable.getPageSize())
+                .map(mealService::findById)
+                .map(Mono::block)
+                .map(mealDtoConverter::toDto)
+                .collect(Collectors.toList());
+
+        return Mono.just(new PageSupport<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealListId.size()));
+    }
+
     Mono<MealDto> addProductsToMeal(String productId, List<ProductDto> productDtoList) {
         Meal meal = mealService.findById(productId).block();
         userValidation.validateUserWithPrincipal(meal.getUserId());
@@ -58,6 +75,18 @@ public class MealFacade {
         updateMealInfoAfterAddProducts(meal);
 
         return mealService.save(meal).map(mealDtoConverter::toDto);
+    }
+
+    public Mono<Void> addToFavourite(String userId, String mealId) {
+        User user = userService.findById(userId).block();
+        userValidation.validateUserWithPrincipal(user.getId());
+
+        Meal meal = mealService.findById(mealId).block();
+
+        user.getFavouriteMeals().add(meal.getId());
+
+        userService.save(user);
+        return Mono.empty();
     }
 
     void updateMealInfoAfterAddProducts(Meal meal) {
@@ -73,7 +102,7 @@ public class MealFacade {
     private void countProteinFromProducts(Meal meal) {
         double protein = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             protein += product.getProtein();
 
         meal.setProtein(protein);
@@ -82,7 +111,7 @@ public class MealFacade {
     private void countFibreFromProducts(Meal meal) {
         double fibre = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             fibre += product.getFibre();
 
         meal.setFibre(fibre);
@@ -91,7 +120,7 @@ public class MealFacade {
     private void countFatFromProducts(Meal meal) {
         double fat = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             fat += product.getFat();
 
         meal.setFat(fat);
@@ -100,7 +129,7 @@ public class MealFacade {
     private void countCarbohydrateFromProducts(Meal meal) {
         double carbohydrate = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             carbohydrate += product.getCarbohydrate();
 
         meal.setCarbohydrate(carbohydrate);
@@ -109,7 +138,7 @@ public class MealFacade {
     private void countProteinAndFatEquivalentFromProducts(Meal meal) {
         double proteinAndFatEquivalent = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             proteinAndFatEquivalent += product.getProteinAndFatEquivalent();
 
         meal.setProteinAndFatEquivalent(proteinAndFatEquivalent);
@@ -118,7 +147,7 @@ public class MealFacade {
     private void countCarbohydrateExchangeFromProducts(Meal meal) {
         double carbohydrateExchange = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             carbohydrateExchange += product.getCarbohydrateExchange();
 
         meal.setCarbohydrateExchange(carbohydrateExchange);
@@ -127,7 +156,7 @@ public class MealFacade {
     private void countKcalFromProducts(Meal meal) {
         double kcal = 0;
 
-        for(Product product : meal.getProducts())
+        for (Product product : meal.getProducts())
             kcal += product.getKcal();
 
         meal.setKcal(kcal);

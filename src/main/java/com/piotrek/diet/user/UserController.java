@@ -58,6 +58,21 @@ public class UserController {
         return mealFacade.findAllByUserId(id, PageRequest.of(page, size));
     }
 
+    @GetMapping("/{id}/favourite/meals")
+    @ResponseStatus(OK)
+    Mono<PageSupport<MealDto>> findFavouriteMeals(
+            @PathVariable String id,
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        return mealFacade.findFavouriteMeals(id, PageRequest.of(page, size));
+    }
+
+    @PostMapping("/{userId}/favourite/meals/{mealId}")
+    @ResponseStatus(OK)
+    Mono<Void> addMealToFavourite(@PathVariable String userId, @PathVariable String mealId) {
+        return mealFacade.addToFavourite(userId, mealId);
+    }
+
     @PostMapping("/{id}/meals")
     @ResponseStatus(CREATED)
     Mono<MealDto> createMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {

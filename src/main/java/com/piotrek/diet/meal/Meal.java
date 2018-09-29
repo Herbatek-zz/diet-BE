@@ -1,6 +1,7 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.product.Product;
+import com.piotrek.diet.user.User;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

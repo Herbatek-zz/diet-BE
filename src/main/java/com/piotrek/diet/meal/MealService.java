@@ -18,7 +18,7 @@ public class MealService {
     private final MealRepository mealRepository;
     private final MealDtoConverter mealDtoConverter;
 
-    Mono<Meal> findById(String id) {
+    public Mono<Meal> findById(String id) {
         return mealRepository.findById(id)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found meal [id = " + id + "]"))));
     }
