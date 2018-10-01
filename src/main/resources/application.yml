@@ -16,3 +16,11 @@ facebook:
     clientAuthenticationScheme: form
   resource:
     userInfoUri: https://graph.facebook.com/v3.1/me?fields=id,email,birthday,first_name,last_name
+
+server:
+  port: 8443
+  ssl:
+    key-store: classpath:keystore.jks
+    key-store-password: password
+    key-password: password
+    key-store-type: JKS
