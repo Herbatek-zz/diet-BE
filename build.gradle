@@ -21,7 +21,7 @@ apply plugin: 'jacoco'
 
 group = 'com.piotrek'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 10
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -36,7 +36,7 @@ dependencies {
 
     // security
     compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.5.RELEASE')
+    compile('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.0.BUILD-SNAPSHOT')
     compile('org.springframework.security:spring-security-oauth2-client')
     compile('com.auth0:java-jwt:3.4.0')
 
@@ -44,6 +44,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-aop')
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok:1.18.2')
+    annotationProcessor('org.projectlombok:lombok:1.18.2')
 
     // data
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
