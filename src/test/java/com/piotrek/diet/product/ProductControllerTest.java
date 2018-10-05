@@ -3,8 +3,8 @@ package com.piotrek.diet.product;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
-import com.piotrek.diet.helpers.PageSupport;
-import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
+import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.AfterAll;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseForIntegrationTestsConfiguration.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProductControllerTest {
 
@@ -82,7 +82,7 @@ class ProductControllerTest {
 
     @Test
     void searchByName_when2ProductsAndQueryOneOfThem_thenReturnPageableWithOneProduct() throws JsonProcessingException {
-        var expected = new PageSupport<>(List.of(productDtoConverter.toDto(product1)), 0, 10, 1);
+        var expected = new Page<>(List.of(productDtoConverter.toDto(product1)), 0, 10, 1);
 
         webTestClient.get().uri("/products/search?query=" + product1.getName())
                 .exchange()
@@ -97,7 +97,7 @@ class ProductControllerTest {
         products.add(product1);
         products.add(product2);
         var productsDto = productDtoConverter.listToDto(products);
-        var expected = new PageSupport<>(productsDto, 0, 10, products.size());
+        var expected = new Page<>(productsDto, 0, 10, products.size());
 
         webTestClient.get().uri("/products/search")
                 .exchange()
@@ -109,7 +109,7 @@ class ProductControllerTest {
     @Test
     void searchByName_when0ProductsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
 
-        var expected = new PageSupport<>(new ArrayList<>(), 0, 10, 0);
+        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         productService.deleteAll().block();
 
@@ -122,7 +122,7 @@ class ProductControllerTest {
 
     @Test
     void searchByName_when2ProductsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-        var expected = new PageSupport<>(new ArrayList<>(), 0, 10, 0);
+        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         webTestClient.get().uri("/products/search?query=lol123")
                 .exchange()
@@ -136,7 +136,7 @@ class ProductControllerTest {
         var products = new ArrayList<Product>();
         products.add(product1);
         products.add(product2);
-        var expected = new PageSupport<>(List.of(product1), 0, 1, products.size());
+        var expected = new Page<>(List.of(product1), 0, 1, products.size());
 
         webTestClient.get().uri("/products/search?size=1")
                 .exchange()
@@ -148,7 +148,7 @@ class ProductControllerTest {
 
     @Test
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
-        var expected = new PageSupport<ProductDto>(new ArrayList<>(), 0, 10, 0);
+        var expected = new Page<ProductDto>(new ArrayList<>(), 0, 10, 0);
 
         productService.deleteAll().block();
 
@@ -165,7 +165,7 @@ class ProductControllerTest {
         products.add(product1);
         products.add(product2);
         var productsDto = productDtoConverter.listToDto(products);
-        var expected = new PageSupport<>(productsDto, 0, 10, products.size());
+        var expected = new Page<>(productsDto, 0, 10, products.size());
 
         webTestClient.get().uri("/products")
                 .exchange()
@@ -180,7 +180,7 @@ class ProductControllerTest {
         products.add(product1);
         products.add(product2);
         var productsDto = productDtoConverter.listToDto(products);
-        var expected = new PageSupport<>(productsDto
+        var expected = new Page<>(productsDto
                 .stream()
                 .skip(1)
                 .limit(1)

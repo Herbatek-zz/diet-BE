@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode
 @NoArgsConstructor
-public class PageSupport<T> {
+public class Page<T> {
 
     public static final String FIRST_PAGE_NUM = "0";
     public static final String DEFAULT_PAGE_SIZE = "10";
@@ -29,12 +29,12 @@ public class PageSupport<T> {
     }
 
     @JsonProperty
-    public boolean first() {
+    public boolean isFirst() {
         return pageNumber == Integer.parseInt(FIRST_PAGE_NUM);
     }
 
     @JsonProperty
-    public boolean last() {
+    public boolean isLast() {
         return (pageNumber + 1) * pageSize >= totalElements;
     }
 }

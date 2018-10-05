@@ -1,7 +1,7 @@
 package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.DiabetesCalculator;
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +26,11 @@ public class ProductService {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found product [id = " + id + "]"))));
     }
 
-    Mono<PageSupport<ProductDto>> searchByName(Pageable pageable, String query) {
+    Mono<Page<ProductDto>> searchByName(Pageable pageable, String query) {
         return productRepository
                 .findAllByNameIgnoreCaseContaining(query)
                 .collectList()
-                .map(list -> new PageSupport<>(
+                .map(list -> new Page<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())
@@ -40,11 +40,11 @@ public class ProductService {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
-    Mono<PageSupport<ProductDto>> findAllPageable(Pageable pageable) {
+    Mono<Page<ProductDto>> findAllPageable(Pageable pageable) {
         return productRepository
                 .findAll()
                 .collectList()
-                .map(list -> new PageSupport<>(
+                .map(list -> new Page<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())

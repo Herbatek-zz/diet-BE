@@ -1,6 +1,6 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,11 +27,11 @@ public class MealService {
         return mealRepository.findAllByUserId(userId);
     }
 
-    Mono<PageSupport<MealDto>> findAllPageable(Pageable pageable) {
+    Mono<Page<MealDto>> findAllPageable(Pageable pageable) {
         return mealRepository
                 .findAll()
                 .collectList()
-                .map(list -> new PageSupport<>(
+                .map(list -> new Page<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())
@@ -53,10 +53,10 @@ public class MealService {
         return mealRepository.deleteById(id);
     }
 
-    Mono<PageSupport<MealDto>> searchByName(PageRequest pageRequest, String query) {
+    Mono<Page<MealDto>> searchByName(PageRequest pageRequest, String query) {
         return mealRepository.findAllByNameIgnoreCaseContaining(query)
                 .collectList()
-                .map(list -> new PageSupport<>(
+                .map(list -> new Page<>(
                         list
                                 .stream()
                                 .skip(pageRequest.getPageNumber() * pageRequest.getPageSize())

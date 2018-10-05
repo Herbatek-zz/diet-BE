@@ -1,6 +1,6 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
@@ -96,7 +96,7 @@ class MealFacadeTest {
         var totalElements = 20;
         var mealsList = createMealsList(totalElements);
         var mealDtoList = createMealDtoList(totalElements);
-        var expected = new PageSupport<>(mealDtoList
+        var expected = new Page<>(mealDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -124,7 +124,7 @@ class MealFacadeTest {
         var totalElements = 0;
         var mealList = new ArrayList<Meal>();
         var mealDtos = new ArrayList<MealDto>();
-        var expected = new PageSupport<>(mealDtos
+        var expected = new Page<>(mealDtos
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);

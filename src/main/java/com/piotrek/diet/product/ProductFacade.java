@@ -1,6 +1,6 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.user.UserService;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +28,13 @@ public class ProductFacade {
         return productService.save(product).map(productDtoConverter::toDto);
     }
 
-    public Mono<PageSupport<ProductDto>> findAllByUserId(String userId, Pageable pageable) {
+    public Mono<Page<ProductDto>> findAllByUserId(String userId, Pageable pageable) {
         userService.findById(userId).block();
 
         return productService
                 .findAllByUserId(userId)
                 .collectList()
-                .map(list -> new PageSupport<>(
+                .map(list -> new Page<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())

@@ -1,7 +1,7 @@
 package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.DiabetesCalculator;
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,7 +88,7 @@ class ProductServiceTest {
         var query = "name";
         var productList = createProductList(totalElements, BANANA);
         var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -114,7 +114,7 @@ class ProductServiceTest {
         var query = bananaWithId().getName();
         var productList = createProductList(totalElements, BANANA);
         var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -143,7 +143,7 @@ class ProductServiceTest {
         productList.addAll(createProductList(10, BREAD));
         var productDtoList = createProductDtoList(12, BANANA);
         productDtoList.addAll(createProductDtoList(10, BREAD));
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -169,7 +169,7 @@ class ProductServiceTest {
         var totalElements = 20;
         var productList = createProductList(totalElements, BANANA);
         var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -194,7 +194,7 @@ class ProductServiceTest {
         var totalElements = 20;
         var productList = createProductList(totalElements, BANANA);
         var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .skip(pageSize)
                 .limit(pageSize)
@@ -220,7 +220,7 @@ class ProductServiceTest {
         var totalElements = 0;
         var productList = createProductList(totalElements, BANANA);
         var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);

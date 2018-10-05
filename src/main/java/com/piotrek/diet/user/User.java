@@ -1,8 +1,8 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.enums.Role;
-import com.piotrek.diet.meal.Meal;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 @Data
 @Document
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -42,6 +43,12 @@ public class User {
     @NotNull
     private String pictureUrl;
 
+    private double weight;
+
+    private int height;
+
+    private int age;
+
     @NotNull
     private LocalDateTime createdAt;
 
@@ -52,8 +59,6 @@ public class User {
     private String role;
 
     private ArrayList<String> favouriteMeals = new ArrayList<>();
-
-    public User() {}
 
     public User(long facebookId, String email, String firstName, String lastName) {
         this.facebookId = facebookId;

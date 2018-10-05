@@ -1,6 +1,6 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.MealSample.*;
-import static com.piotrek.diet.sample.ProductSample.BANANA;
-import static com.piotrek.diet.sample.ProductSample.BREAD;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -87,7 +85,7 @@ class MealServiceTest {
         var query = "name";
         var mealList = createMealList(totalElements, COFFEE);
         var productDtoList = createMealDtoList(totalElements, COFFEE);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -113,7 +111,7 @@ class MealServiceTest {
         var query = coffeeWithId().getName();
         var productList = createMealList(totalElements, COFFEE);
         var productDtoList = createMealDtoList(totalElements, COFFEE);
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -142,7 +140,7 @@ class MealServiceTest {
         productList.addAll(createMealList(10, DUMPLINGS));
         var productDtoList = createMealDtoList(12, COFFEE);
         productDtoList.addAll(createMealDtoList(10, DUMPLINGS));
-        var expected = new PageSupport<>(productDtoList
+        var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -198,7 +196,7 @@ class MealServiceTest {
         var totalElements = 20;
         var mealList = createMealList(totalElements, DUMPLINGS);
         var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
-        var expected = new PageSupport<>(mealDtoList
+        var expected = new Page<>(mealDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -223,7 +221,7 @@ class MealServiceTest {
         var totalElements = 20;
         var mealList = createMealList(totalElements, DUMPLINGS);
         var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
-        var expected = new PageSupport<>(mealDtoList
+        var expected = new Page<>(mealDtoList
                 .stream()
                 .skip(pageSize)
                 .limit(pageSize)
@@ -249,7 +247,7 @@ class MealServiceTest {
         var totalElements = 0;
         var mealLis = createMealList(totalElements, DUMPLINGS);
         var meaLDtoList = createMealDtoList(totalElements, DUMPLINGS);
-        var expected = new PageSupport<>(meaLDtoList
+        var expected = new Page<>(meaLDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);

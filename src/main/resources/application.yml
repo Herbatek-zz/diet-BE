@@ -14,8 +14,9 @@ facebook:
     tokenName: access_token
     authenticationScheme: query
     clientAuthenticationScheme: form
+    scope: email
   resource:
-    userInfoUri: https://graph.facebook.com/v3.1/me?fields=id,email,birthday,first_name,last_name
+    userInfoUri: https://graph.facebook.com/v3.1/me?fields=email,id,first_name,last_name
 
 server:
   port: 8443

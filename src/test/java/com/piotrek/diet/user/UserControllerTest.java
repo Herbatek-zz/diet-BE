@@ -3,8 +3,8 @@ package com.piotrek.diet.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
-import com.piotrek.diet.helpers.PageSupport;
-import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
+import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealFacade;
@@ -32,7 +32,7 @@ import static com.piotrek.diet.sample.MealSample.dumplingsWithoutIdDto;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseForIntegrationTestsConfiguration.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserControllerTest {
 
@@ -97,8 +97,8 @@ class UserControllerTest {
         webTestClient.get().uri("/users/" + user1.getId() + "/products")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(PageSupport.class)
-                .isEqualTo(new PageSupport<>(new ArrayList<>(), 0, 10, 0));
+                .expectBody(Page.class)
+                .isEqualTo(new Page<>(new ArrayList<>(), 0, 10, 0));
     }
 
     @Test
@@ -113,7 +113,7 @@ class UserControllerTest {
         products.add(productFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
 
 
-        var expected = new PageSupport<>(products, 0, 10, products.size());
+        var expected = new Page<>(products, 0, 10, products.size());
 
         webTestClient.get().uri("/users/" + user1.getId() + "/products")
                 .exchange()
@@ -173,8 +173,8 @@ class UserControllerTest {
         webTestClient.get().uri("/users/" + user1.getId() + "/meals")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(PageSupport.class)
-                .isEqualTo(new PageSupport<>(new ArrayList<>(), 0, 10, 0));
+                .expectBody(Page.class)
+                .isEqualTo(new Page<>(new ArrayList<>(), 0, 10, 0));
     }
 
     @Test
@@ -189,7 +189,7 @@ class UserControllerTest {
         meals.add(mealFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
 
 
-        var expected = new PageSupport<>(meals, 0, 10, meals.size());
+        var expected = new Page<>(meals, 0, 10, meals.size());
 
         webTestClient.get().uri("/users/" + user1.getId() + "/meals")
                 .exchange()

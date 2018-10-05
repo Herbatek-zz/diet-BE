@@ -3,8 +3,8 @@ package com.piotrek.diet.meal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
-import com.piotrek.diet.helpers.PageSupport;
-import com.piotrek.diet.helpers.config.DataBaseConfigIntegrationTests;
+import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.sample.ProductSample;
@@ -29,7 +29,7 @@ import static com.piotrek.diet.sample.MealSample.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseConfigIntegrationTests.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseForIntegrationTestsConfiguration.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MealControllerTest {
 
@@ -91,7 +91,7 @@ class MealControllerTest {
 
     @Test
     void searchByName_when2MealsAndQueryOneOfThem_thenReturnPageableWithOneMeal() throws JsonProcessingException {
-        var expected = new PageSupport<>(List.of(mealDtoConverter.toDto(meal1)), 0, 10, 1);
+        var expected = new Page<>(List.of(mealDtoConverter.toDto(meal1)), 0, 10, 1);
 
         webTestClient.get().uri("/meals/search?query=" + meal1.getName())
                 .exchange()
@@ -106,7 +106,7 @@ class MealControllerTest {
         products.add(meal1);
         products.add(meal2);
         var productsDto = mealDtoConverter.listToDto(products);
-        var expected = new PageSupport<>(productsDto, 0, 10, products.size());
+        var expected = new Page<>(productsDto, 0, 10, products.size());
 
         webTestClient.get().uri("/meals/search")
                 .exchange()
@@ -118,7 +118,7 @@ class MealControllerTest {
     @Test
     void searchByName_whenNoMealsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
 
-        var expected = new PageSupport<>(new ArrayList<>(), 0, 10, 0);
+        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         mealService.deleteAll().block();
 
@@ -131,7 +131,7 @@ class MealControllerTest {
 
     @Test
     void searchByName_when2MealsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-        var expected = new PageSupport<>(new ArrayList<>(), 0, 10, 0);
+        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         webTestClient.get().uri("/meals/search?query=lol123")
                 .exchange()
@@ -144,7 +144,7 @@ class MealControllerTest {
     void searchByName_when2MealsAndQueryWithCapitalCharacters_thenReturnMatchMeal() throws JsonProcessingException {
         var list = new ArrayList<MealDto>(1);
         list.add(mealDto1);
-        var expected = new PageSupport<>(list, 0, 10, 1);
+        var expected = new Page<>(list, 0, 10, 1);
 
         webTestClient.get().uri("/meals/search?query=" + meal1.getName().toUpperCase())
                 .exchange()
@@ -158,7 +158,7 @@ class MealControllerTest {
         var products = new ArrayList<Meal>();
         products.add(meal1);
         products.add(meal2);
-        var expected = new PageSupport<>(List.of(meal1), 0, 1, products.size());
+        var expected = new Page<>(List.of(meal1), 0, 1, products.size());
 
         webTestClient.get().uri("/meals/search?size=1")
                 .exchange()
@@ -169,7 +169,7 @@ class MealControllerTest {
 
     @Test
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
-        var expected = new PageSupport<MealDto>(new ArrayList<>(), 0, 10, 0);
+        var expected = new Page<MealDto>(new ArrayList<>(), 0, 10, 0);
 
         mealService.deleteAll().block();
 
@@ -186,7 +186,7 @@ class MealControllerTest {
         meals.add(meal1);
         meals.add(meal2);
         var mealsDto = mealDtoConverter.listToDto(meals);
-        var expected = new PageSupport<>(mealsDto, 0, 10, meals.size());
+        var expected = new Page<>(mealsDto, 0, 10, meals.size());
 
         webTestClient.get().uri("/meals")
                 .exchange()
@@ -201,7 +201,7 @@ class MealControllerTest {
         meals.add(meal1);
         meals.add(meal2);
         var mealDtos = mealDtoConverter.listToDto(meals);
-        var expected = new PageSupport<>(mealDtos
+        var expected = new Page<>(mealDtos
                 .stream()
                 .skip(1)
                 .limit(1)

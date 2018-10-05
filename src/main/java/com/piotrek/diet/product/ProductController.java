@@ -1,13 +1,13 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import static com.piotrek.diet.helpers.PageSupport.DEFAULT_PAGE_SIZE;
-import static com.piotrek.diet.helpers.PageSupport.FIRST_PAGE_NUM;
+import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
+import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -28,7 +28,7 @@ public class ProductController {
 
     @GetMapping("/search")
     @ResponseStatus(OK)
-    Mono<PageSupport<ProductDto>> searchByName(
+    Mono<Page<ProductDto>> searchByName(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
             @RequestParam(defaultValue = "") String query) {
@@ -37,7 +37,7 @@ public class ProductController {
 
     @GetMapping
     @ResponseStatus(OK)
-    Mono<PageSupport<ProductDto>> findAll(
+    Mono<Page<ProductDto>> findAll(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
         return productService.findAllPageable(PageRequest.of(page, size));

@@ -1,6 +1,6 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.helpers.PageSupport;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
@@ -35,13 +35,13 @@ public class MealFacade {
         return mealService.save(meal).map(mealDtoConverter::toDto);
     }
 
-    public Mono<PageSupport<MealDto>> findAllByUserId(String userId, Pageable pageable) {
+    public Mono<Page<MealDto>> findAllByUserId(String userId, Pageable pageable) {
         userService.findById(userId).block();
 
         return mealService
                 .findAllByUserId(userId)
                 .collectList()
-                .map(list -> new PageSupport<>(
+                .map(list -> new Page<>(
                         list
                                 .stream()
                                 .skip(pageable.getPageNumber() * pageable.getPageSize())
@@ -51,7 +51,7 @@ public class MealFacade {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
-    public Mono<PageSupport<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
+    public Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
         ArrayList<String> favouriteMealListId = userService.findById(userId).block().getFavouriteMeals();
 
         List<MealDto> collect = favouriteMealListId
@@ -63,7 +63,7 @@ public class MealFacade {
                 .map(mealDtoConverter::toDto)
                 .collect(Collectors.toList());
 
-        return Mono.just(new PageSupport<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealListId.size()));
+        return Mono.just(new Page<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealListId.size()));
     }
 
     Mono<MealDto> addProductsToMeal(String productId, List<ProductDto> productDtoList) {
@@ -78,12 +78,24 @@ public class MealFacade {
     }
 
     public Mono<Void> addToFavourite(String userId, String mealId) {
-        User user = userService.findById(userId).block();
+        var user = userService.findById(userId).block();
         userValidation.validateUserWithPrincipal(user.getId());
 
-        Meal meal = mealService.findById(mealId).block();
+        var meal = mealService.findById(mealId).block();
 
-        user.getFavouriteMeals().add(meal.getId());
+        var favouriteMeals = user.getFavouriteMeals();
+        favouriteMeals.add(meal.getId());
+        user.setFavouriteMeals(favouriteMeals);
+
+        userService.save(user);
+        return Mono.empty();
+    }
+
+    public Mono<Void> deleteFromFavourite(String userId, String mealId) {
+        var user = userService.findById(userId).block();
+        userValidation.validateUserWithPrincipal(user.getId());
+
+        user.getFavouriteMeals().remove(mealId);
 
         userService.save(user);
         return Mono.empty();
