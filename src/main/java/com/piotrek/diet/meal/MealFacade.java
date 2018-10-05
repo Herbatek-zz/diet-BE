@@ -4,7 +4,6 @@ import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
@@ -52,9 +51,9 @@ public class MealFacade {
     }
 
     public Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
-        ArrayList<String> favouriteMealListId = userService.findById(userId).block().getFavouriteMeals();
+        var favouriteMealIdSet = userService.findById(userId).block().getFavouriteMeals();
 
-        List<MealDto> collect = favouriteMealListId
+        List<MealDto> collect = favouriteMealIdSet
                 .stream()
                 .skip(pageable.getPageNumber() * pageable.getPageSize())
                 .limit(pageable.getPageSize())
@@ -63,7 +62,7 @@ public class MealFacade {
                 .map(mealDtoConverter::toDto)
                 .collect(Collectors.toList());
 
-        return Mono.just(new Page<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealListId.size()));
+        return Mono.just(new Page<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealIdSet.size()));
     }
 
     Mono<MealDto> addProductsToMeal(String productId, List<ProductDto> productDtoList) {
@@ -84,10 +83,12 @@ public class MealFacade {
         var meal = mealService.findById(mealId).block();
 
         var favouriteMeals = user.getFavouriteMeals();
+
+
         favouriteMeals.add(meal.getId());
         user.setFavouriteMeals(favouriteMeals);
 
-        userService.save(user);
+        userService.save(user).block();
         return Mono.empty();
     }
 
@@ -97,11 +98,16 @@ public class MealFacade {
 
         user.getFavouriteMeals().remove(mealId);
 
-        userService.save(user);
+        userService.save(user).block();
         return Mono.empty();
     }
 
-    void updateMealInfoAfterAddProducts(Meal meal) {
+    public Mono<MealDto> findById(String id) {
+        return mealService.findById(id)
+                .map(mealDtoConverter::toDto);
+    }
+
+    private void updateMealInfoAfterAddProducts(Meal meal) {
         countProteinFromProducts(meal);
         countCarbohydrateFromProducts(meal);
         countFatFromProducts(meal);
@@ -172,5 +178,10 @@ public class MealFacade {
             kcal += product.getKcal();
 
         meal.setKcal(kcal);
+    }
+
+    public Mono<Boolean> isFavourite(String userId, String mealId) {
+        var user = userService.findById(userId).block();
+        return Mono.just(user.getFavouriteMeals().contains(mealId));
     }
 }

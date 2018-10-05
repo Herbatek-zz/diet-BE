@@ -84,4 +84,10 @@ public class UserController {
     Mono<MealDto> createMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
         return mealFacade.createMeal(id, mealDto);
     }
+
+    @GetMapping("/{userId}/meals/{mealId}")
+    @ResponseStatus(OK)
+    Mono<Boolean> isFavourite(@PathVariable String userId, @PathVariable String mealId) {
+        return mealFacade.isFavourite(userId, mealId);
+    }
 }

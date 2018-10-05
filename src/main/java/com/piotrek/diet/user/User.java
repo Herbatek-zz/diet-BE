@@ -11,6 +11,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 @Data
 @Document
@@ -58,7 +59,7 @@ public class User {
     @NotNull
     private String role;
 
-    private ArrayList<String> favouriteMeals = new ArrayList<>();
+    private HashSet<String> favouriteMeals = new HashSet<>();
 
     public User(long facebookId, String email, String firstName, String lastName) {
         this.facebookId = facebookId;

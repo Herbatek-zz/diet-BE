@@ -74,7 +74,6 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
     }
 
     private User createUser(LinkedHashMap userDetails) {
-        userDetails.forEach((a, b) -> System.out.println(a + " : " + b));
         String email = userDetails.get("email").toString();
         String firstName = userDetails.get("first_name").toString();
         String lastName = userDetails.get("last_name").toString();

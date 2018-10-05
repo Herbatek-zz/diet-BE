@@ -21,13 +21,11 @@ public class MealController {
 
     private final MealService mealService;
     private final MealFacade mealFacade;
-    private final MealDtoConverter mealDtoConverter;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     Mono<MealDto> findById(@PathVariable String id) {
-        return mealService.findById(id)
-                .map(mealDtoConverter::toDto);
+        return mealFacade.findById(id);
     }
 
     @GetMapping("/search")
