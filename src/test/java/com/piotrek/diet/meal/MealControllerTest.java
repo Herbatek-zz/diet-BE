@@ -8,10 +8,7 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.sample.ProductSample;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.MealSample.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
+
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseForIntegrationTestsConfiguration.class})
@@ -61,7 +59,7 @@ class MealControllerTest {
         mealService.deleteAll().block();
         createMeals();
         webTestClient = WebTestClient
-                .bindToController(new MealController(mealService, mealFacade, mealDtoConverter))
+                .bindToController(new MealController(mealService, mealFacade))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }

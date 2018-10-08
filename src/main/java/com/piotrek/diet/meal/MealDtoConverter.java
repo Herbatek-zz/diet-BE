@@ -58,7 +58,7 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         return meal;
     }
 
-    public List<MealDto> listToDto(List<Meal> products) {
+    List<MealDto> listToDto(List<Meal> products) {
         return products
                 .stream()
                 .map(this::toDto)

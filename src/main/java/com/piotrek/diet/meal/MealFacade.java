@@ -11,8 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,7 +31,9 @@ public class MealFacade {
         var meal = mealDtoConverter.fromDto(mealDto);
         meal.setUserId(userId);
 
-        return mealService.save(meal).map(mealDtoConverter::toDto);
+        return mealService
+                .save(meal)
+                .map(mealDtoConverter::toDto);
     }
 
     public Mono<Page<MealDto>> findAllByUserId(String userId, Pageable pageable) {
@@ -50,20 +52,6 @@ public class MealFacade {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
-    public Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
-        var favouriteMealIdSet = userService.findById(userId).block().getFavouriteMeals();
-
-        List<MealDto> collect = favouriteMealIdSet
-                .stream()
-                .skip(pageable.getPageNumber() * pageable.getPageSize())
-                .limit(pageable.getPageSize())
-                .map(mealService::findById)
-                .map(Mono::block)
-                .map(mealDtoConverter::toDto)
-                .collect(Collectors.toList());
-
-        return Mono.just(new Page<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealIdSet.size()));
-    }
 
     Mono<MealDto> addProductsToMeal(String productId, List<ProductDto> productDtoList) {
         Meal meal = mealService.findById(productId).block();
@@ -76,26 +64,37 @@ public class MealFacade {
         return mealService.save(meal).map(mealDtoConverter::toDto);
     }
 
-    public Mono<Void> addToFavourite(String userId, String mealId) {
-        var user = userService.findById(userId).block();
-        userValidation.validateUserWithPrincipal(user.getId());
+    public Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
+        var favouriteMealListId = Objects.requireNonNull(userService.findById(userId).block()).getFavouriteMeals();
 
+        var collect = favouriteMealListId
+                .stream()
+                .skip(pageable.getPageNumber() * pageable.getPageSize())
+                .limit(pageable.getPageSize())
+                .map(mealService::findById)
+                .map(Mono::block)
+                .map(mealDtoConverter::toDto)
+                .collect(Collectors.toList());
+
+        return Mono.just(new Page<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealListId.size()));
+    }
+
+    public Mono<Void> addToFavourite(String userId, String mealId) {
+        userValidation.validateUserWithPrincipal(userId);
+
+        var user = userService.findById(userId).block();
         var meal = mealService.findById(mealId).block();
 
-        var favouriteMeals = user.getFavouriteMeals();
-
-
-        favouriteMeals.add(meal.getId());
-        user.setFavouriteMeals(favouriteMeals);
+        user.getFavouriteMeals().add(meal.getId());
 
         userService.save(user).block();
         return Mono.empty();
     }
 
     public Mono<Void> deleteFromFavourite(String userId, String mealId) {
-        var user = userService.findById(userId).block();
-        userValidation.validateUserWithPrincipal(user.getId());
+        userValidation.validateUserWithPrincipal(userId);
 
+        var user = userService.findById(userId).block();
         user.getFavouriteMeals().remove(mealId);
 
         userService.save(user).block();

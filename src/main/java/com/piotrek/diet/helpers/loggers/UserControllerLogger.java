@@ -14,13 +14,19 @@ public class UserControllerLogger {
     private final String PREFIX = "DIET | ";
 
     @Before("execution(* com.piotrek.diet.user.UserController.findUserById(String)) && args(id) ")
-    public void logAfterFindUserById(String id) {
+    public void logBeforeFindUserById(String id) {
         log.info(PREFIX + "Attempt to retrieve a user [id = " + id + "]");
     }
 
     @Before(value = "execution(* com.piotrek.diet.user.UserController.addMealToFavourite(String, String)) && args(userId, mealId) ",
             argNames = "userId,mealId")
-    public void logAfterAddMealToFavourite(String userId, String mealId) {
+    public void logBeforeAddMealToFavourite(String userId, String mealId) {
         log.info(PREFIX + "Attempt to add meal to favourite [id = " + mealId + "] for user [id = " + userId + "]");
+    }
+
+    @Before(value = "execution(* com.piotrek.diet.user.UserController.findUserProducts(String, int, int)) && args(userId, page, size) ",
+            argNames = "userId,page,size")
+    public void logBeforeRetrieveUserProducts(String userId, int page, int size) {
+        log.info(PREFIX + "Attempt to retrieve products for user [id = " + userId + "]");
     }
 }

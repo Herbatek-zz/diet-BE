@@ -14,8 +14,7 @@ import javax.validation.Valid;
 
 import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/users")
@@ -68,13 +67,13 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/favourite/meals/{mealId}")
-    @ResponseStatus(OK)
+    @ResponseStatus(CREATED)
     Mono<Void> addMealToFavourite(@PathVariable String userId, @PathVariable String mealId) {
         return mealFacade.addToFavourite(userId, mealId);
     }
 
     @DeleteMapping("/{userId}/favourite/meals/{mealId}")
-    @ResponseStatus(OK)
+    @ResponseStatus(NO_CONTENT)
     Mono<Void> deleteMealFromFavourite(@PathVariable String userId, @PathVariable String mealId) {
         return mealFacade.deleteFromFavourite(userId, mealId);
     }
@@ -87,7 +86,7 @@ public class UserController {
 
     @GetMapping("/{userId}/meals/{mealId}")
     @ResponseStatus(OK)
-    Mono<Boolean> isFavourite(@PathVariable String userId, @PathVariable String mealId) {
+    Mono<Boolean> isMealFavourite(@PathVariable String userId, @PathVariable String mealId) {
         return mealFacade.isFavourite(userId, mealId);
     }
 }

@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,7 @@ public class Page<T> {
     public static final String FIRST_PAGE_NUM = "0";
     public static final String DEFAULT_PAGE_SIZE = "10";
 
-    private List<T> content;
+    private Collection<T> content;
     private int pageNumber;
     private int pageSize;
     private long totalElements;
