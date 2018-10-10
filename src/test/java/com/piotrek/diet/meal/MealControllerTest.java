@@ -8,7 +8,6 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +20,13 @@ import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.MealSample.*;
+import static com.piotrek.diet.sample.ProductSample.bananaWithIdDto;
+import static com.piotrek.diet.sample.ProductSample.breadWithIdDto;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 
@@ -69,7 +71,9 @@ class MealControllerTest {
     @Test
     @DisplayName("When findById finds a single meal, meal will be returned as dto")
     void findById_whenFound_thenReturnMeal() {
-        webTestClient.get().uri("/meals/" + meal1.getId())
+        final var URI = "/meals/" + meal1.getId();
+
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -78,10 +82,11 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findById not found a meal, then throw NotFoundException")
+    @DisplayName("When findById doesn't find a meal, throws NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
-        final String INCORRECT_ID = "badIDXD";
-        webTestClient.get().uri("/meals/" + INCORRECT_ID)
+        final var URI = "/meals/aBadId";
+
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -89,11 +94,12 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Search meals by name, when there is two meals, but query matches for one of them, one of them will be returned in page wrapper")
-    void searchByName_when2MealsAndQueryOneOfThem_thenReturnPageableWithOneMeal() throws JsonProcessingException {
+    @DisplayName("Search meals, when there is two meals, but query matches for one of them, one of them will be returned in page wrapper")
+    void searchByName_when2MealsAndQueryOneOfThem_thenReturnPageWithOneMeal() throws JsonProcessingException {
+        final var URI = "/meals/search?query=" + meal1.getName();
         final var expected = new Page<>(List.of(mealDtoConverter.toDto(meal1)), 0, 10, 1);
 
-        webTestClient.get().uri("/meals/search?query=" + meal1.getName())
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -102,14 +108,14 @@ class MealControllerTest {
 
     @Test
     @DisplayName("Search meals by name, when no query, then all products will be returned in page wrapper")
-    void searchByName_when2MealsAndNoQuery_thenReturnPageableWithAllMeals() throws JsonProcessingException {
-        var productsDto = new ArrayList<>(Arrays.asList(meal1, meal2))
+    void searchByName_when2MealsAndNoQuery_thenReturnPageWithAllMeals() throws JsonProcessingException {
+        final var URI = "/meals/search";
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(meal1, meal2))
                 .stream()
                 .map(mealDtoConverter::toDto)
-                .collect(Collectors.toCollection(ArrayList::new));
-        final var expected = new Page<>(productsDto, 0, 10, productsDto.size());
+                .collect(Collectors.toCollection(ArrayList::new)), 0, 10, 2);
 
-        webTestClient.get().uri("/meals/search")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -118,12 +124,13 @@ class MealControllerTest {
 
     @Test
     @DisplayName("Search meals by name, when no query and no meals, will be returned empty list wrapped in page")
-    void searchByName_whenNoMealsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
+    void searchByName_whenNoMealsAndNoQuery_thenReturnEmptyPage() throws JsonProcessingException {
+        final var URI = "/meals/search";
+        final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         mealService.deleteAll().block();
 
-        webTestClient.get().uri("/meals/search")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -132,10 +139,11 @@ class MealControllerTest {
 
     @Test
     @DisplayName("Search meals, when query doesn't match any meal, then will be returned empty list wrapped in page")
-    void searchByName_when2MealsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
+    void searchByName_when2MealsAndQueryDoesNotMatch_thenReturnEmptyPage() throws JsonProcessingException {
+        final var URI = "/meals/search?query=lol123";
+        final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
-        webTestClient.get().uri("/meals/search?query=lol123")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -143,12 +151,12 @@ class MealControllerTest {
     }
 
     @Test
-    void searchByName_when2MealsAndQueryWithCapitalCharacters_thenReturnMatchMeal() throws JsonProcessingException {
-        var list = new ArrayList<MealDto>(1);
-        list.add(mealDto1);
-        var expected = new Page<>(list, 0, 10, 1);
+    @DisplayName("Search meals, when there are two products but query matches only one of them, then return page with one meal")
+    void searchByName_when2MealsAndQueryCapitalCaseMatchOnlyOneOfThem_thenReturnMatchMealInPage() throws JsonProcessingException {
+        final var URI = "/meals/search?query=" + meal1.getName().toUpperCase();
+        final var expected = new Page<>(new ArrayList<>(Collections.singletonList(mealDto1)), 0, 10, 1);
 
-        webTestClient.get().uri("/meals/search?query=" + meal1.getName().toUpperCase())
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -156,13 +164,12 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("Search meals, when there are 2 meals, no query and pageSize = 1, then return first page with one meal")
     void searchByName_when2MealsAndNoQueryAndPageSize1_thenReturnFirstPageWithOneMeal() throws JsonProcessingException {
-        var products = new ArrayList<Meal>();
-        products.add(meal1);
-        products.add(meal2);
-        var expected = new Page<>(List.of(meal1), 0, 1, products.size());
+        final var URI = "/meals/search?size=1";
+        final var expected = new Page<>(List.of(meal1), 0, 1, 2);
 
-        webTestClient.get().uri("/meals/search?size=1")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -170,12 +177,14 @@ class MealControllerTest {
     }
 
     @Test
-    void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
+    @DisplayName("When findAll with default parameters and there is no meals, then return empty page")
+    void findAll_whenDefaultParamsTotalElements0_thenReturnPageWithEmptyList() throws JsonProcessingException {
+        final var URI = "/meals";
         var expected = new Page<MealDto>(new ArrayList<>(), 0, 10, 0);
 
         mealService.deleteAll().block();
 
-        webTestClient.get().uri("/meals")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -183,14 +192,12 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("When findAll with default parameters and there are two meals, then return page with two meals")
     void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Meals() throws JsonProcessingException {
-        var meals = new ArrayList<Meal>();
-        meals.add(meal1);
-        meals.add(meal2);
-        var mealsDto = mealDtoConverter.listToDto(meals);
-        var expected = new Page<>(mealsDto, 0, 10, meals.size());
+        final var URI = "/meals";
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2)), 0, 10, 2);
 
-        webTestClient.get().uri("/meals")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -198,18 +205,16 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("When findAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
     void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
-        var meals = new ArrayList<Meal>();
-        meals.add(meal1);
-        meals.add(meal2);
-        var mealDtos = mealDtoConverter.listToDto(meals);
-        var expected = new Page<>(mealDtos
+        final var URI = "/meals?page=1&size=1";
+        var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))
                 .stream()
                 .skip(1)
                 .limit(1)
-                .collect(Collectors.toList()), 1, 1, meals.size());
+                .collect(Collectors.toList()), 1, 1, 2);
 
-        webTestClient.get().uri("/meals?page=1&size=1")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -217,19 +222,27 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("When delete a meal, then the meal shouldn't be available in database")
     void deleteById() {
-        webTestClient.delete().uri("/meals/" + meal1.getId())
+        final var URI = "/meals/" + meal1.getId();
+        webTestClient.delete().uri(URI)
                 .exchange()
                 .expectStatus().isNoContent();
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(NotFoundException.class);
     }
 
     @Test
-    void addProducts() throws JsonProcessingException {
-        var productDtos = new ArrayList<ProductDto>(2);
-        productDtos.add(ProductSample.bananaWithIdDto());
-        productDtos.add(ProductSample.breadWithIdDto());
+    @DisplayName("When we add products to a meal, then the meal should be with added products")
+    void addProducts_thenMealShouldHasAddedProducts() throws JsonProcessingException {
+        final var URI = "/meals/" + meal1.getId();
+        final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
 
-        var expected = dumplingsWithIdDto();
+        final var expected = dumplingsWithIdDto();
         expected.setProducts(productDtos);
 
         expected.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
@@ -243,8 +256,14 @@ class MealControllerTest {
         var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
-        webTestClient.put().uri("/meals/" + meal1.getId())
+        webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(productDtos))
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
