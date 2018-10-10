@@ -1,17 +1,16 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.product.Product;
-import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import static com.piotrek.diet.sample.MealSample.*;
+import static com.piotrek.diet.sample.ProductSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -27,25 +26,17 @@ class MealDtoConverterTest {
         ProductDtoConverter productDtoConverter = new ProductDtoConverter();
         mealDtoConverter = new MealDtoConverter(productDtoConverter);
 
-        var listProducts = new ArrayList<Product>(2);
-        listProducts.add(ProductSample.breadWithId());
-        listProducts.add(ProductSample.bananaWithId());
-
         meal = dumplingsWithId();
-        meal.setProducts(listProducts);
-
-
-        var listProductsDto = new ArrayList<ProductDto>(2);
-        listProductsDto.add(ProductSample.breadWithIdDto());
-        listProductsDto.add(ProductSample.bananaWithIdDto());
+        meal.setProducts(new ArrayList<>(Arrays.asList(breadWithId(), bananaWithId())));
 
         meaLDto = dumplingsWithIdDto();
-        meaLDto.setProducts(listProductsDto);
+        meaLDto.setProducts(new ArrayList<>(Arrays.asList(breadWithIdDto(), bananaWithIdDto())));
     }
 
     @Test
+    @DisplayName("Convert entity meal to dto")
     void toDto() {
-        var convertedMeal = mealDtoConverter.toDto(meal);
+        final var convertedMeal = mealDtoConverter.toDto(meal);
 
         assertNotNull(convertedMeal);
         assertAll(
@@ -67,8 +58,9 @@ class MealDtoConverterTest {
     }
 
     @Test
+    @DisplayName("Convert dto to meal entity")
     void fromDto() {
-        var convertedMeal = mealDtoConverter.fromDto(meaLDto);
+        final var convertedMeal = mealDtoConverter.fromDto(meaLDto);
 
         assertNotNull(convertedMeal);
         assertAll(
@@ -90,20 +82,38 @@ class MealDtoConverterTest {
     }
 
     @Test
+    @DisplayName("Convert meal list to dto list")
     void listToDto() {
-        var products = new ArrayList<Meal>(2);
-        products.add(dumplingsWithId());
-        products.add(coffeeWithId());
+        final var beforeConvert = new ArrayList<Meal>(Arrays.asList(dumplingsWithId(), coffeeWithId()));
+        final var afterConvert = mealDtoConverter.listToDto(beforeConvert);
 
-        List<MealDto> convertedList = mealDtoConverter.listToDto(products);
-
-        assertNotNull(convertedList);
-        assertNotNull(convertedList.get(0));
-        assertNotNull(convertedList.get(1));
         assertAll(
-                () -> assertEquals(products.size(), convertedList.size()),
-                () -> assertEquals(products.get(0).getId(), convertedList.get(0).getId()),
-                () -> assertEquals(products.get(1).getId(), convertedList.get(1).getId())
+                () -> assertNotNull(afterConvert),
+                () -> assertNotNull(afterConvert.get(0)),
+                () -> assertNotNull(afterConvert.get(1)),
+                () -> assertEquals(beforeConvert.size(), afterConvert.size()),
+                () -> assertEquals(beforeConvert.get(0).getId(), afterConvert.get(0).getId()),
+                () -> assertEquals(beforeConvert.get(1).getId(), afterConvert.get(1).getId()),
+                () -> assertEquals(beforeConvert.get(0).getClass(), Meal.class),
+                () -> assertEquals(afterConvert.get(0).getClass(), MealDto.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Convert entity meal list from dto list")
+    void listFromDto() {
+        final var beforeConvert = new ArrayList<MealDto>(Arrays.asList(dumplingsWithIdDto(), coffeeWithIdDto()));
+        final var afterConvert = mealDtoConverter.listFromDto(beforeConvert);
+
+        assertAll(
+                () -> assertNotNull(afterConvert),
+                () -> assertNotNull(afterConvert.get(0)),
+                () -> assertNotNull(afterConvert.get(1)),
+                () -> assertEquals(beforeConvert.size(), afterConvert.size()),
+                () -> assertEquals(beforeConvert.get(0).getId(), afterConvert.get(0).getId()),
+                () -> assertEquals(beforeConvert.get(1).getId(), afterConvert.get(1).getId()),
+                () -> assertEquals(beforeConvert.get(0).getClass(), MealDto.class),
+                () -> assertEquals(afterConvert.get(0).getClass(), Meal.class)
         );
     }
 }
