@@ -2,9 +2,7 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.meal.MealDto;
-import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.product.ProductFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
@@ -22,15 +20,12 @@ import static org.springframework.http.HttpStatus.*;
 public class UserController {
 
     private final UserService userService;
-    private final UserDtoConverter userDtoConverter;
-    private final ProductFacade productFacade;
-    private final MealFacade mealFacade;
+    private final UserFacade userFacade;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     Mono<UserDto> findUserById(@PathVariable String id) {
-        return userService.findById(id)
-                .map(userDtoConverter::toDto);
+        return userService.findDtoById(id);
     }
 
     @GetMapping("/{id}/products")
@@ -39,13 +34,7 @@ public class UserController {
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return productFacade.findAllByUserId(id, PageRequest.of(page, size));
-    }
-
-    @PostMapping("/{id}/products")
-    @ResponseStatus(CREATED)
-    Mono<ProductDto> createProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
-        return productFacade.createProduct(id, productDto);
+        return userFacade.findAllProducts(id, PageRequest.of(page, size));
     }
 
     @GetMapping("/{id}/meals")
@@ -54,7 +43,13 @@ public class UserController {
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return mealFacade.findAllByUserId(id, PageRequest.of(page, size));
+        return userFacade.findAllMealsByUser(id, PageRequest.of(page, size));
+    }
+
+    @GetMapping("/{userId}/meals/{mealId}")
+    @ResponseStatus(OK)
+    Mono<Boolean> isMealFavourite(@PathVariable String userId, @PathVariable String mealId) {
+        return userFacade.isFavourite(userId, mealId);
     }
 
     @GetMapping("/{id}/favourite/meals")
@@ -63,30 +58,30 @@ public class UserController {
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return mealFacade.findFavouriteMeals(id, PageRequest.of(page, size));
+        return userFacade.findFavouriteMeals(id, PageRequest.of(page, size));
+    }
+
+    @PostMapping("/{id}/products")
+    @ResponseStatus(CREATED)
+    Mono<ProductDto> createProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
+        return userFacade.createProduct(id, productDto);
     }
 
     @PostMapping("/{userId}/favourite/meals/{mealId}")
     @ResponseStatus(CREATED)
     Mono<Void> addMealToFavourite(@PathVariable String userId, @PathVariable String mealId) {
-        return mealFacade.addToFavourite(userId, mealId);
-    }
-
-    @DeleteMapping("/{userId}/favourite/meals/{mealId}")
-    @ResponseStatus(NO_CONTENT)
-    Mono<Void> deleteMealFromFavourite(@PathVariable String userId, @PathVariable String mealId) {
-        return mealFacade.deleteFromFavourite(userId, mealId);
+        return userFacade.addToFavourite(userId, mealId);
     }
 
     @PostMapping("/{id}/meals")
     @ResponseStatus(CREATED)
     Mono<MealDto> createMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
-        return mealFacade.createMeal(id, mealDto);
+        return userFacade.createMeal(id, mealDto);
     }
 
-    @GetMapping("/{userId}/meals/{mealId}")
-    @ResponseStatus(OK)
-    Mono<Boolean> isMealFavourite(@PathVariable String userId, @PathVariable String mealId) {
-        return mealFacade.isFavourite(userId, mealId);
+    @DeleteMapping("/{userId}/favourite/meals/{mealId}")
+    @ResponseStatus(NO_CONTENT)
+    Mono<Void> deleteMealFromFavourite(@PathVariable String userId, @PathVariable String mealId) {
+        return userFacade.deleteFromFavourite(userId, mealId);
     }
 }

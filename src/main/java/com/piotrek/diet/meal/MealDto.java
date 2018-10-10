@@ -2,11 +2,13 @@ package com.piotrek.diet.meal;
 
 import com.piotrek.diet.product.ProductDto;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 
 @Data
+@EqualsAndHashCode(of = {"id"})
 public class MealDto {
 
     private String id;
@@ -30,6 +32,7 @@ public class MealDto {
 
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
+    @NotNull
     private String imageUrl;
 
     private ArrayList<ProductDto> products = new ArrayList<>();

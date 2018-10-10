@@ -17,13 +17,11 @@ import static org.springframework.http.HttpStatus.OK;
 public class ProductController {
 
     private final ProductService productService;
-    private final ProductDtoConverter productDtoConverter;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     Mono<ProductDto> findById(@PathVariable String id) {
-        return productService.findById(id)
-                .map(productDtoConverter::toDto);
+        return productService.findDtoById(id);
     }
 
     @GetMapping("/search")

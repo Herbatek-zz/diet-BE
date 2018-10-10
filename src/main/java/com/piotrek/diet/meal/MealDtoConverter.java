@@ -5,6 +5,7 @@ import com.piotrek.diet.product.ProductDtoConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,6 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
     @Override
     public MealDto toDto(Meal meal) {
         var mealDto = new MealDto();
-
         mealDto.setId(meal.getId());
         mealDto.setName(meal.getName());
         mealDto.setDescription(meal.getDescription());
@@ -32,14 +32,12 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         mealDto.setProteinAndFatEquivalent(meal.getProteinAndFatEquivalent());
         mealDto.setProducts(productDtoConverter.listToDto(meal.getProducts()));
         mealDto.setUserId(meal.getUserId());
-
         return mealDto;
     }
 
     @Override
     public Meal fromDto(MealDto mealDto) {
         var meal = new Meal();
-
         meal.setId(mealDto.getId());
         meal.setName(mealDto.getName());
         meal.setDescription(mealDto.getDescription());
@@ -54,14 +52,20 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         meal.setProteinAndFatEquivalent(mealDto.getProteinAndFatEquivalent());
         meal.setProducts(productDtoConverter.listFromDto(mealDto.getProducts()));
         meal.setUserId(mealDto.getUserId());
-
         return meal;
     }
 
-    List<MealDto> listToDto(List<Meal> products) {
-        return products
+    public ArrayList<MealDto> listToDto(List<Meal> meals) {
+        return meals
                 .stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<Meal> listFromDto(List<MealDto> mealDtos) {
+        return mealDtos
+                .stream()
+                .map(this::fromDto)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 }

@@ -1,5 +1,7 @@
 package com.piotrek.diet.helpers;
 
+import com.piotrek.diet.cart.Cart;
+import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -20,6 +23,7 @@ public class Bootstrap implements CommandLineRunner {
     private final UserService userService;
     private final ProductService productService;
     private final MealService mealService;
+    private final CartService cartService;
 
     @Override
     public void run(String... args) {
@@ -43,6 +47,7 @@ public class Bootstrap implements CommandLineRunner {
             product.setFibre(8.4);
             product.setImageUrl("http://static.ilewazy.pl/wp-content/uploads/chleb-zytni-razowy-600g.jpg");
             product.setUserId(user.getId());
+            product.setPrivate(true);
             productService.save(product).block();
         }
 
@@ -66,6 +71,17 @@ public class Bootstrap implements CommandLineRunner {
             meal.setProducts(products);
             mealService.save(meal).block();
         }
+
+        var cart = new Cart("123123", LocalDate.now());
+        var list = new ArrayList<Meal>();
+        var meal = new Meal();
+        meal.setName("Dobre");
+        list.add(meal);
+        cart.setMeals(list);
+        cartService.deleteAll().block();
+        cartService.save(cart).block();
+
+        cartService.findByUserIdAndDate("123123", LocalDate.now()).block().getMeals().forEach(i -> System.out.println(i.getName()));
 
     }
 }

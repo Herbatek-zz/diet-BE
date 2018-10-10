@@ -17,6 +17,7 @@ public class ProductDtoConverter implements DtoConverter<Product, ProductDto> {
         productDto.setName(product.getName());
         productDto.setDescription(product.getDescription());
         productDto.setImageUrl(product.getImageUrl());
+        productDto.setPrivate(product.isPrivate());
         productDto.setProtein(product.getProtein());
         productDto.setCarbohydrate(product.getCarbohydrate());
         productDto.setFat(product.getFat());
@@ -36,6 +37,7 @@ public class ProductDtoConverter implements DtoConverter<Product, ProductDto> {
         product.setName(productDto.getName());
         product.setDescription(productDto.getDescription());
         product.setImageUrl(productDto.getImageUrl());
+        product.setPrivate(productDto.isPrivate());
         product.setProtein(productDto.getProtein());
         product.setCarbohydrate(productDto.getCarbohydrate());
         product.setFat(productDto.getFat());

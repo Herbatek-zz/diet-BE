@@ -1,8 +1,8 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.product.Product;
-import com.piotrek.diet.user.User;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 @Data
 @Document
+@EqualsAndHashCode(of = {"id"})
 public class Meal {
 
     @Id
@@ -26,28 +27,22 @@ public class Meal {
     @NotNull
     private String recipe;
 
-    @NotNull
     private double protein;
 
-    @NotNull
     private double carbohydrate;
 
-    @NotNull
     private double fat;
 
-    @NotNull
     private double fibre;
 
-    @NotNull
     private double kcal;
 
+    @NotNull
     private String imageUrl;
 
-    @NotNull
-    private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
+    private double carbohydrateExchange;
 
-    @NotNull
-    private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
+    private double proteinAndFatEquivalent;
 
     private ArrayList<Product> products = new ArrayList<>();
 

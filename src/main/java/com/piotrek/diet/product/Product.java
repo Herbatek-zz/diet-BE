@@ -1,6 +1,7 @@
 package com.piotrek.diet.product;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Document
+@EqualsAndHashCode(of = {"id"})
 public class Product {
 
     @Id
@@ -20,9 +22,11 @@ public class Product {
     @NotNull
     private String description;
 
+    @NotNull
     private String imageUrl;
 
-    @NotNull
+    private boolean isPrivate;
+
     private double protein;
 
     @NotNull

@@ -29,7 +29,6 @@ public class UserSample {
         userDto.setEmail("CoreySanders@dayrep.com");
         userDto.setFirstName("Corey");
         userDto.setLastName("Sanders");
-        userDto.setRole(Role.ROLE_USER.name());
         userDto.setUsername("Brulty");
         return userDto;
     }
@@ -57,7 +56,6 @@ public class UserSample {
 
     public static UserDto baileyWithoutIdDto() {
         var userDto = new UserDto();
-        userDto.setRole(Role.ROLE_USER.name());
         userDto.setUsername("Cougge1940");
         userDto.setEmail("BaileyHancock@teleworm.us");
         userDto.setFirstName("Bailey");

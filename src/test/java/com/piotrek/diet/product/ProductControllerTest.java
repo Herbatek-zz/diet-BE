@@ -52,7 +52,7 @@ class ProductControllerTest {
         productService.deleteAll().block();
         createProducts();
         webTestClient = WebTestClient
-                .bindToController(new ProductController(productService, productDtoConverter))
+                .bindToController(new ProductController(productService))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }

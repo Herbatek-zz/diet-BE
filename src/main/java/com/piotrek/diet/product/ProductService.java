@@ -21,9 +21,14 @@ public class ProductService {
     private final ProductDtoConverter productDtoConverter;
     private final DiabetesCalculator diabetesCalculator;
 
-    Mono<Product> findById(String id) {
+    public Mono<Product> findById(String id) {
         return productRepository.findById(id)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found product [id = " + id + "]"))));
+    }
+
+    Mono<ProductDto> findDtoById(String id) {
+        return findById(id)
+                .map(productDtoConverter::toDto);
     }
 
     Mono<Page<ProductDto>> searchByName(Pageable pageable, String query) {
@@ -58,7 +63,7 @@ public class ProductService {
         return Flux.fromStream(productRepository.findAll().skip(skipNumber).toStream().limit(limitNumber));
     }
 
-    Flux<Product> findAllByUserId(String userId) {
+    public Flux<Product> findAllByUserId(String userId) {
         return productRepository.findAllByUserId(userId);
     }
 

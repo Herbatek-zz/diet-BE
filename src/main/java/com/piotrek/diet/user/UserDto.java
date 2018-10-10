@@ -1,11 +1,13 @@
 package com.piotrek.diet.user;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 @Data
+@EqualsAndHashCode(of = {"id"})
 public class UserDto {
 
     @NotNull
@@ -26,6 +28,9 @@ public class UserDto {
     @NotNull
     private String picture_url;
 
-    @NotNull
-    private String role;
+    private int age;
+
+    private int height;
+
+    private double weight;
 }

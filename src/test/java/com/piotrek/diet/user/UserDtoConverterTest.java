@@ -23,7 +23,6 @@ class UserDtoConverterTest {
                 () -> assertEquals(user.getId(), convertedUser.getId()),
                 () -> assertEquals(user.getEmail(), convertedUser.getEmail()),
                 () -> assertEquals(user.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(user.getRole(), convertedUser.getRole()),
                 () -> assertEquals(user.getPictureUrl(), convertedUser.getPicture_url())
         );
     }
@@ -38,7 +37,6 @@ class UserDtoConverterTest {
                 () -> assertEquals(userDto.getId(), convertedUser.getId()),
                 () -> assertEquals(userDto.getEmail(), convertedUser.getEmail()),
                 () -> assertEquals(userDto.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(userDto.getRole(), convertedUser.getRole()),
                 () -> assertEquals(userDto.getPicture_url(), convertedUser.getPictureUrl())
         );
     }

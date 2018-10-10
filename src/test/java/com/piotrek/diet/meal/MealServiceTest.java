@@ -2,7 +2,9 @@ package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -27,6 +29,12 @@ class MealServiceTest {
     @Mock
     private MealDtoConverter mealDtoConverter;
 
+    @Mock
+    private ProductDtoConverter productDtoConverter;
+
+    @Mock
+    private UserValidation userValidation;
+
     private MealService mealService;
 
     private Meal meal;
@@ -35,7 +43,7 @@ class MealServiceTest {
     void beforeEach() {
         meal = dumplingsWithId();
         MockitoAnnotations.initMocks(this);
-        mealService = new MealService(mealRepository, mealDtoConverter);
+        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test

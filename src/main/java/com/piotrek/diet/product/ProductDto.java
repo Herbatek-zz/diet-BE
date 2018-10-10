@@ -1,11 +1,13 @@
 package com.piotrek.diet.product;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
+@EqualsAndHashCode(of = {"id"})
 public class ProductDto {
 
     private String id;
@@ -17,7 +19,11 @@ public class ProductDto {
     @NotNull
     private String description;
 
+    @NotNull
     private String imageUrl;
+
+    @NotNull
+    private boolean isPrivate;
 
     @NotNull
     private double protein;

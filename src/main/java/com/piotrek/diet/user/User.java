@@ -2,6 +2,7 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.enums.Role;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -10,12 +11,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 @Data
 @Document
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class User {
 
     @Id
@@ -44,11 +45,11 @@ public class User {
     @NotNull
     private String pictureUrl;
 
-    private double weight;
+    private int age;
 
     private int height;
 
-    private int age;
+    private double weight;
 
     @NotNull
     private LocalDateTime createdAt;

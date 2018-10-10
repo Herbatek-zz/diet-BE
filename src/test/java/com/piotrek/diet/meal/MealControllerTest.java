@@ -6,6 +6,7 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.*;
@@ -19,6 +20,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,9 +37,6 @@ class MealControllerTest {
     private MealService mealService;
 
     @Autowired
-    private MealFacade mealFacade;
-
-    @Autowired
     private MealDtoConverter mealDtoConverter;
 
     @Autowired
@@ -52,14 +51,12 @@ class MealControllerTest {
     private MealDto mealDto1;
     private MealDto mealDto2;
 
-    private final String INCORRECT_ID = "badIDXD";
-
     @BeforeEach
     void setUp() {
         mealService.deleteAll().block();
         createMeals();
         webTestClient = WebTestClient
-                .bindToController(new MealController(mealService, mealFacade))
+                .bindToController(new MealController(mealService))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
@@ -70,6 +67,7 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("When findById finds a single meal, meal will be returned as dto")
     void findById_whenFound_thenReturnMeal() {
         webTestClient.get().uri("/meals/" + meal1.getId())
                 .exchange()
@@ -80,16 +78,20 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("When findById not found a meal, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
+        final String INCORRECT_ID = "badIDXD";
         webTestClient.get().uri("/meals/" + INCORRECT_ID)
                 .exchange()
                 .expectStatus().isNotFound()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8);
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(NotFoundException.class);
     }
 
     @Test
+    @DisplayName("Search meals by name, when there is two meals, but query matches for one of them, one of them will be returned in page wrapper")
     void searchByName_when2MealsAndQueryOneOfThem_thenReturnPageableWithOneMeal() throws JsonProcessingException {
-        var expected = new Page<>(List.of(mealDtoConverter.toDto(meal1)), 0, 10, 1);
+        final var expected = new Page<>(List.of(mealDtoConverter.toDto(meal1)), 0, 10, 1);
 
         webTestClient.get().uri("/meals/search?query=" + meal1.getName())
                 .exchange()
@@ -99,12 +101,13 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("Search meals by name, when no query, then all products will be returned in page wrapper")
     void searchByName_when2MealsAndNoQuery_thenReturnPageableWithAllMeals() throws JsonProcessingException {
-        var products = new ArrayList<Meal>();
-        products.add(meal1);
-        products.add(meal2);
-        var productsDto = mealDtoConverter.listToDto(products);
-        var expected = new Page<>(productsDto, 0, 10, products.size());
+        var productsDto = new ArrayList<>(Arrays.asList(meal1, meal2))
+                .stream()
+                .map(mealDtoConverter::toDto)
+                .collect(Collectors.toCollection(ArrayList::new));
+        final var expected = new Page<>(productsDto, 0, 10, productsDto.size());
 
         webTestClient.get().uri("/meals/search")
                 .exchange()
@@ -114,8 +117,8 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("Search meals by name, when no query and no meals, will be returned empty list wrapped in page")
     void searchByName_whenNoMealsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-
         var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         mealService.deleteAll().block();
@@ -128,6 +131,7 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("Search meals, when query doesn't match any meal, then will be returned empty list wrapped in page")
     void searchByName_when2MealsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
         var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 

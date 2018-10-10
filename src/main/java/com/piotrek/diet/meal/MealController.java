@@ -20,12 +20,11 @@ import static org.springframework.http.HttpStatus.OK;
 public class MealController {
 
     private final MealService mealService;
-    private final MealFacade mealFacade;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     Mono<MealDto> findById(@PathVariable String id) {
-        return mealFacade.findById(id);
+        return mealService.findDtoById(id);
     }
 
     @GetMapping("/search")
@@ -48,7 +47,7 @@ public class MealController {
     @PutMapping("/{id}")
     @ResponseStatus(OK)
     Mono<MealDto> addProducts(@PathVariable String id, @RequestBody List<ProductDto> productDtos) {
-        return mealFacade.addProductsToMeal(id, productDtos);
+        return mealService.addProductsToMeal(id, productDtos);
     }
 
     @DeleteMapping("/{id}")

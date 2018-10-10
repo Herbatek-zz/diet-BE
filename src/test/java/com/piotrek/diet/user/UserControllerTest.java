@@ -7,9 +7,7 @@ import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.meal.MealDto;
-import com.piotrek.diet.meal.MealFacade;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.product.ProductFacade;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.AfterAll;
@@ -43,10 +41,7 @@ class UserControllerTest {
     private UserDtoConverter userDtoConverter;
 
     @Autowired
-    private ProductFacade productFacade;
-
-    @Autowired
-    private MealFacade mealFacade;
+    private UserFacade userFacade;
 
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
@@ -63,7 +58,7 @@ class UserControllerTest {
         userService.deleteAll().block();
         createUsers();
         webTestClient = WebTestClient
-                .bindToController(new UserController(userService, userDtoConverter, productFacade, mealFacade))
+                .bindToController(new UserController(userService, userFacade))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
@@ -109,8 +104,8 @@ class UserControllerTest {
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
         var products = new ArrayList<ProductDto>(2);
-        products.add(productFacade.createProduct(user1.getId(), ProductSample.bananaWithoutIdDto()).block());
-        products.add(productFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
+        products.add(userFacade.createProduct(user1.getId(), ProductSample.bananaWithoutIdDto()).block());
+        products.add(userFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
 
 
         var expected = new Page<>(products, 0, 10, products.size());
@@ -185,8 +180,8 @@ class UserControllerTest {
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
         var meals = new ArrayList<MealDto>(2);
-        meals.add(mealFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
-        meals.add(mealFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
+        meals.add(userFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
+        meals.add(userFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
 
 
         var expected = new Page<>(meals, 0, 10, meals.size());
