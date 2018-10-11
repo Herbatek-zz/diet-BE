@@ -82,11 +82,10 @@ public class MealService {
     }
 
     Mono<MealDto> addProductsToMeal(String productId, List<ProductDto> productDtoList) {
-        Meal meal = findById(productId).block();
+        var meal = findById(productId).block();
         userValidation.validateUserWithPrincipal(meal.getUserId());
 
         meal.setProducts(productDtoConverter.listFromDto(productDtoList));
-
         updateMealInfoAfterAddProducts(meal);
 
         return save(meal).map(mealDtoConverter::toDto);
@@ -106,7 +105,7 @@ public class MealService {
         double protein = 0;
 
         for (Product product : meal.getProducts())
-            protein += product.getProtein();
+            protein += product.getProtein() * (double) (product.getAmount()/100);
 
         meal.setProtein(protein);
     }
@@ -115,7 +114,7 @@ public class MealService {
         double fibre = 0;
 
         for (Product product : meal.getProducts())
-            fibre += product.getFibre();
+            fibre += product.getFibre() * (double) (product.getAmount()/100);
 
         meal.setFibre(fibre);
     }
@@ -124,7 +123,7 @@ public class MealService {
         double fat = 0;
 
         for (Product product : meal.getProducts())
-            fat += product.getFat();
+            fat += product.getFat() * (double) (product.getAmount()/100);
 
         meal.setFat(fat);
     }
@@ -133,7 +132,7 @@ public class MealService {
         double carbohydrate = 0;
 
         for (Product product : meal.getProducts())
-            carbohydrate += product.getCarbohydrate();
+            carbohydrate += product.getCarbohydrate() * (double) (product.getAmount()/100);
 
         meal.setCarbohydrate(carbohydrate);
     }
@@ -142,7 +141,7 @@ public class MealService {
         double proteinAndFatEquivalent = 0;
 
         for (Product product : meal.getProducts())
-            proteinAndFatEquivalent += product.getProteinAndFatEquivalent();
+            proteinAndFatEquivalent += product.getProteinAndFatEquivalent() * (double) (product.getAmount()/100);
 
         meal.setProteinAndFatEquivalent(proteinAndFatEquivalent);
     }
@@ -151,7 +150,7 @@ public class MealService {
         double carbohydrateExchange = 0;
 
         for (Product product : meal.getProducts())
-            carbohydrateExchange += product.getCarbohydrateExchange();
+            carbohydrateExchange += product.getCarbohydrateExchange() * (double) (product.getAmount()/100);
 
         meal.setCarbohydrateExchange(carbohydrateExchange);
     }
@@ -160,7 +159,7 @@ public class MealService {
         double kcal = 0;
 
         for (Product product : meal.getProducts())
-            kcal += product.getKcal();
+            kcal += product.getKcal() * (double) (product.getAmount()/100);
 
         meal.setKcal(kcal);
     }

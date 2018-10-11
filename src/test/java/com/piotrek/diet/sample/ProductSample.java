@@ -31,6 +31,7 @@ public class ProductSample {
         product.setFat(0.3);
         product.setFibre(1.7);
         product.setKcal(97.0);
+        product.setAmount(100);
         product.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre()));
         product.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat()));
         return product;
@@ -52,6 +53,7 @@ public class ProductSample {
         productDto.setFat(0.3);
         productDto.setFibre(1.7);
         productDto.setKcal(97.0);
+        productDto.setAmount(100);
         productDto.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre()));
         productDto.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat()));
         return productDto;
@@ -71,6 +73,7 @@ public class ProductSample {
         product.setProtein(4.9);
         product.setCarbohydrate(43.0);
         product.setFat(1.6);
+        product.setAmount(100);
         product.setFibre(0.0);
         product.setKcal(216.0);
         product.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre()));
@@ -93,6 +96,7 @@ public class ProductSample {
         productDto.setCarbohydrate(43.0);
         productDto.setFat(1.6);
         productDto.setFibre(0.0);
+        productDto.setAmount(100);
         productDto.setKcal(216.0);
         productDto.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre()));
         productDto.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat()));
