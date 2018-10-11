@@ -23,7 +23,10 @@ class UserDtoConverterTest {
                 () -> assertEquals(user.getId(), convertedUser.getId()),
                 () -> assertEquals(user.getEmail(), convertedUser.getEmail()),
                 () -> assertEquals(user.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(user.getPictureUrl(), convertedUser.getPicture_url())
+                () -> assertEquals(user.getPictureUrl(), convertedUser.getPicture_url()),
+                () -> assertEquals(user.getAge(), convertedUser.getAge()),
+                () -> assertEquals(user.getHeight(), convertedUser.getHeight()),
+                () -> assertEquals(user.getWeight(), convertedUser.getWeight())
         );
     }
 
@@ -37,7 +40,10 @@ class UserDtoConverterTest {
                 () -> assertEquals(userDto.getId(), convertedUser.getId()),
                 () -> assertEquals(userDto.getEmail(), convertedUser.getEmail()),
                 () -> assertEquals(userDto.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(userDto.getPicture_url(), convertedUser.getPictureUrl())
+                () -> assertEquals(userDto.getPicture_url(), convertedUser.getPictureUrl()),
+                () -> assertEquals(userDto.getAge(), convertedUser.getAge()),
+                () -> assertEquals(userDto.getHeight(), convertedUser.getHeight()),
+                () -> assertEquals(userDto.getWeight(), convertedUser.getWeight())
         );
     }
 }

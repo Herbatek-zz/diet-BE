@@ -388,11 +388,13 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("When addProductsToMeal and there is a list with 0 products, then meal has 0 products")
-    void addProductsToMeal_whenEmptyListWithProducts_thenReturnMealWithEmptyList() {
+    @DisplayName("Update meal, when empty list of products, then return meal with empty list")
+    void updateMeal_whenEmptyListWithProducts_thenReturnMealWithEmptyList() {
         final var products = new ArrayList<Product>();
         final var productDtos = new ArrayList<ProductDto>();
 
+        final var afterUpdate = dumplingsWithIdDto();
+        afterUpdate.setProducts(productDtos);
 
         Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
         Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
@@ -400,7 +402,7 @@ class MealServiceTest {
         Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
-        final var mealWithProducts = mealService.addProductsToMeal(meal1.getId(), productDtos).block();
+        final var mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdate).block();
 
 
         assertNotNull(mealWithProducts);
@@ -429,40 +431,94 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("When addProductsToMeal and there is a list with 2 products, then the meal has 2 products")
-    void addProductsToMeal_whenListWith2ProductsAsParameter_thenReturnMealWith2Products() {
-        ArrayList<Product> products = new ArrayList<>(Arrays.asList(breadWithId(), bananaWithId()));
-        ArrayList<ProductDto> productDtos = new ArrayList<>(Arrays.asList(breadWithIdDto(), bananaWithIdDto()));
+    @DisplayName("Update meal, when update object has different fields, then update the meal")
+    void updateMeal_whenSomeInformationAreChanged_thenReturnMealUpdated() {
+        final var products = new ArrayList<Product>();
+        final var productDtos = new ArrayList<ProductDto>();
 
-        final var afterCalculated = dumplingsWithId();
-        final var afterCalculatedDto = dumplingsWithIdDto();
+        final var afterUpdate = dumplingsWithIdDto();
+        afterUpdate.setName("Update name");
+        afterUpdate.setDescription("Update description");
+        afterUpdate.setRecipe("Update recipe");
+        afterUpdate.setImageUrl("some updated image");
+        afterUpdate.setProducts(productDtos);
 
-        afterCalculated.setProducts(products);
-        afterCalculated.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        afterCalculated.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        afterCalculated.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        afterCalculated.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        afterCalculated.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        afterCalculated.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        afterCalculated.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
-        afterCalculatedDto.setProducts(productDtos);
-        afterCalculatedDto.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        afterCalculatedDto.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        afterCalculatedDto.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        afterCalculatedDto.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        afterCalculatedDto.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        afterCalculatedDto.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        afterCalculatedDto.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
+        final var afterUpdateDto = dumplingsWithId();
+        afterUpdateDto.setName("Update name");
+        afterUpdateDto.setDescription("Update description");
+        afterUpdateDto.setRecipe("Update recipe");
+        afterUpdateDto.setImageUrl("some updated image");
+        afterUpdateDto.setProducts(products);
 
         Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        Mockito.when(mealRepository.save(afterCalculated)).thenReturn(Mono.just(afterCalculated));
-        Mockito.when(mealDtoConverter.toDto(afterCalculated)).thenReturn(afterCalculatedDto);
+        Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(afterUpdateDto));
+        Mockito.when(mealDtoConverter.toDto(afterUpdateDto)).thenReturn(afterUpdate);
         Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
-        MealDto mealWithProducts = mealService.addProductsToMeal(meal1.getId(), productDtos).block();
+        final var mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdate).block();
+
+
+        assertNotNull(mealWithProducts);
+        assertAll(
+                () -> assertEquals(0, mealWithProducts.getProducts().size()),
+                () -> assertEquals(0, mealWithProducts.getProtein()),
+                () -> assertEquals(0, mealWithProducts.getKcal()),
+                () -> assertEquals(0, mealWithProducts.getFibre()),
+                () -> assertEquals(0, mealWithProducts.getFat()),
+                () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
+                () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
+                () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
+                () -> assertEquals(meal1.getUserId(), mealWithProducts.getUserId()),
+                () -> assertEquals(meal1.getDescription(), mealWithProducts.getDescription()),
+                () -> assertEquals(meal1.getRecipe(), mealWithProducts.getRecipe()),
+                () -> assertEquals(meal1.getName(), mealWithProducts.getName()),
+                () -> assertEquals(meal1.getImageUrl(), mealWithProducts.getImageUrl()),
+                () -> assertEquals(meal1.getId(), mealWithProducts.getId())
+        );
+        verify(mealRepository, times(1)).findById(meal1.getId());
+        verify(mealRepository, times(1)).save(meal1);
+        verify(mealDtoConverter, times(1)).toDto(meal1);
+        verify(productDtoConverter, times(1)).listFromDto(productDtos);
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal1.getUserId());
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+    }
+
+    @Test
+    @DisplayName("Update meal, when the only change is 2 products, then return the meal calculated with 2 products")
+    void updateMeal_whenOnlyListIsChanged_thenReturnMealWith2Products() {
+        var products = new ArrayList<Product>(Arrays.asList(breadWithId(), bananaWithId()));
+        var productDtos = new ArrayList<ProductDto>(Arrays.asList(breadWithIdDto(), bananaWithIdDto()));
+
+        final var afterUpdate = dumplingsWithId();
+        final var afterUpdateDto = dumplingsWithIdDto();
+
+        afterUpdate.setProducts(products);
+        afterUpdate.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        afterUpdate.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        afterUpdate.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        afterUpdate.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        afterUpdate.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        afterUpdate.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        afterUpdate.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
+
+        afterUpdateDto.setProducts(productDtos);
+        afterUpdateDto.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        afterUpdateDto.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        afterUpdateDto.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        afterUpdateDto.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        afterUpdateDto.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        afterUpdateDto.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        afterUpdateDto.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
+
+
+        Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        Mockito.when(mealRepository.save(afterUpdate)).thenReturn(Mono.just(afterUpdate));
+        Mockito.when(mealDtoConverter.toDto(afterUpdate)).thenReturn(afterUpdateDto);
+        Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+
+
+        MealDto mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdateDto).block();
 
 
         assertNotNull(mealWithProducts);

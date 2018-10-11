@@ -3,7 +3,6 @@ package com.piotrek.diet.meal;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.Product;
-import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,14 +80,23 @@ public class MealService {
                         pageRequest.getPageNumber(), pageRequest.getPageSize(), list.size()));
     }
 
-    Mono<MealDto> addProductsToMeal(String productId, List<ProductDto> productDtoList) {
-        var meal = findById(productId).block();
+    Mono<MealDto> updateMeal(String mealId, MealDto mealDto) {
+        Meal meal = findById(mealId).block();
         userValidation.validateUserWithPrincipal(meal.getUserId());
 
-        meal.setProducts(productDtoConverter.listFromDto(productDtoList));
-        updateMealInfoAfterAddProducts(meal);
+        Objects.requireNonNull(meal).setName(mealDto.getName());
+        meal.setRecipe(mealDto.getRecipe());
+        meal.setImageUrl(mealDto.getImageUrl());
+        meal.setDescription(mealDto.getDescription());
+
+        addProductsToMeal(meal, mealDto);
 
         return save(meal).map(mealDtoConverter::toDto);
+    }
+
+    private void addProductsToMeal(Meal meal, MealDto update) {
+        meal.setProducts(productDtoConverter.listFromDto(update.getProducts()));
+        updateMealInfoAfterAddProducts(meal);
     }
 
     private void updateMealInfoAfterAddProducts(Meal meal) {
@@ -105,7 +113,7 @@ public class MealService {
         double protein = 0;
 
         for (Product product : meal.getProducts())
-            protein += product.getProtein() * (double) (product.getAmount()/100);
+            protein += product.getProtein() * (double) (product.getAmount() / 100);
 
         meal.setProtein(protein);
     }
@@ -114,7 +122,7 @@ public class MealService {
         double fibre = 0;
 
         for (Product product : meal.getProducts())
-            fibre += product.getFibre() * (double) (product.getAmount()/100);
+            fibre += product.getFibre() * (double) (product.getAmount() / 100);
 
         meal.setFibre(fibre);
     }
@@ -123,7 +131,7 @@ public class MealService {
         double fat = 0;
 
         for (Product product : meal.getProducts())
-            fat += product.getFat() * (double) (product.getAmount()/100);
+            fat += product.getFat() * (double) (product.getAmount() / 100);
 
         meal.setFat(fat);
     }
@@ -132,7 +140,7 @@ public class MealService {
         double carbohydrate = 0;
 
         for (Product product : meal.getProducts())
-            carbohydrate += product.getCarbohydrate() * (double) (product.getAmount()/100);
+            carbohydrate += product.getCarbohydrate() * (double) (product.getAmount() / 100);
 
         meal.setCarbohydrate(carbohydrate);
     }
@@ -141,7 +149,7 @@ public class MealService {
         double proteinAndFatEquivalent = 0;
 
         for (Product product : meal.getProducts())
-            proteinAndFatEquivalent += product.getProteinAndFatEquivalent() * (double) (product.getAmount()/100);
+            proteinAndFatEquivalent += product.getProteinAndFatEquivalent() * (double) (product.getAmount() / 100);
 
         meal.setProteinAndFatEquivalent(proteinAndFatEquivalent);
     }
@@ -150,7 +158,7 @@ public class MealService {
         double carbohydrateExchange = 0;
 
         for (Product product : meal.getProducts())
-            carbohydrateExchange += product.getCarbohydrateExchange() * (double) (product.getAmount()/100);
+            carbohydrateExchange += product.getCarbohydrateExchange() * (double) (product.getAmount() / 100);
 
         meal.setCarbohydrateExchange(carbohydrateExchange);
     }
@@ -159,7 +167,7 @@ public class MealService {
         double kcal = 0;
 
         for (Product product : meal.getProducts())
-            kcal += product.getKcal() * (double) (product.getAmount()/100);
+            kcal += product.getKcal() * (double) (product.getAmount() / 100);
 
         meal.setKcal(kcal);
     }

@@ -1,13 +1,12 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.product.ProductDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import javax.validation.Valid;
 
 import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
@@ -20,6 +19,14 @@ import static org.springframework.http.HttpStatus.OK;
 public class MealController {
 
     private final MealService mealService;
+
+    @GetMapping
+    @ResponseStatus(OK)
+    Mono<Page<MealDto>> findAll(
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        return mealService.findAllPageable(PageRequest.of(page, size));
+    }
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
@@ -36,18 +43,10 @@ public class MealController {
         return mealService.searchByName(PageRequest.of(page, size), query);
     }
 
-    @GetMapping
-    @ResponseStatus(OK)
-    Mono<Page<MealDto>> findAll(
-            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
-            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return mealService.findAllPageable(PageRequest.of(page, size));
-    }
-
     @PutMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<MealDto> addProducts(@PathVariable String id, @RequestBody List<ProductDto> productDtos) {
-        return mealService.addProductsToMeal(id, productDtos);
+    Mono<MealDto> addProducts(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
+        return mealService.updateMeal(id, mealDto);
     }
 
     @DeleteMapping("/{id}")

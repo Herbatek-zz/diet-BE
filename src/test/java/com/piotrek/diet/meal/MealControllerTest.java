@@ -68,6 +68,52 @@ class MealControllerTest {
         mealService.deleteAll().block();
     }
 
+
+    @Test
+    @DisplayName("Find all without any parameters and when there are no meals, then return empty page")
+    void findAll_whenDefaultParamsTotalElements0_thenReturnPageWithEmptyList() throws JsonProcessingException {
+        final var URI = "/meals";
+        final var expected = new Page<MealDto>(new ArrayList<>(), 0, 10, 0);
+
+        mealService.deleteAll().block();
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    @DisplayName("Find all without any parameters and there are two meals, then return page with two meals")
+    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Meals() throws JsonProcessingException {
+        final var URI = "/meals";
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2)), 0, 10, 2);
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    @DisplayName("When findAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
+    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
+        final var URI = "/meals?page=1&size=1";
+        var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))
+                .stream()
+                .skip(1)
+                .limit(1)
+                .collect(Collectors.toList()), 1, 1, 2);
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
     @Test
     @DisplayName("When findById finds a single meal, meal will be returned as dto")
     void findById_whenFound_thenReturnMeal() {
@@ -177,48 +223,143 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findAll with default parameters and there is no meals, then return empty page")
-    void findAll_whenDefaultParamsTotalElements0_thenReturnPageWithEmptyList() throws JsonProcessingException {
-        final var URI = "/meals";
-        var expected = new Page<MealDto>(new ArrayList<>(), 0, 10, 0);
+    @DisplayName("When we add products to a meal, then the meal should be with added products")
+    void updateMeal_whenUpdateMeal_thenMealShouldBeUpdated() throws JsonProcessingException {
+        final var URI = "/meals/" + meal1.getId();
+        final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
 
-        mealService.deleteAll().block();
+        final var update = dumplingsWithIdDto();
+        update.setName("updated name");
+        update.setRecipe("updated recipe");
+        update.setDescription("updated description");
+        update.setImageUrl("new image");
+        update.setProducts(productDtos);
+
+        update.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        update.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        update.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        update.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        update.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        update.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        update.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
+
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(update));
 
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(expected));
+                .expectBody().json(objectMapper.writeValueAsString(update));
     }
 
     @Test
-    @DisplayName("When findAll with default parameters and there are two meals, then return page with two meals")
-    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Meals() throws JsonProcessingException {
-        final var URI = "/meals";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2)), 0, 10, 2);
+    @DisplayName("When update meal, and there is missing name, then throw BadRequestException")
+    void updateMeal_whenUpdateHasNoName_throwBadRequestException() throws JsonProcessingException {
+        final var URI = "/meals/" + meal1.getId();
+
+        final var update = dumplingsWithIdDto();
+        update.setName(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isBadRequest();
 
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(expected));
+                .expectBody().json(objectMapper.writeValueAsString(meal1));
     }
 
     @Test
-    @DisplayName("When findAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
-    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
-        final var URI = "/meals?page=1&size=1";
-        var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))
-                .stream()
-                .skip(1)
-                .limit(1)
-                .collect(Collectors.toList()), 1, 1, 2);
+    @DisplayName("When update meal, and there is missing recipe, then throw BadRequestException")
+    void updateMeal_whenUpdateHasNoRecipe_throwBadRequestException() throws JsonProcessingException {
+        final var URI = "/meals/" + meal1.getId();
+
+        final var update = dumplingsWithIdDto();
+        update.setRecipe(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isBadRequest();
 
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(expected));
+                .expectBody().json(objectMapper.writeValueAsString(meal1));
+    }
+
+    @Test
+    @DisplayName("When update meal, and there is missing description, then throw BadRequestException")
+    void updateMeal_whenUpdateHasNoDescription_throwBadRequestException() throws JsonProcessingException {
+        final var URI = "/meals/" + meal1.getId();
+
+        final var update = dumplingsWithIdDto();
+        update.setDescription(null);
+
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isBadRequest();
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(meal1));
+    }
+
+    @Test
+    @DisplayName("When update meal, and there is missing imageUrl, then throw BadRequestException")
+    void updateMeal_whenUpdateHasNoImageUrl_throwBadRequestException() throws JsonProcessingException {
+        final var URI = "/meals/" + meal1.getId();
+        final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
+
+        final var update = dumplingsWithIdDto();
+        update.setImageUrl(null);
+        update.setProducts(productDtos);
+
+        update.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        update.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        update.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        update.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        update.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        update.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        update.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
+
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isBadRequest();
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(meal1));
     }
 
     @Test
@@ -234,40 +375,6 @@ class MealControllerTest {
                 .expectStatus().isNotFound()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
                 .expectBody(NotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("When we add products to a meal, then the meal should be with added products")
-    void addProducts_thenMealShouldHasAddedProducts() throws JsonProcessingException {
-        final var URI = "/meals/" + meal1.getId();
-        final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
-
-        final var expected = dumplingsWithIdDto();
-        expected.setProducts(productDtos);
-
-        expected.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        expected.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        expected.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        expected.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        expected.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        expected.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        expected.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.put().uri(URI)
-                .body(BodyInserters.fromObject(productDtos))
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(expected));
-
-        webTestClient.get().uri(URI)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(expected));
     }
 
     private void createMeals() {

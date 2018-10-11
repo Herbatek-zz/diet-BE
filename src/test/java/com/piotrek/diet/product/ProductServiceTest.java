@@ -5,6 +5,7 @@ import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.sample.ProductSample.*;
@@ -34,19 +36,22 @@ class ProductServiceTest {
     private ProductService productService;
 
     private Product product;
+    private ProductDto productDto;
 
     @BeforeEach
     void setup() {
         product = bananaWithId();
+        productDto = bananaWithIdDto();
         MockitoAnnotations.initMocks(this);
         productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
+    @DisplayName("Find by id, when found a product, then return Mono<Product>")
     void findById_whenIdIsValid_thenReturnProduct() {
         Mockito.when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
-        var productById = productService.findById(product.getId()).block();
+        final var productById = productService.findById(product.getId()).block();
 
         assertNotNull(productById);
         assertAll(
@@ -64,19 +69,60 @@ class ProductServiceTest {
                 () -> assertEquals(product.getUserId(), productById.getUserId()),
                 () -> assertEquals(product.getAmount(), productById.getAmount())
         );
-
         verify(productRepository, times(1)).findById(product.getId());
         verifyNoMoreInteractions(productRepository);
     }
 
     @Test
+    @DisplayName("Find by id, when not found, then throw NotFoundException")
     void findById_whenIdIsInvalid_thenThrowNotFoundException() {
-        var id = "invalid@#@#@ID";
+        final var ID = "invalid@#@#@ID";
+        Mockito.when(productRepository.findById(ID)).thenReturn(Mono.empty());
+
+        assertThrows(NotFoundException.class, () -> productService.findById(ID).block());
+
+        verify(productRepository, times(1)).findById(ID);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    @DisplayName("Find productDto, when not found, then return NotFoundException")
+    void findDtoById_whenNotFound_thenThrowNotFoundException() {
+        final var id = "invalid@#@#@ID";
         Mockito.when(productRepository.findById(id)).thenReturn(Mono.empty());
 
-        assertThrows(NotFoundException.class, () -> productService.findById(id).block());
+        assertThrows(NotFoundException.class, () -> productService.findDtoById(id).block());
 
         verify(productRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    @DisplayName("Find productDto, when found a product, then return the productDto")
+    void findDtoById_whenFound_thenReturnProductDto() {
+        Mockito.when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
+        Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
+
+        final var productDtoById = productService.findDtoById(product.getId()).block();
+
+        assertNotNull(productDtoById);
+        assertAll(
+                () -> assertEquals(product.getId(), productDtoById.getId()),
+                () -> assertEquals(product.getName(), productDtoById.getName()),
+                () -> assertEquals(product.getDescription(), productDtoById.getDescription()),
+                () -> assertEquals(product.getImageUrl(), productDtoById.getImageUrl()),
+                () -> assertEquals(product.getProtein(), productDtoById.getProtein()),
+                () -> assertEquals(product.getCarbohydrate(), productDtoById.getCarbohydrate()),
+                () -> assertEquals(product.getFat(), productDtoById.getFat()),
+                () -> assertEquals(product.getFibre(), productDtoById.getFibre()),
+                () -> assertEquals(product.getKcal(), productDtoById.getKcal()),
+                () -> assertEquals(product.getCarbohydrateExchange(), productDtoById.getCarbohydrateExchange()),
+                () -> assertEquals(product.getProteinAndFatEquivalent(), productDtoById.getProteinAndFatEquivalent()),
+                () -> assertEquals(product.getUserId(), productDtoById.getUserId()),
+                () -> assertEquals(product.getAmount(), productDtoById.getAmount())
+        );
+
+        verify(productRepository, times(1)).findById(product.getId());
         verifyNoMoreInteractions(productRepository);
     }
 
@@ -112,8 +158,7 @@ class ProductServiceTest {
         var totalElements = 2;
         var query = bananaWithId().getName();
         var productList = createProductList(totalElements, BANANA);
-        var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new Page<>(productDtoList
+        var expected = new Page<>(createProductDtoList(totalElements, BANANA)
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -124,7 +169,6 @@ class ProductServiceTest {
         var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
         assertEquals(expected, firstPage);
-
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(2)).toDto(bananaWithId());
         verifyNoMoreInteractions(productRepository, productDtoConverter);
@@ -158,6 +202,18 @@ class ProductServiceTest {
         verifyNoMoreInteractions(productRepository, productDtoConverter);
     }
 
+    @Test
+    @DisplayName("Find all, skip 2 and limit 2, when found 10 products, then skip 2 products, and return next 2 products in Flux")
+    void findAll_when10ProductsAndSkip2AndLimit2_thenReturnFluxWith2Products() {
+        final var productsList = createProductList(10, BANANA);
+        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productsList));
+
+        var returned = productService.findAll(2, 2).collect(Collectors.toCollection(ArrayList::new)).block();
+
+        assertEquals(new ArrayList<>(Arrays.asList(productsList.get(2), productsList.get(3))), returned);
+        verify(productRepository, times(1)).findAll();
+        verifyNoMoreInteractions(productRepository);
+    }
 
     @Test
     void findAllPageable_whenTotalElements20PageSize10Page0_thenReturnFirstPageWith10Products() {

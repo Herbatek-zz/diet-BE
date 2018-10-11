@@ -18,6 +18,14 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @GetMapping
+    @ResponseStatus(OK)
+    Mono<Page<ProductDto>> findAll(
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        return productService.findAllPageable(PageRequest.of(page, size));
+    }
+
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     Mono<ProductDto> findById(@PathVariable String id) {
@@ -31,14 +39,6 @@ public class ProductController {
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
             @RequestParam(defaultValue = "") String query) {
         return productService.searchByName(PageRequest.of(page, size), query);
-    }
-
-    @GetMapping
-    @ResponseStatus(OK)
-    Mono<Page<ProductDto>> findAll(
-            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
-            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return productService.findAllPageable(PageRequest.of(page, size));
     }
 
     @DeleteMapping("/{id}")
