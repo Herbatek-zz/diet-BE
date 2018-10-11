@@ -6,11 +6,9 @@ import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.ProductSample;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,8 +44,6 @@ class ProductControllerTest {
     private Product product2;
     private ProductDto productDto1;
 
-    private final String INCORRECT_ID = "badIDXD";
-
     @BeforeEach
     void setUp() {
         productService.deleteAll().block();
@@ -63,8 +60,10 @@ class ProductControllerTest {
     }
 
     @Test
+    @DisplayName("When findById and found a product, then return this product")
     void findById_whenFound_thenReturnProduct() {
-        webTestClient.get().uri("/products/" + product1.getId())
+        final var URI = "/products/" + product1.getId();
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -73,18 +72,22 @@ class ProductControllerTest {
     }
 
     @Test
-    void findById_whenNotFound_thenThrowNotFoundException() throws JsonProcessingException {
-        webTestClient.get().uri("/products/" + INCORRECT_ID)
+    @DisplayName("When findById and not found a product, then throw NotFoundException")
+    void findById_whenNotFound_thenThrowNotFoundException() {
+        final var URI = "/products/badId";
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isNotFound()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8);
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(NotFoundException.class);
     }
 
     @Test
     void searchByName_when2ProductsAndQueryOneOfThem_thenReturnPageableWithOneProduct() throws JsonProcessingException {
-        var expected = new Page<>(List.of(productDtoConverter.toDto(product1)), 0, 10, 1);
+        final var URI = "/products/search?query=" + product1.getName();
+        final var expected = new Page<>(List.of(productDtoConverter.toDto(product1)), 0, 10, 1);
 
-        webTestClient.get().uri("/products/search?query=" + product1.getName())
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -93,13 +96,10 @@ class ProductControllerTest {
 
     @Test
     void searchByName_when2ProductsAndNoQuery_thenReturnPageableWithAllProduct() throws JsonProcessingException {
-        var products = new ArrayList<Product>();
-        products.add(product1);
-        products.add(product2);
-        var productsDto = productDtoConverter.listToDto(products);
-        var expected = new Page<>(productsDto, 0, 10, products.size());
+        final var URI = "/products/search";
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(product1, product2)), 0, 10, 2);
 
-        webTestClient.get().uri("/products/search")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -108,12 +108,12 @@ class ProductControllerTest {
 
     @Test
     void searchByName_when0ProductsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-
-        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
+        final var URI = "/products/search";
+        final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
         productService.deleteAll().block();
 
-        webTestClient.get().uri("/products/search")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -122,9 +122,10 @@ class ProductControllerTest {
 
     @Test
     void searchByName_when2ProductsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
-        var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
+        final var URI = "/products/search?query=lol123";
+        final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
-        webTestClient.get().uri("/products/search?query=lol123")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -133,12 +134,10 @@ class ProductControllerTest {
 
     @Test
     void searchByName_when2ProductsAndNoQueryAndPageSize1_thenReturnFirstPageWithOneProduct() throws JsonProcessingException {
-        var products = new ArrayList<Product>();
-        products.add(product1);
-        products.add(product2);
-        var expected = new Page<>(List.of(product1), 0, 1, products.size());
+        final var URI = "/products/search?size=1";
+        final var expected = new Page<>(List.of(product1), 0, 1, 2);
 
-        webTestClient.get().uri("/products/search?size=1")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -148,11 +147,12 @@ class ProductControllerTest {
 
     @Test
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
-        var expected = new Page<ProductDto>(new ArrayList<>(), 0, 10, 0);
+        final var URI = "/products";
+        final var expected = new Page<ProductDto>(new ArrayList<>(), 0, 10, 0);
 
         productService.deleteAll().block();
 
-        webTestClient.get().uri("/products")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -161,13 +161,10 @@ class ProductControllerTest {
 
     @Test
     void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Products() throws JsonProcessingException {
-        var products = new ArrayList<Product>();
-        products.add(product1);
-        products.add(product2);
-        var productsDto = productDtoConverter.listToDto(products);
-        var expected = new Page<>(productsDto, 0, 10, products.size());
+        final var URI = "/products";
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(product1, product2)), 0, 10, 2);
 
-        webTestClient.get().uri("/products")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -176,17 +173,14 @@ class ProductControllerTest {
 
     @Test
     void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneProduct() throws JsonProcessingException {
-        var products = new ArrayList<Product>();
-        products.add(product1);
-        products.add(product2);
-        var productsDto = productDtoConverter.listToDto(products);
-        var expected = new Page<>(productsDto
+        final var URI = "/products?page=1&size=1";
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(product1, product2))
                 .stream()
                 .skip(1)
                 .limit(1)
-                .collect(Collectors.toList()), 1, 1, products.size());
+                .collect(Collectors.toList()), 1, 1, 2);
 
-        webTestClient.get().uri("/products?page=1&size=1")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -195,9 +189,16 @@ class ProductControllerTest {
 
     @Test
     void deleteById() {
-        webTestClient.delete().uri("/products/" + product1.getId())
+        final var URI = "/products/" + product1.getId();
+        webTestClient.delete().uri(URI)
                 .exchange()
                 .expectStatus().isNoContent();
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(NotFoundException.class);
     }
 
     private void createProducts() {

@@ -92,16 +92,16 @@ public class MealService {
     }
 
     private void updateMealInfoAfterAddProducts(Meal meal) {
-        countProteinFromProducts(meal);
-        countCarbohydrateFromProducts(meal);
-        countFatFromProducts(meal);
-        countFibreFromProducts(meal);
-        countCarbohydrateExchangeFromProducts(meal);
-        countProteinAndFatEquivalentFromProducts(meal);
-        countKcalFromProducts(meal);
+        calculateProtein(meal);
+        calculateCarbohydrate(meal);
+        calculateFat(meal);
+        calculateFibre(meal);
+        calculateCarbohydrateExchange(meal);
+        calculateProteinAndFatEquivalent(meal);
+        calculateKcal(meal);
     }
 
-    private void countProteinFromProducts(Meal meal) {
+    private void calculateProtein(Meal meal) {
         double protein = 0;
 
         for (Product product : meal.getProducts())
@@ -110,7 +110,7 @@ public class MealService {
         meal.setProtein(protein);
     }
 
-    private void countFibreFromProducts(Meal meal) {
+    private void calculateFibre(Meal meal) {
         double fibre = 0;
 
         for (Product product : meal.getProducts())
@@ -119,7 +119,7 @@ public class MealService {
         meal.setFibre(fibre);
     }
 
-    private void countFatFromProducts(Meal meal) {
+    private void calculateFat(Meal meal) {
         double fat = 0;
 
         for (Product product : meal.getProducts())
@@ -128,7 +128,7 @@ public class MealService {
         meal.setFat(fat);
     }
 
-    private void countCarbohydrateFromProducts(Meal meal) {
+    private void calculateCarbohydrate(Meal meal) {
         double carbohydrate = 0;
 
         for (Product product : meal.getProducts())
@@ -137,7 +137,7 @@ public class MealService {
         meal.setCarbohydrate(carbohydrate);
     }
 
-    private void countProteinAndFatEquivalentFromProducts(Meal meal) {
+    private void calculateProteinAndFatEquivalent(Meal meal) {
         double proteinAndFatEquivalent = 0;
 
         for (Product product : meal.getProducts())
@@ -146,7 +146,7 @@ public class MealService {
         meal.setProteinAndFatEquivalent(proteinAndFatEquivalent);
     }
 
-    private void countCarbohydrateExchangeFromProducts(Meal meal) {
+    private void calculateCarbohydrateExchange(Meal meal) {
         double carbohydrateExchange = 0;
 
         for (Product product : meal.getProducts())
@@ -155,7 +155,7 @@ public class MealService {
         meal.setCarbohydrateExchange(carbohydrateExchange);
     }
 
-    private void countKcalFromProducts(Meal meal) {
+    private void calculateKcal(Meal meal) {
         double kcal = 0;
 
         for (Product product : meal.getProducts())
