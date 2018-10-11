@@ -3,6 +3,7 @@ package com.piotrek.diet.user;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,14 +23,19 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private UserDtoConverter userDtoConverter;
+
     @InjectMocks
     private UserService userService;
 
     private User user;
+    private UserDto userDto;
 
     @BeforeEach
     void setup() {
         user = UserSample.johnWithId();
+        userDto = UserSample.johnWithIdDto();
         MockitoAnnotations.initMocks(this);
     }
 
@@ -37,7 +43,7 @@ class UserServiceTest {
     void findById_whenIdIsValid_thenReturnUser() {
         Mockito.when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
 
-        User userById = userService.findById(user.getId()).block();
+        var userById = userService.findById(user.getId()).block();
 
         assertNotNull(userById);
         assertAll(
@@ -64,6 +70,40 @@ class UserServiceTest {
         assertThrows(NotFoundException.class, () -> userService.findById(id).block());
 
         verify(userRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("Find userDto by id, when found then return it")
+    void findDtoById_whenFound_thenReturn() {
+        Mockito.when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
+        Mockito.when(userDtoConverter.toDto(user)).thenReturn(userDto);
+
+        var userById = userService.findDtoById(user.getId()).block();
+
+        assertNotNull(userById);
+        assertAll(
+                () -> assertEquals(user.getFirstName(), userById.getFirstName()),
+                () -> assertEquals(user.getLastName(), userById.getLastName()),
+                () -> assertEquals(user.getId(), userById.getId()),
+                () -> assertEquals(user.getEmail(), userById.getEmail()),
+                () -> assertEquals(user.getUsername(), userById.getUsername())
+        );
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("Find userDto by id, when not found then throw NotFoundException")
+    void findDtoById_whenNotFound_thenReturn() {
+        final var ID = "unknown#id";
+
+        Mockito.when(userRepository.findById(ID)).thenReturn(Mono.empty());
+        Mockito.when(userDtoConverter.toDto(user)).thenReturn(userDto);
+
+        assertThrows(NotFoundException.class, () -> userService.findDtoById(ID).block());
+        verify(userRepository, times(1)).findById(ID);
         verifyNoMoreInteractions(userRepository);
     }
 

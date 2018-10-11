@@ -9,6 +9,9 @@ import java.util.UUID;
 
 public class UserSample {
 
+    private final static String JOHN_ID = UUID.randomUUID().toString();
+    private final static String BAILEY_ID = UUID.randomUUID().toString();
+
     public static User johnWithoutId() {
         var user = new User(1233211L, "CoreySanders@dayrep.com", "Corey", "Sanders");
         user.setRole(Role.ROLE_USER.name());
@@ -20,7 +23,7 @@ public class UserSample {
 
     public static User johnWithId() {
         var user = johnWithoutId();
-        user.setId(UUID.randomUUID().toString());
+        user.setId(JOHN_ID);
         return user;
     }
 
@@ -50,7 +53,7 @@ public class UserSample {
 
     public static User baileyWithId() {
         var user = baileyWithoutId();
-        user.setId(UUID.randomUUID().toString());
+        user.setId(BAILEY_ID);
         return user;
     }
 
