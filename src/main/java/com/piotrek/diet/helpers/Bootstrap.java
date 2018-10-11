@@ -47,7 +47,6 @@ public class Bootstrap implements CommandLineRunner {
             product.setFibre(8.4);
             product.setImageUrl("http://static.ilewazy.pl/wp-content/uploads/chleb-zytni-razowy-600g.jpg");
             product.setUserId(user.getId());
-            product.setPrivate(true);
             productService.save(product).block();
         }
 

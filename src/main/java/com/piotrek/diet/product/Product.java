@@ -25,8 +25,6 @@ public class Product {
     @NotNull
     private String imageUrl;
 
-    private boolean isPrivate;
-
     private double protein;
 
     @NotNull

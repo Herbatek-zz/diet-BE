@@ -19,9 +19,12 @@ class ProductDtoConverterTest {
     void toDto() {
         var convertedProduct = productDtoConverter.toDto(product);
 
+
+
         assertNotNull(convertedProduct);
         assertAll(
                 () -> assertEquals(productDto.getId(), convertedProduct.getId()),
+                () -> assertEquals(productDto.getName(), convertedProduct.getName()),
                 () -> assertEquals(productDto.getDescription(), convertedProduct.getDescription()),
                 () -> assertEquals(productDto.getImageUrl(), convertedProduct.getImageUrl()),
                 () -> assertEquals(productDto.getProtein(), convertedProduct.getProtein()),
@@ -43,6 +46,7 @@ class ProductDtoConverterTest {
         assertNotNull(convertedProduct);
         assertAll(
                 () -> assertEquals(product.getId(), convertedProduct.getId()),
+                () -> assertEquals(productDto.getName(), convertedProduct.getName()),
                 () -> assertEquals(product.getDescription(), convertedProduct.getDescription()),
                 () -> assertEquals(product.getImageUrl(), convertedProduct.getImageUrl()),
                 () -> assertEquals(product.getProtein(), convertedProduct.getProtein()),

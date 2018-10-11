@@ -102,8 +102,7 @@ class ProductServiceTest {
 
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(0)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter);
     }
 
     @Test
@@ -128,8 +127,7 @@ class ProductServiceTest {
 
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(2)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter);
 
     }
 
@@ -157,8 +155,7 @@ class ProductServiceTest {
 
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(pageSize)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter);
     }
 
 
@@ -183,8 +180,7 @@ class ProductServiceTest {
 
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter);
     }
 
     @Test
@@ -209,8 +205,7 @@ class ProductServiceTest {
 
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter);
     }
 
     @Test
@@ -232,8 +227,7 @@ class ProductServiceTest {
         assertEquals(expected, secondPage);
 
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter);
     }
 
     @Test
@@ -276,8 +270,7 @@ class ProductServiceTest {
         verify(productRepository, times(1)).save(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository);
-        verifyNoMoreInteractions(diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, diabetesCalculator);
     }
 
     @Test

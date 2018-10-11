@@ -23,9 +23,6 @@ public class ProductDto {
     private String imageUrl;
 
     @NotNull
-    private boolean isPrivate;
-
-    @NotNull
     private double protein;
 
     @NotNull
