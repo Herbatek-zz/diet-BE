@@ -54,7 +54,7 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("When findById and found meal, then the meal should be returned")
+    @DisplayName("When findMealDtoById and found meal, then the meal should be returned")
     void findById_whenSuccess_thenReturnMeal() {
         Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
 
@@ -83,7 +83,7 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("When findById with id that doesn't exist, NotFoundException should be thrown")
+    @DisplayName("When findMealDtoById with id that doesn't exist, NotFoundException should be thrown")
     void findById_whenNotFoundMeal_thenThrowNotFoundException() {
         final var ID = "@#@#@ID";
         Mockito.when(mealRepository.findById(ID)).thenReturn(Mono.empty());

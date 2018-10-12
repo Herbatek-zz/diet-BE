@@ -60,7 +60,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("When findById and found a product, then return this product")
+    @DisplayName("When findMealDtoById and found a product, then return this product")
     void findById_whenFound_thenReturnProduct() {
         final var URI = "/products/" + product1.getId();
         webTestClient.get().uri(URI)
@@ -72,7 +72,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("When findById and not found a product, then throw NotFoundException")
+    @DisplayName("When findMealDtoById and not found a product, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
         final var URI = "/products/badId";
         webTestClient.get().uri(URI)

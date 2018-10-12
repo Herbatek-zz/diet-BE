@@ -125,7 +125,7 @@ public class UserFacade {
                 .then();
     }
 
-    public Mono<MealDto> findById(String id) {
+    Mono<MealDto> findMealDtoById(String id) {
         return mealService.findById(id)
                 .map(mealDtoConverter::toDto);
     }

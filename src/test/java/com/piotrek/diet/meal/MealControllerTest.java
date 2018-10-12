@@ -115,7 +115,7 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findById finds a single meal, meal will be returned as dto")
+    @DisplayName("When findMealDtoById finds a single meal, meal will be returned as dto")
     void findById_whenFound_thenReturnMeal() {
         final var URI = "/meals/" + meal1.getId();
 
@@ -128,7 +128,7 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findById doesn't find a meal, throws NotFoundException")
+    @DisplayName("When findMealDtoById doesn't find a meal, throws NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
         final var URI = "/meals/aBadId";
 
