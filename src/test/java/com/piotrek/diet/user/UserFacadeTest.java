@@ -335,8 +335,7 @@ class UserFacadeTest {
 
         assertAll(
                 () -> assertEquals(expected.getPageSize(), block.getPageSize()),
-                () -> assertEquals(expected, block),
-                () -> assertEquals(expected.getContent(), block.getContent()),
+                () -> assertTrue(expected.getContent().containsAll(block.getContent())),
                 () -> assertEquals(expected.getTotalElements(), block.getTotalElements()),
                 () -> assertEquals(expected.getPageNumber(), block.getPageNumber())
         );
