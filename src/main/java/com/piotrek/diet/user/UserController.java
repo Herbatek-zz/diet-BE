@@ -34,7 +34,7 @@ public class UserController {
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return userFacade.findAllProducts(id, PageRequest.of(page, size));
+        return userFacade.findAllProductsByUserId(id, PageRequest.of(page, size));
     }
 
     @GetMapping("/{id}/meals")

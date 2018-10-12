@@ -49,7 +49,7 @@ public class UserFacade {
         return productService.save(product).map(productDtoConverter::toDto);
     }
 
-    Mono<Page<ProductDto>> findAllProducts(String userId, Pageable pageable) {
+    Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {
         return userService.findById(userId)
                 .then(productService
                         .findAllByUserId(userId)
