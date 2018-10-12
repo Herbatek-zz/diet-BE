@@ -110,19 +110,19 @@ class UserFacadeTest {
 
     @Test
     void createProduct_whenPrincipalNotEqualUserId_thenFailure() {
-
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(productService.save(product)).thenReturn(Mono.just(product));
         Mockito.doThrow(BadRequestException.class).when(userValidation).validateUserWithPrincipal(user.getId());
 
         assertThrows(BadRequestException.class, () -> userFacade.createProduct(user.getId(), productDto).block());
+        verifyNoMoreInteractions(userService, productService);
     }
 
     @Test
     void createProduct_whenUserDoesNotExist_thenThrowNotFoundException() {
-        Mockito.doThrow(BadRequestException.class).when(userService).findById(user.getId());
+        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.error(new NotFoundException("")));
 
-        assertThrows(BadRequestException.class, () -> userFacade.createProduct(user.getId(), productDto).block());
+        assertThrows(NotFoundException.class, () -> userFacade.createProduct(user.getId(), productDto).block());
+        verify(userService, times(1)).findById(user.getId());
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -148,9 +148,7 @@ class UserFacadeTest {
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).findAllByUserId(user.getId());
         verify(productDtoConverter, times(10)).toDto(product);
-        verifyNoMoreInteractions(userService);
-        verifyNoMoreInteractions(productService);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(userService, productService, productDtoConverter);
     }
 
     @Test
@@ -159,8 +157,7 @@ class UserFacadeTest {
         var pageSize = 10;
         var totalElements = 0;
         var productList = new ArrayList<Product>();
-        var productDtoList = new ArrayList<ProductDto>();
-        var expected = new Page<>(productDtoList
+        var expected = new Page<>(new ArrayList<ProductDto>()
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -176,9 +173,7 @@ class UserFacadeTest {
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).findAllByUserId(user.getId());
         verify(productDtoConverter, times(0)).toDto(product);
-        verifyNoMoreInteractions(userService);
-        verifyNoMoreInteractions(productService);
-        verifyNoMoreInteractions(productDtoConverter);
+        verifyNoMoreInteractions(userService, productService, productDtoConverter);
     }
 
     @Test

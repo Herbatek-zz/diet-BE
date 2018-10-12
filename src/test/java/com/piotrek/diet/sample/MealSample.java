@@ -12,12 +12,6 @@ public class MealSample {
     public final static String DUMPLINGS = "dumplings";
     public final static String COFFEE = "coffee";
 
-    public static Meal dumplingsWithId() {
-        var meal = dumplingsWithoutId();
-        meal.setId(DUMPLINGS_ID);
-        return meal;
-    }
-
     public static Meal dumplingsWithoutId() {
         var meal = new Meal();
         meal.setName("Dumplings");
@@ -30,8 +24,8 @@ public class MealSample {
         return meal;
     }
 
-    public static MealDto dumplingsWithIdDto() {
-        var meal = dumplingsWithoutIdDto();
+    public static Meal dumplingsWithId() {
+        var meal = dumplingsWithoutId();
         meal.setId(DUMPLINGS_ID);
         return meal;
     }
@@ -48,9 +42,9 @@ public class MealSample {
         return meal;
     }
 
-    public static Meal coffeeWithId() {
-        var meal = coffeeWithoutId();
-        meal.setId(COFFEE_ID);
+    public static MealDto dumplingsWithIdDto() {
+        var meal = dumplingsWithoutIdDto();
+        meal.setId(DUMPLINGS_ID);
         return meal;
     }
 
@@ -66,8 +60,8 @@ public class MealSample {
         return meal;
     }
 
-    public static MealDto coffeeWithIdDto() {
-        var meal = coffeeWithoutIdDto();
+    public static Meal coffeeWithId() {
+        var meal = coffeeWithoutId();
         meal.setId(COFFEE_ID);
         return meal;
     }
@@ -84,6 +78,11 @@ public class MealSample {
         return meal;
     }
 
+    public static MealDto coffeeWithIdDto() {
+        var meal = coffeeWithoutIdDto();
+        meal.setId(COFFEE_ID);
+        return meal;
+    }
 
 
 }
