@@ -1,5 +1,7 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.cart.Cart;
+import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
@@ -13,6 +15,7 @@ import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductService;
+import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.UserSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -71,17 +74,60 @@ class UserFacadeTest {
 
     private Meal meal;
     private MealDto mealDto;
+
     private Meal meal2;
     private MealDto mealDto2;
 
     private User user;
+
+    private Cart cart;
+    private CartDto cartDto;
 
     @BeforeEach
     void setup() {
         initProducts();
         initMeals();
         user = UserSample.johnWithId();
+        cart = CartSample.cart1();
+        cartDto = CartSample.cartDto1();
         MockitoAnnotations.initMocks(this);
+    }
+
+
+    @Test
+    @DisplayName("Find cart, when found, then return it")
+    void findCart_whenFound_thenReturn() {
+        Mockito.when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
+        Mockito.when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+        Mockito.when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+
+        var block = userFacade.findCart(user.getId(), cart.getDate()).block();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), block.getId()),
+                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
+                () -> assertEquals(cart.getUserId(), block.getUserId()),
+                () -> assertEquals(cart.getDate(), block.getDate())
+        );
+
+    }
+
+    @Test
+    @DisplayName("Find cart, when found, then return it")
+    void findCart_whenNotFound_thenSaveNewCartAndReturn() {
+        Mockito.when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.empty());
+        Mockito.when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+        Mockito.when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+
+        var block = userFacade.findCart(user.getId(), cart.getDate()).block();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), block.getId()),
+                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
+                () -> assertEquals(cart.getUserId(), block.getUserId()),
+                () -> assertEquals(cart.getDate(), block.getDate())
+        );
+
     }
 
     @Test

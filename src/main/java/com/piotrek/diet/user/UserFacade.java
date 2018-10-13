@@ -38,6 +38,7 @@ public class UserFacade {
         return cartService.findByUserIdAndDate(userId, date)
                 .switchIfEmpty(cartService.save(new Cart(userId, date)))
                 .map(cartDtoConverter::toDto);
+
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
@@ -131,6 +132,7 @@ public class UserFacade {
     }
 
     Mono<Boolean> isFavourite(String userId, String mealId) {
+        userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .flatMap(user -> Mono.just(requireNonNull(user).getFavouriteMeals().contains(mealId)));
     }

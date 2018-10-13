@@ -59,7 +59,7 @@ public class MealService {
         return save(mealDtoConverter.fromDto(mealDto));
     }
 
-    Mono<Void> deleteAll() {
+    public Mono<Void> deleteAll() {
         return mealRepository.deleteAll();
     }
 

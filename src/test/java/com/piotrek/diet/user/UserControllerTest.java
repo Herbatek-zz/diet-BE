@@ -3,17 +3,20 @@ package com.piotrek.diet.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
+import com.piotrek.diet.cart.Cart;
+import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
+import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
+import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.sample.CartSample;
+import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
 import com.piotrek.diet.sample.UserSample;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +27,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.sample.MealSample.dumplingsWithoutIdDto;
@@ -44,19 +48,30 @@ class UserControllerTest {
     private UserFacade userFacade;
 
     @Autowired
+    private MealService mealService;
+
+    @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
 
     private WebTestClient webTestClient;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private User user1;
-    private UserDto userDto1;
+    private User user;
+    private UserDto userDto;
+
+    private Meal meal;
+    private MealDto mealDto;
+
+    private Cart cart;
+    private CartDto cartDto;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         userService.deleteAll().block();
-        createUsers();
+        createUser();
+        createMeal();
+        createCart();
         webTestClient = WebTestClient
                 .bindToController(new UserController(userService, userFacade))
                 .controllerAdvice(globalExceptionHandler)
@@ -68,28 +83,161 @@ class UserControllerTest {
         userService.deleteAll().block();
     }
 
+
     @Test
+    @DisplayName("Check if user has meal in favourites, if he has, then return true")
+    void isMealFavourite_whenUserHasAMealInFavourites_thenReturnTrue() {
+        final var URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";
+
+        user.getFavouriteMeals().add(meal.getId());
+        userService.save(user).block();
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(Boolean.class)
+                .isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("Check if user has meal in favourites, if he has no favourites, then return false")
+    void isMealFavourite_whenUserHasNoTheMealInFavourites_thenReturnTrue() {
+        final var URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(Boolean.class)
+                .isEqualTo(false);
+    }
+//
+//    @GetMapping("/{id}/meals/favourites")
+//    @ResponseStatus(OK)
+//    Mono<Page<MealDto>> findFavouriteMeals(
+//            @PathVariable String id,
+//            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+//            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+//        return userFacade.findFavouriteMeals(id, PageRequest.of(page, size));
+//    }
+
+    @Test
+    @DisplayName("Find all favourites meals for user, when user has favourites, then return list")
+    void findFavouritesMeals_whenUserHasFavourites_thenReturnList() throws JsonProcessingException {
+        final var URI = "/users/" + user.getId() + "/meals/favourites";
+        final var list = new ArrayList<MealDto>();
+        list.add(mealDto);
+
+        user.getFavouriteMeals().add(mealDto.getId());
+        userService.save(user).block();
+
+        var expected = new Page<>(list, 0, 10, list.size());
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
+    @DisplayName("Find all favourites meals for user, when user has no favourites, then return empty list")
+    void findFavouritesMeals_whenUserHasNoFavourites_thenReturnEmptyList() throws JsonProcessingException {
+        final var URI = "/users/" + user.getId() + "/meals/favourites";
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(new Page<>(new ArrayList<MealDto>(), 0, 10, 0)));
+
+    }
+
+    @Test
+    @DisplayName("Add meal to favourites, when user had no favourites, after add he has 1")
+    void addMealToFavourites_whenUserHasEmptyList_afterMethodInvokedHeHas1Meal() throws JsonProcessingException {
+        final var ADD_URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";
+        final var FIND_URI = "/users/" + user.getId() + "/meals/favourites";
+
+        final var list = new ArrayList<MealDto>(1);
+        list.add(mealDto);
+
+        webTestClient.get().uri(FIND_URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(new Page<>(new ArrayList<MealDto>(), 0, 10, 0)));
+
+        webTestClient.post().uri(ADD_URI)
+                .exchange()
+                .expectStatus().isCreated();
+
+        webTestClient.get().uri(FIND_URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(new Page<>(list, 0, 10, list.size())));
+
+    }
+
+
+
+    @Test
+    @DisplayName("Delete meal from favourites, then user has no more this meal in favourites")
+    void deleteMeaLFromFavourites_thenUserHasNoLongerThisMealInFavourites() throws JsonProcessingException {
+        final var DELETE_URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";
+        final var FIND_URI = "/users/" + user.getId() + "/meals/favourites";
+
+        final var list = new ArrayList<MealDto>(1);
+        list.add(mealDto);
+
+        user.getFavouriteMeals().add(meal.getId());
+        userService.save(user).block();
+
+        webTestClient.get().uri(FIND_URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(new Page<>(list, 0, 10, list.size())));
+
+        webTestClient.delete().uri(DELETE_URI)
+                .exchange()
+                .expectStatus().isNoContent();
+
+
+        webTestClient.get().uri(FIND_URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(new Page<>(new ArrayList<MealDto>(), 0, 10, 0)));
+    }
+
+    @Test
+    @DisplayName("Find a user by id, when found the user, then return userDto")
     void findUserById_whenUserExists_thenReturnUserDto() {
-        webTestClient.get().uri("/users/" + user1.getId())
+        final var URI = "/users/" + user.getId();
+
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
                 .expectBody(UserDto.class)
-                .isEqualTo(userDto1);
+                .isEqualTo(userDto);
     }
 
     @Test
+    @DisplayName("Find a user by id, when not found, then return 404 not found status")
     void findUserById_whenUserDoesNotExist_thenReturn404() {
-        var invalidId = "iDoesNotExist";
+        final var URI = "/users/badId";
 
-        webTestClient.get().uri("/users/" + invalidId)
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isNotFound();
     }
 
     @Test
     void findUserProducts_whenUserHasNoProducts_thenReturnPageSupportWithoutElements() {
-        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+        webTestClient.get().uri("/users/" + user.getId() + "/products")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Page.class)
@@ -98,19 +246,14 @@ class UserControllerTest {
 
     @Test
     void findUserProducts_whenUserHasProducts_thenReturnArray() throws JsonProcessingException {
+        final var URI = "/users/" + user.getId() + "/products";
+        final var products = new ArrayList<ProductDto>(2);
+        products.add(userFacade.createProduct(user.getId(), ProductSample.bananaWithoutIdDto()).block());
+        products.add(userFacade.createProduct(user.getId(), ProductSample.breadWithoutIdDto()).block());
 
-        // this need be added because below we create products using facade
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+        final var expected = new Page<>(products, 0, 10, products.size());
 
-        var products = new ArrayList<ProductDto>(2);
-        products.add(userFacade.createProduct(user1.getId(), ProductSample.bananaWithoutIdDto()).block());
-        products.add(userFacade.createProduct(user1.getId(), ProductSample.breadWithoutIdDto()).block());
-
-
-        var expected = new Page<>(products, 0, 10, products.size());
-
-        webTestClient.get().uri("/users/" + user1.getId() + "/products")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody().json(objectMapper.writeValueAsString(expected));
@@ -118,13 +261,11 @@ class UserControllerTest {
 
     @Test
     void createProduct_whenAllRequiredField_thenSaveProductAndReturnDto() {
-        var productDto = ProductSample.bananaWithIdDto();
-        productDto.setUserId(user1.getId());
+        final var URI = "/users/" + user.getId() + "/products";
+        final var productDto = ProductSample.bananaWithIdDto();
+        productDto.setUserId(user.getId());
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/products")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(productDto))
                 .exchange()
@@ -135,13 +276,11 @@ class UserControllerTest {
 
     @Test
     void createProduct_whenNameIsMissing_thenReturn400() {
-        var productDto = ProductSample.bananaWithIdDto();
+        final var URI = "/users/" + user.getId() + "/products";
+        final var productDto = ProductSample.bananaWithIdDto();
         productDto.setName(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/products")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(productDto))
                 .exchange()
@@ -150,13 +289,11 @@ class UserControllerTest {
 
     @Test
     void createProduct_whenDescriptionIsNull_thenReturn400() {
-        ProductDto productDto = ProductSample.bananaWithIdDto();
+        final var URI = "/users/" + user.getId() + "/products";
+        final var productDto = ProductSample.bananaWithoutIdDto();
         productDto.setDescription(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/products")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(productDto))
                 .exchange()
@@ -165,7 +302,10 @@ class UserControllerTest {
 
     @Test
     void findUserMeals_whenUserHasNoMeals_thenReturnPageSupportWithoutElements() {
-        webTestClient.get().uri("/users/" + user1.getId() + "/meals")
+        final var URI = "/users/" + user.getId() + "/meals";
+        mealService.deleteAll().block();
+
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Page.class)
@@ -174,19 +314,15 @@ class UserControllerTest {
 
     @Test
     void findUserMeals_whenUserHasMeals_thenReturnArray() throws JsonProcessingException {
+        final var URI = "/users/" + user.getId() + "/meals";
+        final var meals = new ArrayList<MealDto>(3);
+        meals.add(userFacade.createMeal(user.getId(), dumplingsWithoutIdDto()).block());
+        meals.add(userFacade.createMeal(user.getId(), dumplingsWithoutIdDto()).block());
+        meals.add(mealDto);
 
-        // this need be added because below we create products using facade
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+        final var expected = new Page<>(meals, 0, 10, meals.size());
 
-        var meals = new ArrayList<MealDto>(2);
-        meals.add(userFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
-        meals.add(userFacade.createMeal(user1.getId(), dumplingsWithoutIdDto()).block());
-
-
-        var expected = new Page<>(meals, 0, 10, meals.size());
-
-        webTestClient.get().uri("/users/" + user1.getId() + "/meals")
+        webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody().json(objectMapper.writeValueAsString(expected));
@@ -194,13 +330,11 @@ class UserControllerTest {
 
     @Test
     void createMeal_whenAllRequiredField_thenSaveMealAndReturnDto() {
-        var mealDto = dumplingsWithIdDto();
-        mealDto.setUserId(user1.getId());
+        final var URI = "/users/" + user.getId() + "/meals";
+        final var mealDto = dumplingsWithIdDto();
+        mealDto.setUserId(user.getId());
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(mealDto))
                 .exchange()
@@ -211,13 +345,11 @@ class UserControllerTest {
 
     @Test
     void createMeal_whenNameIsMissing_thenReturn400() {
-        var mealDto = dumplingsWithIdDto();
+        final var URI = "/users/" + user.getId() + "/meals";
+        final var mealDto = dumplingsWithoutIdDto();
         mealDto.setName(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(mealDto))
                 .exchange()
@@ -226,13 +358,11 @@ class UserControllerTest {
 
     @Test
     void createMeal_whenDescriptionIsNull_thenReturn400() {
-        var mealDto = dumplingsWithIdDto();
+        final var URI = "/users/" + user.getId() + "/meals";
+        final var mealDto = dumplingsWithoutIdDto();
         mealDto.setDescription(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(mealDto))
                 .exchange()
@@ -240,25 +370,40 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Create a new meal, when recipe is missing, then return Bad Request status")
     void createMeal_whenRecipeIsNull_thenReturn400() {
-        var mealDto = dumplingsWithIdDto();
+        final var URI = "/users/" + user.getId() + "/meals";
+        final var mealDto = dumplingsWithoutIdDto();
         mealDto.setRecipe(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(user1.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
-        webTestClient.post().uri("/users/" + user1.getId() + "/meals")
+        webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
                 .body(BodyInserters.fromObject(mealDto))
                 .exchange()
                 .expectStatus().isBadRequest();
     }
 
-    private void createUsers() {
-        user1 = UserSample.baileyWithoutId();
+    private void createUser() {
+        user = UserSample.baileyWithoutId();
+        user = userService.save(user).block();
+        userDto = userDtoConverter.toDto(user);
+    }
 
-        user1 = userService.save(user1).block();
+    private void createMeal() {
+        providePrincipal();
+        meal = MealSample.dumplingsWithoutId();
+        mealDto = userFacade.createMeal(user.getId(), MealSample.dumplingsWithoutIdDto()).block();
+        meal.setId(mealDto.getId());
+    }
 
-        userDto1 = userDtoConverter.toDto(user1);
+    private void createCart() {
+        cart = CartSample.cart1();
+        cartDto = userFacade.findCart(user.getId(), cart.getDate()).block();
+        cart.setId(cartDto.getId());
+    }
+
+    private void providePrincipal() {
+        var testingAuthentication = new TestingAuthenticationToken(user.getId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
     }
 }
