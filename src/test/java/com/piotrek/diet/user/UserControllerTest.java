@@ -186,6 +186,30 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Add meal to today cart, when cart is empty, then cart should has 1 meal")
+    void addMealToTodayCart_whenCartIsEmpty_thenCartShouldHasOneMeal() {
+
+    }
+
+    @Test
+    @DisplayName("Add meal to today cart, when cart had one meal, then cart should has 2 meals")
+    void addMealToTodayCart_whenCartHad1Meal_thenCartShouldHasTwoMeals() {
+
+    }
+
+    @Test
+    @DisplayName("Add meal to today cart, when cart had one meal and we add the same meal again, then cart should has 2 the same meals")
+    void addMealToTodayCart_whenCartHad1MealAndWeAddTheSameMealAgain_thenCartShouldHasTwoTheSameMeals() {
+
+    }
+
+    @Test
+    @DisplayName("Add meal to today cart, when cart doesn't exist, then create new cart and return in with one meal")
+    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() {
+
+    }
+
+    @Test
     @DisplayName("Add meal to favourites, when user had no favourites, after add he has 1")
     void addMealToFavourites_whenUserHasEmptyList_afterMethodInvokedHeHas1Meal() throws JsonProcessingException {
         final var ADD_URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";

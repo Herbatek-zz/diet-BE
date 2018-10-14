@@ -5,6 +5,7 @@ import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
@@ -38,7 +39,13 @@ public class UserFacade {
         return cartService.findByUserIdAndDate(userId, date)
                 .switchIfEmpty(cartService.save(new Cart(userId, date)))
                 .map(cartDtoConverter::toDto);
+    }
 
+    Mono<CartDto> addMealToTodayCart(String userId, String mealId) {
+        Cart cart = cartService.findTodayByUserId(userId).block();
+        Meal meal = mealService.findById(mealId).block();
+        cart.getMeals().add(meal);
+        return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
