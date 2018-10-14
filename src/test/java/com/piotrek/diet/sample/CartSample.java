@@ -15,7 +15,7 @@ public class CartSample {
     public static Cart cart1() {
         var cart = new Cart();
         cart.setId(CART1_ID);
-        cart.setDate(LocalDate.of(1995, Month.MARCH, 3));
+        cart.setDate(LocalDate.now());
         cart.setUserId(UserSample.johnWithId().getId());
         return cart;
     }
@@ -23,7 +23,7 @@ public class CartSample {
     public static CartDto cartDto1() {
         var cartDto = new CartDto();
         cartDto.setId(CART1_ID);
-        cartDto.setDate(LocalDate.of(1995, Month.MARCH, 3));
+        cartDto.setDate(LocalDate.now());
         cartDto.setUserId(UserSample.johnWithId().getId());
         return cartDto;
     }

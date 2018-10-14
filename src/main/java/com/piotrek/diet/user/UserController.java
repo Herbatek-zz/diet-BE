@@ -70,13 +70,13 @@ public class UserController {
     @GetMapping("/{id}/carts")
     @ResponseStatus(OK)
     Mono<CartDto> getOrCreateCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.findCart(id, date);
+        return userFacade.findDtoCart(id, date);
     }
 
     @PutMapping("/{id}/carts")
     @ResponseStatus(OK)
-    Mono<CartDto> addMealToTodayCart(@PathVariable String id, @RequestParam String productId) {
-        return userFacade.addMealToTodayCart(id, productId);
+    Mono<CartDto> addMealToTodayCart(@PathVariable String id, @RequestParam String mealId) {
+        return userFacade.addMealToTodayCart(id, mealId);
     }
 
     @PostMapping("/{id}/products")

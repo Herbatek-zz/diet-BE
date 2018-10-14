@@ -115,7 +115,7 @@ class MealServiceTest {
                 () -> assertEquals(meal1.getProtein(), byId.getProtein()),
                 () -> assertEquals(meal1.getProteinAndFatEquivalent(), byId.getProteinAndFatEquivalent()),
                 () -> assertEquals(meal1.getCarbohydrateExchange(), byId.getCarbohydrateExchange()),
-                () -> assertEquals(productDtoConverter.listToDto(meal1.getProducts()), byId.getProducts()),
+                () -> assertEquals(meal1.getProducts().size(), byId.getProducts().size()),
                 () -> assertEquals(meal1.getUserId(), byId.getUserId()),
                 () -> assertEquals(meal1.getKcal(), byId.getKcal())
         );
@@ -398,7 +398,7 @@ class MealServiceTest {
 
         Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
         Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
-        Mockito.when(mealDtoConverter.toDto(meal1)).thenReturn(meal1Dto);
+        Mockito.when(mealDtoConverter.toDto(meal1)).thenReturn(afterUpdate);
         Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 

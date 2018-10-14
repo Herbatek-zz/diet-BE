@@ -2,10 +2,11 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.sample.UserSample;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class UserValidationTest {
 
@@ -25,6 +26,6 @@ class UserValidationTest {
         var testingAuthentication = new TestingAuthenticationToken(user.getId(), null);
         SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
-        Assertions.assertThrows(BadRequestException.class, () -> userValidation.validateUserWithPrincipal("badUserId"));
+        assertThrows(BadRequestException.class, () -> userValidation.validateUserWithPrincipal("badUserId"));
     }
 }

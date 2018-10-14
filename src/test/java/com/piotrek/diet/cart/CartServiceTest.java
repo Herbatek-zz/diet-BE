@@ -99,23 +99,6 @@ class CartServiceTest {
     }
 
     @Test
-    void findTodayByUserId() {
-        Mockito.when(cartRepository.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
-
-        Cart block = cartService.findTodayByUserId(user.getId()).block();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals(), block.getMeals()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getUserId(), block.getUserId())
-        );
-
-        verify(cartRepository, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verifyNoMoreInteractions(cartRepository);
-    }
-
-    @Test
     void save() {
         Mockito.when(cartRepository.save(cart)).thenReturn(Mono.just(cart));
 

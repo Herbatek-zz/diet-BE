@@ -28,6 +28,7 @@ import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -97,11 +98,11 @@ class UserFacadeTest {
     @Test
     @DisplayName("Find cart, when found, then return it")
     void findCart_whenFound_thenReturn() {
-        Mockito.when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
-        Mockito.when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
-        Mockito.when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        var block = userFacade.findCart(user.getId(), cart.getDate()).block();
+        final var block = userFacade.findDtoCart(user.getId(), cart.getDate()).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -109,16 +110,20 @@ class UserFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate())
         );
+        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
+        verify(cartService, times(1)).save(any(Cart.class));
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verifyNoMoreInteractions(cartService, cartDtoConverter);
     }
 
     @Test
     @DisplayName("Find cart, when found, then return it")
     void findCart_whenNotFound_thenSaveNewCartAndReturn() {
-        Mockito.when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.empty());
-        Mockito.when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
-        Mockito.when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.empty());
+        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        var block = userFacade.findCart(user.getId(), cart.getDate()).block();
+        var block = userFacade.findDtoCart(user.getId(), cart.getDate()).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -131,33 +136,68 @@ class UserFacadeTest {
     @Test
     @DisplayName("Add meal to today cart, when cart is empty, then cart should has 1 meal")
     void addMealToTodayCart_whenCartIsEmpty_thenCartShouldHasOneMeal() {
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
+        cartDto.getMeals().add(mealDto);
+        cartDto.getProducts().addAll(mealDto.getProducts());
+
+        CartDto block = userFacade.addMealToTodayCart(user.getId(), meal.getId()).block();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), block.getId()),
+                () -> assertEquals(1, block.getMeals().size()),
+                () -> assertEquals(cart.getUserId(), block.getUserId()),
+                () -> assertEquals(cart.getDate(), block.getDate()),
+                () -> assertEquals(2, block.getProducts().size())
+        );
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(cartService, times(1)).save(cart);
+        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
     }
 
     @Test
     @DisplayName("Add meal to today cart, when cart had one meal, then cart should has 2 meals")
     void addMealToTodayCart_whenCartHad1Meal_thenCartShouldHasTwoMeals() {
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
+        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-    }
+        cart.setDate(LocalDate.now());
+        cartDto.setDate(LocalDate.now());
+        cart.getMeals().add(meal2);
+        cartDto.getMeals().add(mealDto2);
+        cartDto.getProducts().addAll(mealDto2.getProducts());
+        cartDto.getMeals().add(mealDto);
+        cartDto.getProducts().addAll(mealDto.getProducts());
 
-    @Test
-    @DisplayName("Add meal to today cart, when cart had one meal and we add the same meal again, then cart should has 2 the same meals")
-    void addMealToTodayCart_whenCartHad1MealAndWeAddTheSameMealAgain_thenCartShouldHasTwoTheSameMeals() {
+        CartDto block = userFacade.addMealToTodayCart(user.getId(), meal.getId()).block();
 
-    }
-
-    @Test
-    @DisplayName("Add meal to today cart, when cart doesn't exist, then create new cart and return in with one meal")
-    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() {
-
+        assertAll(
+                () -> assertEquals(cart.getId(), block.getId()),
+                () -> assertEquals(2, block.getMeals().size()),
+                () -> assertEquals(cart.getUserId(), block.getUserId()),
+                () -> assertEquals(cart.getDate(), block.getDate()),
+                () -> assertEquals(4, block.getProducts().size())
+        );
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(cartService, times(1)).save(cart);
+        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
     }
 
     @Test
     void createProduct_whenPrincipalEqualUserId_thenSuccess() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(productService.save(product)).thenReturn(Mono.just(product));
-        Mockito.when(productDtoConverter.fromDto(productDto)).thenReturn(product);
-        Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(productService.save(product)).thenReturn(Mono.just(product));
+        when(productDtoConverter.fromDto(productDto)).thenReturn(product);
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
 
         var created = userFacade.createProduct(user.getId(), productDto).block();
 
@@ -178,7 +218,7 @@ class UserFacadeTest {
 
     @Test
     void createProduct_whenPrincipalNotEqualUserId_thenFailure() {
-        Mockito.doThrow(BadRequestException.class).when(userValidation).validateUserWithPrincipal(user.getId());
+        doThrow(BadRequestException.class).when(userValidation).validateUserWithPrincipal(user.getId());
 
         assertThrows(BadRequestException.class, () -> userFacade.createProduct(user.getId(), productDto).block());
         verifyNoMoreInteractions(userService, productService);
@@ -186,7 +226,7 @@ class UserFacadeTest {
 
     @Test
     void createProduct_whenUserDoesNotExist_thenThrowNotFoundException() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.error(new NotFoundException("")));
+        when(userService.findById(user.getId())).thenReturn(Mono.error(new NotFoundException("")));
 
         assertThrows(NotFoundException.class, () -> userFacade.createProduct(user.getId(), productDto).block());
         verify(userService, times(1)).findById(user.getId());
@@ -205,9 +245,9 @@ class UserFacadeTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
-        Mockito.when(productService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+        when(productService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
 
         var firstPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
@@ -230,9 +270,9 @@ class UserFacadeTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
-        Mockito.when(productService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+        when(productService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
 
         var firstPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
@@ -246,7 +286,7 @@ class UserFacadeTest {
 
     @Test
     void findAllProductsByUserId_whenUserDoesNotExist_thenThrowNotFoundException() {
-        Mockito.doThrow(BadRequestException.class).when(userService).findById(user.getId());
+        doThrow(BadRequestException.class).when(userService).findById(user.getId());
 
         assertThrows(BadRequestException.class,
                 () -> userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(1, 10)).block());
@@ -254,9 +294,9 @@ class UserFacadeTest {
 
     @Test
     void createMeal_whenPrincipalEqualUserId_thenSuccess() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.save(mealDto)).thenReturn(Mono.just(meal));
-        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.save(mealDto)).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
 
         var created = userFacade.createMeal(user.getId(), mealDto).block();
 
@@ -266,16 +306,16 @@ class UserFacadeTest {
     @Test
     void createMeal_whenPrincipalNotEqualUserId_thenFailure() {
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.save(meal)).thenReturn(Mono.just(meal));
-        Mockito.doThrow(BadRequestException.class).when(userValidation).validateUserWithPrincipal(user.getId());
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
+        doThrow(BadRequestException.class).when(userValidation).validateUserWithPrincipal(user.getId());
 
         assertThrows(BadRequestException.class, () -> userFacade.createMeal(user.getId(), mealDto).block());
     }
 
     @Test
     void createMeal_whenUserDoesNotExist_thenThrowNotFoundException() {
-        Mockito.doThrow(BadRequestException.class).when(userService).findById(user.getId());
+        doThrow(BadRequestException.class).when(userService).findById(user.getId());
 
         assertThrows(BadRequestException.class, () -> userFacade.createMeal(user.getId(), mealDto).block());
     }
@@ -292,9 +332,9 @@ class UserFacadeTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
-        Mockito.when(mealService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealsList));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        when(mealService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealsList));
 
         var firstPage = userFacade.findAllMealsByUser(user.getId(), PageRequest.of(page, pageSize)).block();
 
@@ -319,9 +359,9 @@ class UserFacadeTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
-        Mockito.when(mealService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        when(mealService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
 
         var firstPage = userFacade.findAllMealsByUser(user.getId(), PageRequest.of(page, pageSize)).block();
 
@@ -335,7 +375,7 @@ class UserFacadeTest {
 
     @Test
     void findAllMealsByUserId_whenUserDoesNotExist_thenThrowNotFoundException() {
-        Mockito.doThrow(BadRequestException.class).when(userService).findById(user.getId());
+        doThrow(BadRequestException.class).when(userService).findById(user.getId());
 
         assertThrows(BadRequestException.class,
                 () -> userFacade.findAllMealsByUser(user.getId(), PageRequest.of(1, 10)).block());
@@ -356,9 +396,9 @@ class UserFacadeTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
 
         Page<MealDto> block = userFacade.findFavouriteMeals(user.getId(), PageRequest.of(page, pageSize)).block();
 
@@ -388,11 +428,11 @@ class UserFacadeTest {
 
         user.setFavouriteMeals(new HashSet<>(Set.of(meal.getId(), meal2.getId())));
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        Mockito.when(mealService.findById(meal2.getId())).thenReturn(Mono.just(meal2));
-        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
-        Mockito.when(mealDtoConverter.toDto(meal2)).thenReturn(mealDto2);
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealService.findById(meal2.getId())).thenReturn(Mono.just(meal2));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        when(mealDtoConverter.toDto(meal2)).thenReturn(mealDto2);
 
         Page<MealDto> block = userFacade.findFavouriteMeals(user.getId(), PageRequest.of(page, pageSize)).block();
 
@@ -413,9 +453,9 @@ class UserFacadeTest {
     @Test
     @DisplayName("Add to favourite list, when user has no other meals in favourite, then list size is 1")
     void addToFavourite_whenNoOtherFavourites_thenListSize1() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        Mockito.when(userService.save(user)).thenReturn(Mono.just(user));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(userService.save(user)).thenReturn(Mono.just(user));
 
         userFacade.addToFavourite(user.getId(), meal.getId()).block();
 
@@ -430,9 +470,9 @@ class UserFacadeTest {
     @Test
     @DisplayName("Add to favourite list other meal, when user has 2 meals in favourite, then list is equal 3")
     void addToFavourite_whenUserHas2ProductsAndWeAddOtherMeal_thenListSizeEquals3() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        Mockito.when(userService.save(user)).thenReturn(Mono.just(user));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(userService.save(user)).thenReturn(Mono.just(user));
 
         user.getFavouriteMeals().add("firstId");
         user.getFavouriteMeals().add("secondId");
@@ -449,9 +489,9 @@ class UserFacadeTest {
     @Test
     @DisplayName("Add to favourite existing meal, when user has 2 products, then list size is 2")
     void addToFavourite_whenUserHas2ProductsAndWeAddMealThatIsAlreadyInFavourites_thenListSizeEquals2() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        Mockito.when(userService.save(user)).thenReturn(Mono.just(user));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(userService.save(user)).thenReturn(Mono.just(user));
 
         user.getFavouriteMeals().add("firstId");
         user.getFavouriteMeals().add(meal.getId());
@@ -470,8 +510,8 @@ class UserFacadeTest {
     void deleteFromFavourites_whenMethodIsInvoked_thenUserHasNoLongerThisMealInFavouriteList() {
         user.setFavouriteMeals(new HashSet<>(Set.of("123sandwich", "321bread", "222potato")));
 
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(userService.save(user)).thenReturn(Mono.just(user));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userService.save(user)).thenReturn(Mono.just(user));
 
         userFacade.deleteFromFavourite(user.getId(), "222potato").block();
 
@@ -484,8 +524,8 @@ class UserFacadeTest {
     @Test
     @DisplayName("Find by id, when found meal, then return MealDto")
     void findById_whenFound_thenReturnMealDto() {
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        Mockito.when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
 
         MealDto block = userFacade.findMealDtoById(meal.getId()).block();
 
@@ -498,7 +538,7 @@ class UserFacadeTest {
     @Test
     @DisplayName("Find by id, when not found meal, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
-        Mockito.when(mealService.findById(meal.getId())).thenReturn(Mono.error(new NotFoundException("")));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.error(new NotFoundException("")));
 
         assertThrows(NotFoundException.class, () -> userFacade.findMealDtoById(meal.getId()).block());
         verify(mealService, times(1)).findById(meal.getId());
@@ -508,7 +548,7 @@ class UserFacadeTest {
     @Test
     @DisplayName("Is favourite, when favourites contains checking meal, then return true")
     void isFavourite_whenUserFavouritesContainsCheckingMeal_thenReturnTrue() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
 
         var set = new HashSet<String>();
         set.add(meal.getId());
@@ -524,7 +564,7 @@ class UserFacadeTest {
     @Test
     @DisplayName("Is favourite, when favourites doesn't contain checking meal, then return true")
     void isFavourite_whenUserFavouritesDoesNotContainCheckingMeal_thenReturnFalse() {
-        Mockito.when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
 
         user.setFavouriteMeals(new HashSet<>());
 
@@ -539,7 +579,7 @@ class UserFacadeTest {
     @DisplayName("Is favourite, when meal doesn't exist, then return NotFoundException")
     void isFavourite_whenUserDoesNotExist_thenThrowNotFoundException() {
         final var INVALID_ID = "badid";
-        Mockito.when(userService.findById(INVALID_ID)).thenThrow(new NotFoundException(""));
+        when(userService.findById(INVALID_ID)).thenThrow(new NotFoundException(""));
 
         assertThrows(NotFoundException.class, () -> userFacade.isFavourite("badid", meal.getId()));
         verify(userService, times(1)).findById(INVALID_ID);

@@ -20,10 +20,6 @@ public class CartService {
         return cartRepository.findByUserIdAndDate(userId, localDateTime);
     }
 
-    public Mono<Cart> findTodayByUserId(String userId) {
-        return findByUserIdAndDate(userId, LocalDate.now());
-    }
-
     public Mono<Cart> save(Cart cart) {
         return cartRepository.save(cart);
     }

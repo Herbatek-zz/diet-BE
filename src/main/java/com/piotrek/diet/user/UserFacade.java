@@ -35,14 +35,21 @@ public class UserFacade {
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
 
-    Mono<CartDto> findCart(String userId, LocalDate date) {
+    Mono<CartDto> findDtoCart(String userId, LocalDate date) {
         return cartService.findByUserIdAndDate(userId, date)
                 .switchIfEmpty(cartService.save(new Cart(userId, date)))
                 .map(cartDtoConverter::toDto);
     }
 
+    Mono<Cart> findCart(String userId, LocalDate date) {
+        Cart cart = cartService.findByUserIdAndDate(userId, date).block();
+        if(cart == null)
+                return cartService.save(new Cart(userId, date));
+        return Mono.just(cart);
+    }
+
     Mono<CartDto> addMealToTodayCart(String userId, String mealId) {
-        Cart cart = cartService.findTodayByUserId(userId).block();
+        Cart cart = findCart(userId, LocalDate.now()).block();
         Meal meal = mealService.findById(mealId).block();
         cart.getMeals().add(meal);
         return cartService.save(cart).map(cartDtoConverter::toDto);

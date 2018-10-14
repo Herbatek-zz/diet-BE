@@ -7,13 +7,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,56 +38,55 @@ class UserServiceTest {
     }
 
     @Test
-    void findById_whenIdIsValid_thenReturnUser() {
-        Mockito.when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
+    @DisplayName("Find user by id, when found, then return")
+    void findById_whenFound_thenReturn() {
+        when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
 
-        var userById = userService.findById(user.getId()).block();
+        final var block = userService.findById(user.getId()).block();
 
-        assertNotNull(userById);
+        assertNotNull(block);
         assertAll(
-                () -> assertEquals(user.getFirstName(), userById.getFirstName()),
-                () -> assertEquals(user.getLastName(), userById.getLastName()),
-                () -> assertEquals(user.getId(), userById.getId()),
-                () -> assertEquals(user.getFacebookId(), userById.getFacebookId()),
-                () -> assertEquals(user.getEmail(), userById.getEmail()),
-                () -> assertEquals(user.getUsername(), userById.getUsername()),
-                () -> assertEquals(user.getRole(), userById.getRole()),
-                () -> assertEquals(user.getCreatedAt(), userById.getCreatedAt()),
-                () -> assertEquals(user.getLastVisit(), userById.getLastVisit())
+                () -> assertEquals(user.getFirstName(), block.getFirstName()),
+                () -> assertEquals(user.getLastName(), block.getLastName()),
+                () -> assertEquals(user.getId(), block.getId()),
+                () -> assertEquals(user.getFacebookId(), block.getFacebookId()),
+                () -> assertEquals(user.getEmail(), block.getEmail()),
+                () -> assertEquals(user.getUsername(), block.getUsername()),
+                () -> assertEquals(user.getRole(), block.getRole()),
+                () -> assertEquals(user.getCreatedAt(), block.getCreatedAt()),
+                () -> assertEquals(user.getLastVisit(), block.getLastVisit())
         );
-
         verify(userRepository, times(1)).findById(user.getId());
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void findById_whenIdIsInvalid_thenThrowNotFoundException() {
-        var id = "unknown#id";
-        Mockito.when(userRepository.findById(id)).thenReturn(Mono.empty());
+    @DisplayName("Find by id, when not found, then throw NotFoundException")
+    void findById_whenNotFound_thenThrowNotFoundException() {
+        final var ID = "invalidId";
+        when(userRepository.findById(ID)).thenReturn(Mono.empty());
 
-        assertThrows(NotFoundException.class, () -> userService.findById(id).block());
-
-        verify(userRepository, times(1)).findById(id);
+        assertThrows(NotFoundException.class, () -> userService.findById(ID).block());
+        verify(userRepository, times(1)).findById(ID);
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    @DisplayName("Find userDto by id, when found then return it")
+    @DisplayName("Find dto by id, when found, then return")
     void findDtoById_whenFound_thenReturn() {
-        Mockito.when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
-        Mockito.when(userDtoConverter.toDto(user)).thenReturn(userDto);
+        when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userDtoConverter.toDto(user)).thenReturn(userDto);
 
-        var userById = userService.findDtoById(user.getId()).block();
+        final var block = userService.findDtoById(user.getId()).block();
 
-        assertNotNull(userById);
+        assertNotNull(block);
         assertAll(
-                () -> assertEquals(user.getFirstName(), userById.getFirstName()),
-                () -> assertEquals(user.getLastName(), userById.getLastName()),
-                () -> assertEquals(user.getId(), userById.getId()),
-                () -> assertEquals(user.getEmail(), userById.getEmail()),
-                () -> assertEquals(user.getUsername(), userById.getUsername())
+                () -> assertEquals(user.getFirstName(), block.getFirstName()),
+                () -> assertEquals(user.getLastName(), block.getLastName()),
+                () -> assertEquals(user.getId(), block.getId()),
+                () -> assertEquals(user.getEmail(), block.getEmail()),
+                () -> assertEquals(user.getUsername(), block.getUsername())
         );
-
         verify(userRepository, times(1)).findById(user.getId());
         verifyNoMoreInteractions(userRepository);
     }
@@ -99,8 +96,8 @@ class UserServiceTest {
     void findDtoById_whenNotFound_thenReturn() {
         final var ID = "unknown#id";
 
-        Mockito.when(userRepository.findById(ID)).thenReturn(Mono.empty());
-        Mockito.when(userDtoConverter.toDto(user)).thenReturn(userDto);
+        when(userRepository.findById(ID)).thenReturn(Mono.empty());
+        when(userDtoConverter.toDto(user)).thenReturn(userDto);
 
         assertThrows(NotFoundException.class, () -> userService.findDtoById(ID).block());
         verify(userRepository, times(1)).findById(ID);
@@ -108,133 +105,130 @@ class UserServiceTest {
     }
 
     @Test
-    void findByFacebookId_whenFacebookIdIsValid_thenReturnUser() {
-        Mockito.when(userRepository.findByFacebookId(user.getFacebookId())).thenReturn(Mono.just(user));
+    @DisplayName("Find by facebook id, when found, then return")
+    void findByFacebookId_whenFound_thenReturn() {
+        when(userRepository.findByFacebookId(user.getFacebookId())).thenReturn(Mono.just(user));
 
-        User userByFacebookId = userService.findByFacebookId(user.getFacebookId()).block();
+        final var block = userService.findByFacebookId(user.getFacebookId()).block();
 
-        assertNotNull(userByFacebookId);
+        assertNotNull(block);
         assertAll(
-                () -> assertEquals(user.getFirstName(), userByFacebookId.getFirstName()),
-                () -> assertEquals(user.getLastName(), userByFacebookId.getLastName()),
-                () -> assertEquals(user.getId(), userByFacebookId.getId()),
-                () -> assertEquals(user.getFacebookId(), userByFacebookId.getFacebookId()),
-                () -> assertEquals(user.getEmail(), userByFacebookId.getEmail()),
-                () -> assertEquals(user.getUsername(), userByFacebookId.getUsername()),
-                () -> assertEquals(user.getRole(), userByFacebookId.getRole()),
-                () -> assertEquals(user.getCreatedAt(), userByFacebookId.getCreatedAt()),
-                () -> assertEquals(user.getLastVisit(), userByFacebookId.getLastVisit())
+                () -> assertEquals(user.getFirstName(), block.getFirstName()),
+                () -> assertEquals(user.getLastName(), block.getLastName()),
+                () -> assertEquals(user.getId(), block.getId()),
+                () -> assertEquals(user.getFacebookId(), block.getFacebookId()),
+                () -> assertEquals(user.getEmail(), block.getEmail()),
+                () -> assertEquals(user.getUsername(), block.getUsername()),
+                () -> assertEquals(user.getRole(), block.getRole()),
+                () -> assertEquals(user.getCreatedAt(), block.getCreatedAt()),
+                () -> assertEquals(user.getLastVisit(), block.getLastVisit())
         );
-
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void findByFacebookId_whenFacebookIdIsInvalid_thenReturnNull() {
-        Mockito.when(userRepository.findByFacebookId(user.getFacebookId())).thenReturn(Mono.empty());
+    @DisplayName("Find by facebook id, when not found, then return null")
+    void findByFacebookId_whenNotFound_thenReturnNull() {
+        when(userRepository.findByFacebookId(user.getFacebookId())).thenReturn(Mono.empty());
 
-        User userByFacebookId = userService.findByFacebookId(user.getFacebookId()).block();
+        final var block = userService.findByFacebookId(user.getFacebookId()).block();
 
-        assertNull(userByFacebookId);
-
+        assertNull(block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void findByEmail_whenEmailIsCorrect_thenReturnUser() {
+    @DisplayName("Find by email, when found, then return")
+    void findByEmail_whenFound_thenReturn() {
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Mono.just(user));
 
-        User userByEmail = userService.findByEmail(user.getEmail()).block();
+        final var block = userService.findByEmail(user.getEmail()).block();
 
-        assertNotNull(userByEmail);
+        assertNotNull(block);
         assertAll(
-                () -> assertEquals(user.getFirstName(), userByEmail.getFirstName()),
-                () -> assertEquals(user.getLastName(), userByEmail.getLastName()),
-                () -> assertEquals(user.getId(), userByEmail.getId()),
-                () -> assertEquals(user.getFacebookId(), userByEmail.getFacebookId()),
-                () -> assertEquals(user.getEmail(), userByEmail.getEmail()),
-                () -> assertEquals(user.getUsername(), userByEmail.getUsername()),
-                () -> assertEquals(user.getRole(), userByEmail.getRole()),
-                () -> assertEquals(user.getCreatedAt(), userByEmail.getCreatedAt()),
-                () -> assertEquals(user.getLastVisit(), userByEmail.getLastVisit())
+                () -> assertEquals(user.getFirstName(), block.getFirstName()),
+                () -> assertEquals(user.getLastName(), block.getLastName()),
+                () -> assertEquals(user.getId(), block.getId()),
+                () -> assertEquals(user.getFacebookId(), block.getFacebookId()),
+                () -> assertEquals(user.getEmail(), block.getEmail()),
+                () -> assertEquals(user.getUsername(), block.getUsername()),
+                () -> assertEquals(user.getRole(), block.getRole()),
+                () -> assertEquals(user.getCreatedAt(), block.getCreatedAt()),
+                () -> assertEquals(user.getLastVisit(), block.getLastVisit())
         );
-
         verify(userRepository, times(1)).findByEmail(user.getEmail());
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void findByEmail_whenEmailIsIncorrect_thenReturnNull() {
+    @DisplayName("Find by email, then not found, then return null")
+    void findByEmail_whenNotFound_thenReturnNull() {
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Mono.empty());
 
-        User userByEmail = userService.findByEmail(user.getEmail()).block();
+        final var block = userService.findByEmail(user.getEmail()).block();
 
-        assertNull(userByEmail);
-
+        assertNull(block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
     void findAll_whenNoUsers_thenReturnEmptyFlux() {
-        Mockito.when(userRepository.findAll()).thenReturn(Flux.empty());
+        when(userRepository.findAll()).thenReturn(Flux.empty());
 
-        List<User> users = userService.findAll().collectSortedList().block();
+        final var users = userService.findAll().collectSortedList().block();
 
         assertNotNull(users);
         assertEquals(0, users.size());
-
         verify(userRepository, times(1)).findAll();
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
     void findAll_whenOneUser_thenReturnFluxWithOneUser() {
-        Mockito.when(userRepository.findAll()).thenReturn(Flux.just(user));
+        when(userRepository.findAll()).thenReturn(Flux.just(user));
 
-        var users = userService.findAll().collectList().block();
+        final var users = userService.findAll().collectList().block();
 
         assertNotNull(users);
-        assertNotNull(users.get(0));
         assertAll(
+                () -> assertNotNull(users.get(0)),
                 () -> assertEquals(1, users.size()),
                 () -> assertEquals(user, users.get(0))
         );
-
         verify(userRepository, times(1)).findAll();
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
     void findAll_whenTwoUsers_thenReturnFluxWithTwoUsers() {
-        var users = new ArrayList<User>(2);
-        users.add(UserSample.johnWithId());
-        users.add(UserSample.baileyWithId());
+        final var expectedList = new ArrayList<User>(2);
+        expectedList.add(UserSample.johnWithId());
+        expectedList.add(UserSample.baileyWithId());
 
-        Mockito.when(userRepository.findAll()).thenReturn(Flux.fromIterable(users));
+        when(userRepository.findAll()).thenReturn(Flux.fromIterable(expectedList));
 
-        var blockUsers = userService.findAll().collectList().block();
+        final var users = userService.findAll().collectList().block();
 
-        assertNotNull(blockUsers);
-        assertNotNull(blockUsers.get(0));
-        assertNotNull(blockUsers.get(1));
+        assertNotNull(users);
         assertAll(
-                () -> assertEquals(2, blockUsers.size()),
-                () -> assertEquals(users.get(0), blockUsers.get(0)),
-                () -> assertEquals(users.get(1), blockUsers.get(1))
+                () -> assertNotNull(users.get(0)),
+                () -> assertNotNull(users.get(1)),
+                () -> assertEquals(2, users.size()),
+                () -> assertEquals(expectedList.get(0), users.get(0)),
+                () -> assertEquals(expectedList.get(1), users.get(1))
         );
-
         verify(userRepository, times(1)).findAll();
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
     void save_whenSuccess_thenReturnSavedUser() {
-        Mockito.when(userRepository.save(user)).thenReturn(Mono.just(user));
+        when(userRepository.save(user)).thenReturn(Mono.just(user));
 
-        User savedUser = userService.save(user).block();
+        final var savedUser = userService.save(user).block();
 
         assertNotNull(savedUser);
         assertAll(
@@ -249,7 +243,6 @@ class UserServiceTest {
                 () -> assertEquals(user.getLastVisit(), savedUser.getLastVisit())
 
         );
-
         verify(userRepository, times(1)).save(user);
         verifyNoMoreInteractions(userRepository);
     }
@@ -257,7 +250,6 @@ class UserServiceTest {
     @Test
     void deleteById() {
         assertEquals(Mono.empty().block(), userService.deleteById(user.getId()));
-
         verify(userRepository, times(1)).deleteById(user.getId());
         verifyNoMoreInteractions(userRepository);
     }
@@ -265,7 +257,6 @@ class UserServiceTest {
     @Test
     void deleteAll() {
         assertEquals(Mono.empty().block(), userService.deleteAll());
-
         verify(userRepository, times(1)).deleteAll();
         verifyNoMoreInteractions(userRepository);
     }

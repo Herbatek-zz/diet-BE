@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
+import com.piotrek.diet.cart.CartDtoConverter;
+import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
@@ -23,18 +25,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.sample.MealSample.dumplingsWithoutIdDto;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
@@ -49,10 +51,16 @@ class UserControllerTest {
     private UserDtoConverter userDtoConverter;
 
     @Autowired
+    private CartDtoConverter cartDtoConverter;
+
+    @Autowired
     private UserFacade userFacade;
 
     @Autowired
     private MealService mealService;
+
+    @Autowired
+    private CartService cartService;
 
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
@@ -151,13 +159,16 @@ class UserControllerTest {
 //    @GetMapping("/{id}/carts")
 //    @ResponseStatus(OK)
 //    Mono<CartDto> getOrCreateCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-mm-yyyy") LocalDate date) {
-//        return userFacade.findCart(id, date);
+//        return userFacade.findDtoCart(id, date);
 //    }
 
     @Test
     @DisplayName("Get or create cart, when found cart, then return it")
     void getOrCreateCart_whenFoundCart_thenReturnIt() {
         final var URI = "/users/" + user.getId() + "/carts?date=03-03-1995";
+
+        cart.setDate(LocalDate.of(1995,Month.MARCH, 3));
+        cartDto = cartDtoConverter.toDto(cartService.save(cart).block());
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -188,25 +199,67 @@ class UserControllerTest {
     @Test
     @DisplayName("Add meal to today cart, when cart is empty, then cart should has 1 meal")
     void addMealToTodayCart_whenCartIsEmpty_thenCartShouldHasOneMeal() {
+        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
 
-    }
+        cart.getMeals().add(meal);
+        final var expected = cartDtoConverter.toDto(cart);
 
-    @Test
-    @DisplayName("Add meal to today cart, when cart had one meal, then cart should has 2 meals")
-    void addMealToTodayCart_whenCartHad1Meal_thenCartShouldHasTwoMeals() {
-
+        webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class).isEqualTo(expected);
     }
 
     @Test
     @DisplayName("Add meal to today cart, when cart had one meal and we add the same meal again, then cart should has 2 the same meals")
     void addMealToTodayCart_whenCartHad1MealAndWeAddTheSameMealAgain_thenCartShouldHasTwoTheSameMeals() {
+        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
 
+        cart.getMeals().add(meal);
+
+        final var expected = cartDtoConverter.toDto(cart);
+
+        webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class).isEqualTo(expected);
+
+        cart.getMeals().add(meal);
+
+        final var expected2 = cartDtoConverter.toDto(cart);
+
+        webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class).isEqualTo(expected2);
     }
 
     @Test
     @DisplayName("Add meal to today cart, when cart doesn't exist, then create new cart and return in with one meal")
-    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() {
+    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() throws JsonProcessingException {
+        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
 
+        cartService.deleteAll().block();
+        cart.getMeals().add(meal);
+
+        final var expected = cartDtoConverter.toDto(cart);
+
+        var actual = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(expected.getUserId(), actual.getUserId()),
+                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
+                () -> assertEquals(expected.getMeals().size(), actual.getMeals().size()),
+                () -> assertEquals(expected.getDate(), actual.getDate())
+        );
     }
 
     @Test
@@ -437,7 +490,7 @@ class UserControllerTest {
     }
 
     private void createUser() {
-        user = UserSample.baileyWithoutId();
+        user = UserSample.johnWithoutId();
         user = userService.save(user).block();
         userDto = userDtoConverter.toDto(user);
     }
@@ -451,8 +504,10 @@ class UserControllerTest {
 
     private void createCart() {
         cart = CartSample.cart1();
-        cartDto = userFacade.findCart(user.getId(), cart.getDate()).block();
+        cart.setUserId(user.getId());
+        cartDto = userFacade.findDtoCart(user.getId(), cart.getDate()).block();
         cart.setId(cartDto.getId());
+        cart.setUserId(cartDto.getUserId());
     }
 
     private void providePrincipal() {
