@@ -9,8 +9,8 @@ import java.util.UUID;
 
 public class CartSample {
 
-    public static final String CART1_ID = UUID.randomUUID().toString();
-    public static final String CART2_ID = UUID.randomUUID().toString();
+    private static final String CART1_ID = UUID.randomUUID().toString();
+    private static final String CART2_ID = UUID.randomUUID().toString();
 
     public static Cart cart1() {
         var cart = new Cart();

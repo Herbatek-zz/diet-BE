@@ -4,17 +4,15 @@ import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.MealSample;
-import com.piotrek.diet.sample.ProductSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CartDtoConverterTest {
 
-    private ProductDtoConverter productDtoConverter = new ProductDtoConverter();
-    private MealDtoConverter mealDtoConverter = new MealDtoConverter(productDtoConverter);
-    private CartDtoConverter cartDtoConverter = new CartDtoConverter(mealDtoConverter);
+    private CartDtoConverter cartDtoConverter = new CartDtoConverter(new MealDtoConverter(new ProductDtoConverter()));
 
     private Cart cart;
     private CartDto cartDto;
@@ -39,13 +37,8 @@ class CartDtoConverterTest {
 
     @Test
     void toDtoWithMeals() {
-        final var meal = MealSample.coffeeWithId();
-        meal.getProducts().add(ProductSample.bananaWithId());
-        meal.getProducts().add(ProductSample.breadWithId());
-
-        cart.getMeals().add(meal);
-        cartDto.getMeals().add(mealDtoConverter.toDto(meal));
-
+        cart.getMeals().add(MealSample.coffeeWithId());
+        cartDto.getMeals().add(MealSample.coffeeWithIdDto());
         final var converted = cartDtoConverter.toDto(cart);
 
         assertAll(
