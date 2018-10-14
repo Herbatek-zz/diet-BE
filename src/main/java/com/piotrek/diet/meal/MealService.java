@@ -64,6 +64,8 @@ public class MealService {
     }
 
     Mono<Void> deleteById(String id) {
+        Meal block = findById(id).block();
+        userValidation.validateUserWithPrincipal(block.getUserId());
         return mealRepository.deleteById(id);
     }
 

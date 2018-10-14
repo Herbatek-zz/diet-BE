@@ -12,13 +12,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
-import java.time.Month;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 class CartServiceTest {
 
@@ -32,7 +27,6 @@ class CartServiceTest {
     private CartDto cartDto;
     private User user;
 
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -41,13 +35,12 @@ class CartServiceTest {
         user = UserSample.johnWithId();
     }
 
-
     @Test
     @DisplayName("Find cart by id, when found, then return cart in Mono")
     void findById_whenFound_thenReturn() {
-        Mockito.when(cartRepository.findById(cart.getId())).thenReturn(Mono.just(cart));
+        when(cartRepository.findById(cart.getId())).thenReturn(Mono.just(cart));
 
-        Cart block = cartService.findById(cart.getId()).block();
+        final Cart block = cartService.findById(cart.getId()).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -55,7 +48,6 @@ class CartServiceTest {
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getUserId(), block.getUserId())
         );
-
         verify(cartRepository, times(1)).findById(cart.getId());
         verifyNoMoreInteractions(cartRepository);
     }
@@ -63,29 +55,20 @@ class CartServiceTest {
     @Test
     @DisplayName("Find cart by id, when not found, then return null in mono")
     void findById_whenNotFound_thenReturnMonoEmpty() {
-        Mockito.when(cartRepository.findById(cart.getId())).thenReturn(Mono.empty());
+        when(cartRepository.findById(cart.getId())).thenReturn(Mono.empty());
 
-        Cart block = cartService.findById(cart.getId()).block();
+        final Cart block = cartService.findById(cart.getId()).block();
 
         assertNull(block);
-
         verify(cartRepository, times(1)).findById(cart.getId());
         verifyNoMoreInteractions(cartRepository);
     }
 
-    //    public Mono<Cart> findByUserIdAndDate(String userId, LocalDate localDateTime) {
-//        return cartRepository.findByUserIdAndDate(userId, localDateTime);
-//    }
-//
-//    public Mono<Cart> findTodayByUserId(String userId) {
-//        return findByUserIdAndDate(userId, LocalDate.now());
-//    }
-
     @Test
     void findByUserIdAndDate() {
-        Mockito.when(cartRepository.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartRepository.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
 
-        Cart block = cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block();
+        final Cart block = cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -93,16 +76,15 @@ class CartServiceTest {
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getUserId(), block.getUserId())
         );
-
         verify(cartRepository, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
         verifyNoMoreInteractions(cartRepository);
     }
 
     @Test
     void save() {
-        Mockito.when(cartRepository.save(cart)).thenReturn(Mono.just(cart));
+        when(cartRepository.save(cart)).thenReturn(Mono.just(cart));
 
-        Cart block = cartService.save(cart).block();
+        final Cart block = cartService.save(cart).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -110,14 +92,13 @@ class CartServiceTest {
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getUserId(), block.getUserId())
         );
-
         verify(cartRepository, times(1)).save(cart);
         verifyNoMoreInteractions(cartRepository);
     }
 
     @Test
     void deleteAll() {
-        Mockito.when(cartRepository.deleteAll()).thenReturn(Mono.empty());
+        when(cartRepository.deleteAll()).thenReturn(Mono.empty());
 
         cartService.deleteAll().block();
 

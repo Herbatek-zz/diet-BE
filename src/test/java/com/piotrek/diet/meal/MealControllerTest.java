@@ -68,7 +68,6 @@ class MealControllerTest {
         mealService.deleteAll().block();
     }
 
-
     @Test
     @DisplayName("Find all without any parameters and when there are no meals, then return empty page")
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageWithEmptyList() throws JsonProcessingException {
@@ -101,7 +100,7 @@ class MealControllerTest {
     @DisplayName("When getAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
     void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals?page=1&size=1";
-        var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))
+        final var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))
                 .stream()
                 .skip(1)
                 .limit(1)
@@ -228,6 +227,8 @@ class MealControllerTest {
         final var URI = "/meals/" + meal1.getId();
         final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
 
+        providePrincipal();
+
         final var update = dumplingsWithIdDto();
         update.setName("updated name");
         update.setRecipe("updated recipe");
@@ -242,9 +243,6 @@ class MealControllerTest {
         update.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
         update.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
         update.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
         webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
@@ -268,9 +266,6 @@ class MealControllerTest {
         final var update = dumplingsWithIdDto();
         update.setName(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
         webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
                 .exchange()
@@ -291,9 +286,6 @@ class MealControllerTest {
         final var update = dumplingsWithIdDto();
         update.setRecipe(null);
 
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
         webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
                 .exchange()
@@ -313,9 +305,6 @@ class MealControllerTest {
 
         final var update = dumplingsWithIdDto();
         update.setDescription(null);
-
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
         webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
@@ -346,9 +335,6 @@ class MealControllerTest {
         update.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
         update.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
         update.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
 
         webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
@@ -386,5 +372,10 @@ class MealControllerTest {
 
         mealDto1 = mealDtoConverter.toDto(meal1);
         mealDto2 = mealDtoConverter.toDto(meal2);
+    }
+
+    private void providePrincipal() {
+        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
     }
 }

@@ -56,7 +56,7 @@ class MealServiceTest {
     @Test
     @DisplayName("When findMealDtoById and found meal, then the meal should be returned")
     void findById_whenSuccess_thenReturnMeal() {
-        Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
 
         final var byId = mealService.findById(meal1.getId()).block();
 
@@ -86,7 +86,7 @@ class MealServiceTest {
     @DisplayName("When findMealDtoById with id that doesn't exist, NotFoundException should be thrown")
     void findById_whenNotFoundMeal_thenThrowNotFoundException() {
         final var ID = "@#@#@ID";
-        Mockito.when(mealRepository.findById(ID)).thenReturn(Mono.empty());
+        when(mealRepository.findById(ID)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> mealService.findById(ID).block());
 
@@ -97,8 +97,8 @@ class MealServiceTest {
     @Test
     @DisplayName("When findDtoById, and found meal, then the meal should be returned")
     void findDtoById_whenSuccess_thenReturnMeal() {
-        Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        Mockito.when(mealDtoConverter.toDto(meal1)).thenReturn(meal1Dto);
+        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealDtoConverter.toDto(meal1)).thenReturn(meal1Dto);
 
         final var byId = mealService.findDtoById(meal1.getId()).block();
 
@@ -129,7 +129,7 @@ class MealServiceTest {
     @DisplayName("When findDtoById with id that doesn't exist, NotFoundException should be thrown")
     void findDtoById_whenNotFoundMeal_thenThrowNotFoundException() {
         final var ID = "@#@#@ID";
-        Mockito.when(mealRepository.findById(ID)).thenReturn(Mono.empty());
+        when(mealRepository.findById(ID)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> mealService.findDtoById(ID).block());
 
@@ -152,8 +152,8 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList));
-        Mockito.when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList));
+        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
 
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
@@ -180,8 +180,8 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
 
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
@@ -210,8 +210,8 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
 
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
@@ -279,8 +279,8 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
-        Mockito.when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
+        when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
+        when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
 
 
         final var firstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
@@ -307,8 +307,8 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
-        Mockito.when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
+        when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
+        when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
 
 
         final var firstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
@@ -334,7 +334,7 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
 
-        Mockito.when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealLis));
+        when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealLis));
 
 
         final var firstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
@@ -348,7 +348,7 @@ class MealServiceTest {
     @Test
     @DisplayName("When save, then mealRespository.save() should be used and Mono<Meal> should be returned")
     void save() {
-        Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
+        when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
 
         assertEquals(meal1, mealService.save(meal1).block());
 
@@ -359,8 +359,8 @@ class MealServiceTest {
     @Test
     @DisplayName("When save as argument MealDto - then should be used mealRepository.save(), dtoConverter.fromDto() and element should be returned")
     void saveDto() {
-        Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
-        Mockito.when(mealDtoConverter.fromDto(meal1Dto)).thenReturn(meal1);
+        when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
+        when(mealDtoConverter.fromDto(meal1Dto)).thenReturn(meal1);
 
         assertEquals(meal1, mealService.save(meal1Dto).block());
 
@@ -381,9 +381,11 @@ class MealServiceTest {
     @Test
     @DisplayName("When deleteById, then returned should be Mono.empty() and mealRepository.deleteById(id) should be used")
     void deleteById() {
-        assertEquals(Mono.empty().block(), mealService.deleteById(meal1.getId()));
+        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
 
+        assertEquals(Mono.empty().block(), mealService.deleteById(meal1.getId()));
         verify(mealRepository, times(1)).deleteById(meal1.getId());
+        verify(mealRepository, times(1)).findById(meal1.getId());
         verifyNoMoreInteractions(mealRepository);
     }
 
@@ -396,10 +398,10 @@ class MealServiceTest {
         final var afterUpdate = dumplingsWithIdDto();
         afterUpdate.setProducts(productDtos);
 
-        Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
-        Mockito.when(mealDtoConverter.toDto(meal1)).thenReturn(afterUpdate);
-        Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
+        when(mealDtoConverter.toDto(meal1)).thenReturn(afterUpdate);
+        when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
         final var mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdate).block();
@@ -450,10 +452,10 @@ class MealServiceTest {
         afterUpdateDto.setImageUrl("some updated image");
         afterUpdateDto.setProducts(products);
 
-        Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        Mockito.when(mealRepository.save(meal1)).thenReturn(Mono.just(afterUpdateDto));
-        Mockito.when(mealDtoConverter.toDto(afterUpdateDto)).thenReturn(afterUpdate);
-        Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealRepository.save(meal1)).thenReturn(Mono.just(afterUpdateDto));
+        when(mealDtoConverter.toDto(afterUpdateDto)).thenReturn(afterUpdate);
+        when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
         final var mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdate).block();
@@ -512,10 +514,10 @@ class MealServiceTest {
         afterUpdateDto.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
 
 
-        Mockito.when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        Mockito.when(mealRepository.save(afterUpdate)).thenReturn(Mono.just(afterUpdate));
-        Mockito.when(mealDtoConverter.toDto(afterUpdate)).thenReturn(afterUpdateDto);
-        Mockito.when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealRepository.save(afterUpdate)).thenReturn(Mono.just(afterUpdate));
+        when(mealDtoConverter.toDto(afterUpdate)).thenReturn(afterUpdateDto);
+        when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
         MealDto mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdateDto).block();

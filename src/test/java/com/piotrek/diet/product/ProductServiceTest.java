@@ -49,7 +49,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("Find by id, when found a product, then return Mono<Product>")
     void findById_whenIdIsValid_thenReturnProduct() {
-        Mockito.when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
+        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
         final var productById = productService.findById(product.getId()).block();
 
@@ -77,7 +77,7 @@ class ProductServiceTest {
     @DisplayName("Find by id, when not found, then throw NotFoundException")
     void findById_whenIdIsInvalid_thenThrowNotFoundException() {
         final var ID = "invalid@#@#@ID";
-        Mockito.when(productRepository.findById(ID)).thenReturn(Mono.empty());
+        when(productRepository.findById(ID)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> productService.findById(ID).block());
 
@@ -89,7 +89,7 @@ class ProductServiceTest {
     @DisplayName("Find productDto, when not found, then return NotFoundException")
     void findDtoById_whenNotFound_thenThrowNotFoundException() {
         final var id = "invalid@#@#@ID";
-        Mockito.when(productRepository.findById(id)).thenReturn(Mono.empty());
+        when(productRepository.findById(id)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> productService.findDtoById(id).block());
 
@@ -100,8 +100,8 @@ class ProductServiceTest {
     @Test
     @DisplayName("Find productDto, when found a product, then return the productDto")
     void findDtoById_whenFound_thenReturnProductDto() {
-        Mockito.when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
-        Mockito.when(productDtoConverter.toDto(product)).thenReturn(productDto);
+        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
 
         final var productDtoById = productService.findDtoById(product.getId()).block();
 
@@ -139,8 +139,8 @@ class ProductServiceTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
         var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
@@ -163,8 +163,8 @@ class ProductServiceTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
         var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
@@ -190,8 +190,8 @@ class ProductServiceTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
         var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
@@ -206,7 +206,7 @@ class ProductServiceTest {
     @DisplayName("Find all, skip 2 and limit 2, when found 10 products, then skip 2 products, and return next 2 products in Flux")
     void findAll_when10ProductsAndSkip2AndLimit2_thenReturnFluxWith2Products() {
         final var productsList = createProductList(10, BANANA);
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productsList));
+        when(productRepository.findAll()).thenReturn(Flux.fromIterable(productsList));
 
         var returned = productService.findAll(2, 2).collect(Collectors.toCollection(ArrayList::new)).block();
 
@@ -227,8 +227,8 @@ class ProductServiceTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
+        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
         var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
@@ -252,8 +252,8 @@ class ProductServiceTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
-        Mockito.when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
+        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
         var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
@@ -276,7 +276,7 @@ class ProductServiceTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        Mockito.when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
+        when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
 
         var secondPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
@@ -319,7 +319,7 @@ class ProductServiceTest {
 
     @Test
     void save() {
-        Mockito.when(productRepository.save(product)).thenReturn(Mono.just(product));
+        when(productRepository.save(product)).thenReturn(Mono.just(product));
 
         assertEquals(product, productService.save(product).block());
 
