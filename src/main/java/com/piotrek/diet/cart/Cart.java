@@ -1,5 +1,6 @@
 package com.piotrek.diet.cart;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.piotrek.diet.meal.Meal;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,6 +22,7 @@ public class Cart {
     private String id;
 
     @NotNull
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     private ArrayList<Meal> meals = new ArrayList<>();

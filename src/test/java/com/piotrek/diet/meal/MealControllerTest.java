@@ -98,7 +98,7 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
+    @DisplayName("When getAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
     void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals?page=1&size=1";
         var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))

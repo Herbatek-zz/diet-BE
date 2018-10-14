@@ -45,14 +45,16 @@ dependencies {
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok:1.18.2')
     annotationProcessor('org.projectlombok:lombok:1.18.2')
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7')
+
 
     // data
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
 
     // java 10 missing dependencies needed for oauth2
-    compile('javax.xml.bind:jaxb-api:2.3.0')
+    compile('javax.xml.bind:jaxb-api:2.3.1')
     compile('com.sun.xml.bind:jaxb-core:2.3.0.1')
-    compile('com.sun.xml.bind:jaxb-impl:2.3.0.1')
+    compile('com.sun.xml.bind:jaxb-impl:2.3.1')
     compile('javax.activation:javax.activation-api:1.2.0')
 
     // tests

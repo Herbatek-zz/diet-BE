@@ -1,5 +1,6 @@
 package com.piotrek.diet.cart;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.product.ProductDto;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class CartDto {
     private String id;
 
     @NotNull
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     private ArrayList<MealDto> meals = new ArrayList<>();

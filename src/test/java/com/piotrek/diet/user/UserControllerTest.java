@@ -26,11 +26,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.sample.MealSample.dumplingsWithoutIdDto;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
@@ -111,15 +115,6 @@ class UserControllerTest {
                 .expectBody(Boolean.class)
                 .isEqualTo(false);
     }
-//
-//    @GetMapping("/{id}/meals/favourites")
-//    @ResponseStatus(OK)
-//    Mono<Page<MealDto>> findFavouriteMeals(
-//            @PathVariable String id,
-//            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
-//            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-//        return userFacade.findFavouriteMeals(id, PageRequest.of(page, size));
-//    }
 
     @Test
     @DisplayName("Find all favourites meals for user, when user has favourites, then return list")
@@ -152,6 +147,43 @@ class UserControllerTest {
                 .expectBody().json(objectMapper.writeValueAsString(new Page<>(new ArrayList<MealDto>(), 0, 10, 0)));
 
     }
+//
+//    @GetMapping("/{id}/carts")
+//    @ResponseStatus(OK)
+//    Mono<CartDto> getOrCreateCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-mm-yyyy") LocalDate date) {
+//        return userFacade.findCart(id, date);
+//    }
+
+    @Test
+    @DisplayName("Get or create cart, when found cart, then return it")
+    void getOrCreateCart_whenFoundCart_thenReturnIt() {
+        final var URI = "/users/" + user.getId() + "/carts?date=03-03-1995";
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class).isEqualTo(cartDto);
+    }
+
+    @Test
+    @DisplayName("Get or create cart, when not found cart, then create new and return")
+    void getOrCreateCart_whenNotFoundCart_thenCreateAndReturn() {
+        final var URI = "/users/" + user.getId() + "/carts?date=04-03-1995";
+
+        cartDto.setDate(LocalDate.of(1995, Month.MARCH, 4));
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody()
+                .jsonPath("$.userId").isEqualTo(cartDto.getUserId())
+                .jsonPath("$.date").isEqualTo("04-03-1995")
+                .jsonPath("$.products").isEmpty()
+                .jsonPath("$.meals").isEmpty()
+                .jsonPath("$.id").isNotEmpty();
+    }
 
     @Test
     @DisplayName("Add meal to favourites, when user had no favourites, after add he has 1")
@@ -177,10 +209,7 @@ class UserControllerTest {
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
                 .expectBody().json(objectMapper.writeValueAsString(new Page<>(list, 0, 10, list.size())));
-
     }
-
-
 
     @Test
     @DisplayName("Delete meal from favourites, then user has no more this meal in favourites")
