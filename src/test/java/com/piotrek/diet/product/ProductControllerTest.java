@@ -12,6 +12,8 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -189,6 +191,7 @@ class ProductControllerTest {
 
     @Test
     void deleteById() {
+        providePrincipal();
         final var URI = "/products/" + product1.getId();
         webTestClient.delete().uri(URI)
                 .exchange()
@@ -209,5 +212,10 @@ class ProductControllerTest {
         product2 = productService.save(product2).block();
 
         productDto1 = productDtoConverter.toDto(product1);
+    }
+
+    private void providePrincipal() {
+        var testingAuthentication = new TestingAuthenticationToken(product1.getUserId(), null);
+        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
     }
 }

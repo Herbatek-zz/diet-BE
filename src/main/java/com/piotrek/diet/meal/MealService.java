@@ -115,7 +115,7 @@ public class MealService {
         double protein = 0;
 
         for (Product product : meal.getProducts())
-            protein += product.getProtein() * (double) (product.getAmount() / 100);
+            protein += product.getProtein() * (double) product.getAmount() / 100;
 
         meal.setProtein(protein);
     }
@@ -124,7 +124,7 @@ public class MealService {
         double fibre = 0;
 
         for (Product product : meal.getProducts())
-            fibre += product.getFibre() * (double) (product.getAmount() / 100);
+            fibre += product.getFibre() * (double) product.getAmount() / 100;
 
         meal.setFibre(fibre);
     }
@@ -133,7 +133,7 @@ public class MealService {
         double fat = 0;
 
         for (Product product : meal.getProducts())
-            fat += product.getFat() * (double) (product.getAmount() / 100);
+            fat += product.getFat() * (double) product.getAmount() / 100;
 
         meal.setFat(fat);
     }
@@ -142,7 +142,7 @@ public class MealService {
         double carbohydrate = 0;
 
         for (Product product : meal.getProducts())
-            carbohydrate += product.getCarbohydrate() * (double) (product.getAmount() / 100);
+            carbohydrate += product.getCarbohydrate() * (double) product.getAmount() / 100;
 
         meal.setCarbohydrate(carbohydrate);
     }
@@ -151,7 +151,7 @@ public class MealService {
         double proteinAndFatEquivalent = 0;
 
         for (Product product : meal.getProducts())
-            proteinAndFatEquivalent += product.getProteinAndFatEquivalent() * (double) (product.getAmount() / 100);
+            proteinAndFatEquivalent += product.getProteinAndFatEquivalent() * (double) product.getAmount() / 100;
 
         meal.setProteinAndFatEquivalent(proteinAndFatEquivalent);
     }
@@ -160,7 +160,7 @@ public class MealService {
         double carbohydrateExchange = 0;
 
         for (Product product : meal.getProducts())
-            carbohydrateExchange += product.getCarbohydrateExchange() * (double) (product.getAmount() / 100);
+            carbohydrateExchange += product.getCarbohydrateExchange() * (double) product.getAmount() / 100;
 
         meal.setCarbohydrateExchange(carbohydrateExchange);
     }
@@ -169,7 +169,7 @@ public class MealService {
         double kcal = 0;
 
         for (Product product : meal.getProducts())
-            kcal += product.getKcal() * (double) (product.getAmount() / 100);
+            kcal += product.getKcal() * (double) product.getAmount() / 100;
 
         meal.setKcal(kcal);
     }

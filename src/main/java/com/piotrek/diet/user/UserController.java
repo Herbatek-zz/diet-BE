@@ -73,10 +73,10 @@ public class UserController {
         return userFacade.findDtoCart(id, date);
     }
 
-    @PutMapping("/{id}/carts")
+    @PutMapping("/{userId}/carts")
     @ResponseStatus(OK)
-    Mono<CartDto> addMealToTodayCart(@PathVariable String id, @RequestParam String mealId) {
-        return userFacade.addMealToTodayCart(id, mealId);
+    Mono<CartDto> addMealToTodayCart(@PathVariable String userId, @RequestParam String mealId) {
+        return userFacade.addMealToTodayCart(userId, mealId);
     }
 
     @PostMapping("/{id}/products")

@@ -3,6 +3,7 @@ package com.piotrek.diet.product;
 import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductDtoConverter productDtoConverter;
     private final DiabetesCalculator diabetesCalculator;
+    private final UserValidation userValidation;
 
     public Mono<Product> findById(String id) {
         return productRepository.findById(id)
@@ -78,6 +80,8 @@ public class ProductService {
     }
 
     Mono<Void> deleteById(String id) {
+        Product block = findById(id).block();
+        userValidation.validateUserWithPrincipal(block.getUserId());
         return productRepository.deleteById(id);
     }
 

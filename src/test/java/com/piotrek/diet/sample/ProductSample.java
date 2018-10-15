@@ -32,6 +32,7 @@ public class ProductSample {
         product.setFibre(1.7);
         product.setKcal(97.0);
         product.setAmount(100);
+        product.setUserId(UserSample.johnWithId().getId());
         product.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre()));
         product.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat()));
         return product;
@@ -54,6 +55,7 @@ public class ProductSample {
         productDto.setFibre(1.7);
         productDto.setKcal(97.0);
         productDto.setAmount(100);
+        productDto.setUserId(UserSample.johnWithId().getId());
         productDto.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre()));
         productDto.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat()));
         return productDto;

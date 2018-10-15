@@ -4,6 +4,7 @@ import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,9 @@ class ProductServiceTest {
     @Mock
     private DiabetesCalculator diabetesCalculator;
 
+    @Mock
+    private UserValidation userValidation;
+
     private ProductService productService;
 
     private Product product;
@@ -43,7 +47,7 @@ class ProductServiceTest {
         product = bananaWithId();
         productDto = bananaWithIdDto();
         MockitoAnnotations.initMocks(this);
-        productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator);
+        productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
@@ -331,9 +335,11 @@ class ProductServiceTest {
 
     @Test
     void deleteById() {
-        assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
+        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
+        assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
         verify(productRepository, times(1)).deleteById(product.getId());
+        verify(productRepository, times(1)).findById(product.getId());
         verifyNoMoreInteractions(productRepository);
     }
 
