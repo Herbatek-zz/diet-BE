@@ -66,7 +66,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}/carts")
     @ResponseStatus(NO_CONTENT)
-    Mono<Void> deleteMealFromTodayCart(@PathVariable String userId, @RequestParam String mealId) {
+    Mono<CartDto> deleteMealFromTodayCart(@PathVariable String userId, @RequestParam String mealId) {
         return userFacade.deleteMealFromTodayCart(userId, mealId);
     }
 

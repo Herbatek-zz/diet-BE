@@ -193,31 +193,43 @@ class UserFacadeTest {
     void deleteMealFromTodayCart_whenCartHad1Meal_thenCartShouldBeEmpty() {
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(cartService.save(cart)).thenReturn(Mono.just(cart));
 
         cart.getMeals().add(meal);
 
-        userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
+        CartDto block = userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
+
+        assertAll(
+                () -> assertEquals(0, block.getMeals().size())
+        );
 
         assertEquals(0, cart.getMeals().size());
         verify(mealService, times(1)).findById(meal.getId());
         verify(cartService, times(1)).save(cart);
+        verify(cartDtoConverter, times(1)).toDto(cart);
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verifyNoMoreInteractions(cartService, mealService);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
     }
 
     @Test
     void deleteMealFromTodayCart_whenCartHadNoMeals_thenCartShouldBeEmpty() {
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(cartService.save(cart)).thenReturn(Mono.just(cart));
 
-        userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
+        CartDto block = userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
+
+        assertAll(
+                () -> assertEquals(0, block.getMeals().size())
+        );
 
         assertEquals(0, cart.getMeals().size());
         verify(mealService, times(1)).findById(meal.getId());
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verifyNoMoreInteractions(cartService, mealService);
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
     }
 
     @Test

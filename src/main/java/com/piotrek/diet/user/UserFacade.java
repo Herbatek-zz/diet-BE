@@ -55,15 +55,15 @@ public class UserFacade {
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
-    Mono<Void> deleteMealFromTodayCart(String userId, String mealId) {
+    Mono<CartDto> deleteMealFromTodayCart(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
         Cart cart = findCart(userId, LocalDate.now()).block();
         Meal meal = mealService.findById(mealId).block();
         if(cart.getMeals().contains(meal)) {
             cart.getMeals().remove(meal);
-            cartService.save(cart).block();
+            cart = cartService.save(cart).block();
         }
-        return Mono.empty();
+        return Mono.just(cartDtoConverter.toDto(cart));
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {

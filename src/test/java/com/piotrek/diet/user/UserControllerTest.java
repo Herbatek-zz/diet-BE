@@ -292,15 +292,10 @@ class UserControllerTest {
 
         assertEquals(1, meals.size());
 
-        webTestClient.delete().uri(URI_DELETE)
+        ArrayList<MealDto> secondMeals = webTestClient.delete().uri(URI_DELETE)
                 .exchange()
-                .expectStatus().isNoContent();
-
-        ArrayList<MealDto> secondMeals = webTestClient.get().uri(URI_GET)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(CartDto.class).isEqualTo(this.cartDto)
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
                 .returnResult().getResponseBody().getMeals();
 
         assertEquals(0, secondMeals.size());
