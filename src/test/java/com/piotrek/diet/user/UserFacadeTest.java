@@ -109,10 +109,8 @@ class UserFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate())
         );
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verify(cartService, times(1)).save(any(Cart.class));
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, cartDtoConverter);
+        verifyNoMoreInteractions(cartDtoConverter);
     }
 
     @Test
@@ -189,6 +187,37 @@ class UserFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+    }
+
+    @Test
+    void deleteMealFromTodayCart_whenCartHad1Meal_thenCartShouldBeEmpty() {
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
+        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+
+        cart.getMeals().add(meal);
+
+        userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
+
+        assertEquals(0, cart.getMeals().size());
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(cartService, times(1)).save(cart);
+        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
+        verifyNoMoreInteractions(cartService, mealService);
+    }
+
+    @Test
+    void deleteMealFromTodayCart_whenCartHadNoMeals_thenCartShouldBeEmpty() {
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
+        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+
+        userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
+
+        assertEquals(0, cart.getMeals().size());
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
+        verifyNoMoreInteractions(cartService, mealService);
     }
 
     @Test

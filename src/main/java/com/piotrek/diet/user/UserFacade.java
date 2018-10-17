@@ -36,8 +36,7 @@ public class UserFacade {
     private final MealDtoConverter mealDtoConverter;
 
     Mono<CartDto> findDtoCart(String userId, LocalDate date) {
-        return cartService.findByUserIdAndDate(userId, date)
-                .switchIfEmpty(cartService.save(new Cart(userId, date)))
+        return findCart(userId, date)
                 .map(cartDtoConverter::toDto);
     }
 
@@ -49,10 +48,22 @@ public class UserFacade {
     }
 
     Mono<CartDto> addMealToTodayCart(String userId, String mealId) {
+        userValidation.validateUserWithPrincipal(userId);
         Cart cart = findCart(userId, LocalDate.now()).block();
         Meal meal = mealService.findById(mealId).block();
         cart.getMeals().add(meal);
         return cartService.save(cart).map(cartDtoConverter::toDto);
+    }
+
+    Mono<Void> deleteMealFromTodayCart(String userId, String mealId) {
+        userValidation.validateUserWithPrincipal(userId);
+        Cart cart = findCart(userId, LocalDate.now()).block();
+        Meal meal = mealService.findById(mealId).block();
+        if(cart.getMeals().contains(meal)) {
+            cart.getMeals().remove(meal);
+            cartService.save(cart).block();
+        }
+        return Mono.empty();
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {

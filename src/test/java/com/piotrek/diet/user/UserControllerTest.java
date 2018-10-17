@@ -30,6 +30,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
@@ -238,7 +239,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Add meal to today cart, when cart doesn't exist, then create new cart and return in with one meal")
-    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() throws JsonProcessingException {
+    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() {
         final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
 
         cartService.deleteAll().block();
@@ -259,6 +260,50 @@ class UserControllerTest {
                 () -> assertEquals(expected.getMeals().size(), actual.getMeals().size()),
                 () -> assertEquals(expected.getDate(), actual.getDate())
         );
+    }
+
+    @Test
+    @DisplayName("Delete meal from today cart, when cart doesn't exist, then create new cart and do nothing")
+    void deleteMealFromTodayCart_whenCartDoesNotExist_thenCreateNewAndDoNothing() {
+        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
+
+        cartService.deleteAll().block();
+
+        webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent();
+    }
+
+    @Test
+    @DisplayName("Delete meal from today cart, when cart has a meal and we delete it, then carth should be empty")
+    void deleteMealFromTodayCart_whenCartHas1MealAndWeDeleteIt_thenCartShouldBeEmpty() {
+        final var URI_DELETE = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
+        final var URI_GET = "/users/" + user.getId() + "/carts?date=" + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        cart.getMeals().add(meal);
+        cartDto = cartDtoConverter.toDto(cartService.save(cart).block());
+
+        ArrayList<MealDto> meals = webTestClient.get().uri(URI_GET)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class).isEqualTo(this.cartDto)
+                .returnResult().getResponseBody().getMeals();
+
+        assertEquals(1, meals.size());
+
+        webTestClient.delete().uri(URI_DELETE)
+                .exchange()
+                .expectStatus().isNoContent();
+
+        ArrayList<MealDto> secondMeals = webTestClient.get().uri(URI_GET)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class).isEqualTo(this.cartDto)
+                .returnResult().getResponseBody().getMeals();
+
+        assertEquals(0, secondMeals.size());
     }
 
     @Test

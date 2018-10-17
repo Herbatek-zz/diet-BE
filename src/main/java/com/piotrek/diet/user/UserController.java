@@ -52,21 +52,6 @@ public class UserController {
         return userFacade.findAllMealsByUser(id, PageRequest.of(page, size));
     }
 
-    @GetMapping("/{userId}/meals/{mealId}/favourites")
-    @ResponseStatus(OK)
-    Mono<Boolean> isFavouriteMeal(@PathVariable String userId, @PathVariable String mealId) {
-        return userFacade.isFavourite(userId, mealId);
-    }
-
-    @GetMapping("/{id}/meals/favourites")
-    @ResponseStatus(OK)
-    Mono<Page<MealDto>> getFavouriteMeals(
-            @PathVariable String id,
-            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
-            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
-        return userFacade.findFavouriteMeals(id, PageRequest.of(page, size));
-    }
-
     @GetMapping("/{id}/carts")
     @ResponseStatus(OK)
     Mono<CartDto> getOrCreateCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
@@ -79,16 +64,16 @@ public class UserController {
         return userFacade.addMealToTodayCart(userId, mealId);
     }
 
+    @DeleteMapping("/{userId}/carts")
+    @ResponseStatus(NO_CONTENT)
+    Mono<Void> deleteMealFromTodayCart(@PathVariable String userId, @RequestParam String mealId) {
+        return userFacade.deleteMealFromTodayCart(userId, mealId);
+    }
+
     @PostMapping("/{id}/products")
     @ResponseStatus(CREATED)
     Mono<ProductDto> createProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
         return userFacade.createProduct(id, productDto);
-    }
-
-    @PostMapping("/{userId}/meals/{mealId}/favourites")
-    @ResponseStatus(CREATED)
-    Mono<Void> addMealToFavourite(@PathVariable String userId, @PathVariable String mealId) {
-        return userFacade.addToFavourite(userId, mealId);
     }
 
     @PostMapping("/{id}/meals")
@@ -97,10 +82,31 @@ public class UserController {
         return userFacade.createMeal(id, mealDto);
     }
 
+    @GetMapping("/{id}/meals/favourites")
+    @ResponseStatus(OK)
+    Mono<Page<MealDto>> getFavouriteMeals(
+            @PathVariable String id,
+            @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        return userFacade.findFavouriteMeals(id, PageRequest.of(page, size));
+    }
+
+    @PostMapping("/{userId}/meals/{mealId}/favourites")
+    @ResponseStatus(CREATED)
+    Mono<Void> addMealToFavourite(@PathVariable String userId, @PathVariable String mealId) {
+        return userFacade.addToFavourite(userId, mealId);
+    }
+
     @DeleteMapping("/{userId}/meals/{mealId}/favourites")
     @ResponseStatus(NO_CONTENT)
     Mono<Void> deleteMealFromFavourite(@PathVariable String userId, @PathVariable String mealId) {
         return userFacade.deleteFromFavourite(userId, mealId);
+    }
+
+    @GetMapping("/{userId}/meals/{mealId}/favourites")
+    @ResponseStatus(OK)
+    Mono<Boolean> isFavouriteMeal(@PathVariable String userId, @PathVariable String mealId) {
+        return userFacade.isFavourite(userId, mealId);
     }
 
     @InitBinder
