@@ -31,7 +31,7 @@ class UserServiceTest {
     private UserDto userDto;
 
     @BeforeEach
-    void setup() {
+    void beforeEach() {
         user = UserSample.johnWithId();
         userDto = UserSample.johnWithIdDto();
         MockitoAnnotations.initMocks(this);

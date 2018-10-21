@@ -155,12 +155,6 @@ class UserControllerTest {
                 .expectBody().json(objectMapper.writeValueAsString(new Page<>(new ArrayList<MealDto>(), 0, 10, 0)));
 
     }
-//
-//    @GetMapping("/{id}/carts")
-//    @ResponseStatus(OK)
-//    Mono<CartDto> getOrCreateCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-mm-yyyy") LocalDate date) {
-//        return userFacade.findDtoCart(id, date);
-//    }
 
     @Test
     @DisplayName("Get or create cart, when found cart, then return it")
@@ -194,111 +188,6 @@ class UserControllerTest {
                 .jsonPath("$.products").isEmpty()
                 .jsonPath("$.meals").isEmpty()
                 .jsonPath("$.id").isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("Add meal to today cart, when cart is empty, then cart should has 1 meal")
-    void addMealToTodayCart_whenCartIsEmpty_thenCartShouldHasOneMeal() {
-        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
-
-        cart.getMeals().add(meal);
-        final var expected = cartDtoConverter.toDto(cart);
-
-        webTestClient.put().uri(URI)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(CartDto.class).isEqualTo(expected);
-    }
-
-    @Test
-    @DisplayName("Add meal to today cart, when cart had one meal and we add the same meal again, then cart should has 2 the same meals")
-    void addMealToTodayCart_whenCartHad1MealAndWeAddTheSameMealAgain_thenCartShouldHasTwoTheSameMeals() {
-        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
-
-        cart.getMeals().add(meal);
-
-        final var expected = cartDtoConverter.toDto(cart);
-
-        webTestClient.put().uri(URI)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(CartDto.class).isEqualTo(expected);
-
-        cart.getMeals().add(meal);
-
-        final var expected2 = cartDtoConverter.toDto(cart);
-
-        webTestClient.put().uri(URI)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(CartDto.class).isEqualTo(expected2);
-    }
-
-    @Test
-    @DisplayName("Add meal to today cart, when cart doesn't exist, then create new cart and return in with one meal")
-    void addMealToTodayCart_whenCartDoesNotExist_thenCreateCartAndReturnInWithOneMeal() {
-        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
-
-        cartService.deleteAll().block();
-        cart.getMeals().add(meal);
-
-        final var expected = cartDtoConverter.toDto(cart);
-
-        var actual = webTestClient.put().uri(URI)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(CartDto.class)
-                .returnResult().getResponseBody();
-
-        assertAll(
-                () -> assertEquals(expected.getUserId(), actual.getUserId()),
-                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
-                () -> assertEquals(expected.getMeals().size(), actual.getMeals().size()),
-                () -> assertEquals(expected.getDate(), actual.getDate())
-        );
-    }
-
-    @Test
-    @DisplayName("Delete meal from today cart, when cart doesn't exist, then create new cart and do nothing")
-    void deleteMealFromTodayCart_whenCartDoesNotExist_thenCreateNewAndDoNothing() {
-        final var URI = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
-
-        cartService.deleteAll().block();
-
-        webTestClient.delete().uri(URI)
-                .exchange()
-                .expectStatus().isNoContent();
-    }
-
-    @Test
-    @DisplayName("Delete meal from today cart, when cart has a meal and we delete it, then carth should be empty")
-    void deleteMealFromTodayCart_whenCartHas1MealAndWeDeleteIt_thenCartShouldBeEmpty() {
-        final var URI_DELETE = "/users/" + user.getId() + "/carts?mealId=" + meal.getId();
-        final var URI_GET = "/users/" + user.getId() + "/carts?date=" + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-
-        cart.getMeals().add(meal);
-        cartDto = cartDtoConverter.toDto(cartService.save(cart).block());
-
-        ArrayList<MealDto> meals = webTestClient.get().uri(URI_GET)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(CartDto.class).isEqualTo(this.cartDto)
-                .returnResult().getResponseBody().getMeals();
-
-        assertEquals(1, meals.size());
-
-        ArrayList<MealDto> secondMeals = webTestClient.delete().uri(URI_DELETE)
-                .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult().getResponseBody().getMeals();
-
-        assertEquals(0, secondMeals.size());
     }
 
     @Test

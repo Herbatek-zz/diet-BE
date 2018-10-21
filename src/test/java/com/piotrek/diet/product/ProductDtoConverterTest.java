@@ -19,8 +19,6 @@ class ProductDtoConverterTest {
     void toDto() {
         var convertedProduct = productDtoConverter.toDto(product);
 
-
-
         assertNotNull(convertedProduct);
         assertAll(
                 () -> assertEquals(productDto.getId(), convertedProduct.getId()),

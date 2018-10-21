@@ -31,7 +31,7 @@ class TokenServiceTest {
     private User user = UserSample.johnWithId();
 
     @BeforeEach
-    private void beforeAll() {
+    void beforeEach() {
         createToken();
         MockitoAnnotations.initMocks(this);
     }

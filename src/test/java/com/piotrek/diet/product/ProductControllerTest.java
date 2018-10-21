@@ -47,7 +47,7 @@ class ProductControllerTest {
     private ProductDto productDto1;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         productService.deleteAll().block();
         createProducts();
         webTestClient = WebTestClient

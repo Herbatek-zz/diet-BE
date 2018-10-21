@@ -22,6 +22,7 @@ public class CartDto {
 
     private ArrayList<MealDto> meals = new ArrayList<>();
     private ArrayList<ProductDto> products = new ArrayList<>();
+    private ArrayList<ProductDto> allProducts = new ArrayList<>();
 
     @NotNull
     private String userId;

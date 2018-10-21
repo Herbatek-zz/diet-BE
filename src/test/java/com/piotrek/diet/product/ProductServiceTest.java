@@ -43,7 +43,7 @@ class ProductServiceTest {
     private ProductDto productDto;
 
     @BeforeEach
-    void setup() {
+    void beforeEach() {
         product = bananaWithId();
         productDto = bananaWithIdDto();
         MockitoAnnotations.initMocks(this);

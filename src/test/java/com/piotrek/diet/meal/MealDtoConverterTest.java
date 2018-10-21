@@ -23,8 +23,7 @@ class MealDtoConverterTest {
 
     @BeforeAll
     void setup() {
-        ProductDtoConverter productDtoConverter = new ProductDtoConverter();
-        mealDtoConverter = new MealDtoConverter(productDtoConverter);
+        mealDtoConverter = new MealDtoConverter(new ProductDtoConverter());
 
         meal = dumplingsWithId();
         meal.setProducts(new ArrayList<>(Arrays.asList(breadWithId(), bananaWithId())));

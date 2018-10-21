@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
@@ -47,10 +46,10 @@ class MealServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        meal1 = dumplingsWithId();
-        meal1Dto = dumplingsWithIdDto();
         MockitoAnnotations.initMocks(this);
         mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        meal1 = dumplingsWithId();
+        meal1Dto = dumplingsWithIdDto();
     }
 
     @Test

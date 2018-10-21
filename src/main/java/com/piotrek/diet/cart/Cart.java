@@ -2,6 +2,7 @@ package com.piotrek.diet.cart;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.piotrek.diet.meal.Meal;
+import com.piotrek.diet.product.Product;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ public class Cart {
     private LocalDate date;
 
     private ArrayList<Meal> meals = new ArrayList<>();
+    private ArrayList<Product> products = new ArrayList<>();
 
     @NotNull
     private String userId;

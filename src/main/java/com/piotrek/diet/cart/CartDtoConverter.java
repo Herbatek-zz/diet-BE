@@ -4,6 +4,7 @@ import com.piotrek.diet.helpers.DtoConverter;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.product.ProductDtoConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
 
     private final MealDtoConverter mealDtoConverter;
+    private final ProductDtoConverter productDtoConverter;
 
     @Override
     public CartDto toDto(Cart entity) {
@@ -21,9 +23,11 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         cartDto.setId(entity.getId());
         cartDto.setDate(entity.getDate());
         cartDto.setMeals(mealDtoConverter.listToDto(entity.getMeals()));
+        cartDto.setProducts(productDtoConverter.listToDto(entity.getProducts()));
 
-        var products = retrieveProductsFromMeals(cartDto.getMeals());
-        cartDto.setProducts(products);
+        var productsFromMeals = retrieveProductsFromMeals(cartDto.getMeals());
+        var allProducts = sumProductsAndProductsFromMeals(cartDto.getProducts(), productsFromMeals);
+        cartDto.setAllProducts(allProducts);
 
         cartDto.setUserId(entity.getUserId());
 
@@ -35,22 +39,38 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         var cart = new Cart(dto.getUserId(), dto.getDate());
         cart.setId(dto.getId());
         cart.setMeals(mealDtoConverter.listFromDto(dto.getMeals()));
+        cart.setProducts(productDtoConverter.listFromDto(dto.getProducts()));
         return cart;
     }
 
     private ArrayList<ProductDto> retrieveProductsFromMeals(ArrayList<MealDto> mealDtos) {
-        var products = new ArrayList<ProductDto>();
+        var productsFromMeals = new ArrayList<ProductDto>();
 
-        mealDtos.forEach(mealDto -> mealDto.getProducts().forEach(productDto -> {
-            if (products.contains(productDto)) {
-                var index = products.indexOf(productDto);
-                var productFromList = products.remove(index);
-                productFromList.setAmount(productFromList.getAmount() + productDto.getAmount());
-                products.add(productFromList);
-            } else
-                products.add(productDto);
-
+        mealDtos.forEach(mealDto -> mealDto.getProducts().forEach(productToAdd -> {
+            if (productsFromMeals.contains(productToAdd))
+                sumAmountDuplicatedProduct(productsFromMeals, productToAdd);
+            else
+                productsFromMeals.add(productToAdd);
         }));
-        return products;
+        return productsFromMeals;
+    }
+
+    private ArrayList<ProductDto> sumProductsAndProductsFromMeals(ArrayList<ProductDto> products, ArrayList<ProductDto> productsFromMeals) {
+        var allProducts = new ArrayList<ProductDto>(products);
+
+        productsFromMeals.forEach(productToAdd -> {
+            if (allProducts.contains(productToAdd))
+                sumAmountDuplicatedProduct(allProducts, productToAdd);
+            else
+                allProducts.add(productToAdd);
+        });
+        return allProducts;
+    }
+
+    private void sumAmountDuplicatedProduct(ArrayList<ProductDto> mainProductList, ProductDto duplicatedProduct) {
+        int indexOfDuplicatedProduct = mainProductList.indexOf(duplicatedProduct);
+        duplicatedProduct = mainProductList.remove(indexOfDuplicatedProduct);
+        duplicatedProduct.setAmount(duplicatedProduct.getAmount() + duplicatedProduct.getAmount());
+        mainProductList.add(duplicatedProduct);
     }
 }

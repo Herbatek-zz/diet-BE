@@ -58,18 +58,6 @@ public class UserController {
         return userFacade.findDtoCart(id, date);
     }
 
-    @PutMapping("/{userId}/carts")
-    @ResponseStatus(OK)
-    Mono<CartDto> addMealToTodayCart(@PathVariable String userId, @RequestParam String mealId) {
-        return userFacade.addMealToTodayCart(userId, mealId);
-    }
-
-    @DeleteMapping("/{userId}/carts")
-    @ResponseStatus(NO_CONTENT)
-    Mono<CartDto> deleteMealFromTodayCart(@PathVariable String userId, @RequestParam String mealId) {
-        return userFacade.deleteMealFromTodayCart(userId, mealId);
-    }
-
     @PostMapping("/{id}/products")
     @ResponseStatus(CREATED)
     Mono<ProductDto> createProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {

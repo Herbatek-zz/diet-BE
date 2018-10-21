@@ -84,7 +84,7 @@ class UserFacadeTest {
     private CartDto cartDto;
 
     @BeforeEach
-    void setup() {
+    void beforeEach() {
         initProducts();
         initMeals();
         user = UserSample.johnWithId();
@@ -128,108 +128,6 @@ class UserFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate())
         );
-    }
-
-    @Test
-    @DisplayName("Add meal to today cart, when cart is empty, then cart should has 1 meal")
-    void addMealToTodayCart_whenCartIsEmpty_thenCartShouldHasOneMeal() {
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        cartDto.getMeals().add(mealDto);
-        cartDto.getProducts().addAll(mealDto.getProducts());
-
-        CartDto block = userFacade.addMealToTodayCart(user.getId(), meal.getId()).block();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(1, block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(2, block.getProducts().size())
-        );
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
-    }
-
-    @Test
-    @DisplayName("Add meal to today cart, when cart had one meal, then cart should has 2 meals")
-    void addMealToTodayCart_whenCartHad1Meal_thenCartShouldHasTwoMeals() {
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        cart.setDate(LocalDate.now());
-        cartDto.setDate(LocalDate.now());
-        cart.getMeals().add(meal2);
-        cartDto.getMeals().add(mealDto2);
-        cartDto.getProducts().addAll(mealDto2.getProducts());
-        cartDto.getMeals().add(mealDto);
-        cartDto.getProducts().addAll(mealDto.getProducts());
-
-        CartDto block = userFacade.addMealToTodayCart(user.getId(), meal.getId()).block();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(2, block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(4, block.getProducts().size())
-        );
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
-    }
-
-    @Test
-    void deleteMealFromTodayCart_whenCartHad1Meal_thenCartShouldBeEmpty() {
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        cart.getMeals().add(meal);
-
-        CartDto block = userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
-
-        assertAll(
-                () -> assertEquals(0, block.getMeals().size())
-        );
-
-        assertEquals(0, cart.getMeals().size());
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
-    }
-
-    @Test
-    void deleteMealFromTodayCart_whenCartHadNoMeals_thenCartShouldBeEmpty() {
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.findByUserIdAndDate(user.getId(), LocalDate.now())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        CartDto block = userFacade.deleteMealFromTodayCart(user.getId(), meal.getId()).block();
-
-        assertAll(
-                () -> assertEquals(0, block.getMeals().size())
-        );
-
-        assertEquals(0, cart.getMeals().size());
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), LocalDate.now());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
     }
 
     @Test

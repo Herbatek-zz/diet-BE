@@ -54,7 +54,7 @@ class MealControllerTest {
     private MealDto mealDto2;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         mealService.deleteAll().block();
         createMeals();
         webTestClient = WebTestClient

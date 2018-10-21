@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
@@ -27,8 +26,9 @@ class CartServiceTest {
     private CartDto cartDto;
     private User user;
 
+
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         MockitoAnnotations.initMocks(this);
         cart = CartSample.cart1();
         cartDto = CartSample.cartDto1();

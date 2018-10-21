@@ -47,25 +47,6 @@ public class UserFacade {
         return Mono.just(cart);
     }
 
-    Mono<CartDto> addMealToTodayCart(String userId, String mealId) {
-        userValidation.validateUserWithPrincipal(userId);
-        Cart cart = findCart(userId, LocalDate.now()).block();
-        Meal meal = mealService.findById(mealId).block();
-        cart.getMeals().add(meal);
-        return cartService.save(cart).map(cartDtoConverter::toDto);
-    }
-
-    Mono<CartDto> deleteMealFromTodayCart(String userId, String mealId) {
-        userValidation.validateUserWithPrincipal(userId);
-        Cart cart = findCart(userId, LocalDate.now()).block();
-        Meal meal = mealService.findById(mealId).block();
-        if(cart.getMeals().contains(meal)) {
-            cart.getMeals().remove(meal);
-            cart = cartService.save(cart).block();
-        }
-        return Mono.just(cartDtoConverter.toDto(cart));
-    }
-
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
         userValidation.validateUserWithPrincipal(userId);
         var user = userService.findById(userId).block();
@@ -161,4 +142,5 @@ public class UserFacade {
         return userService.findById(userId)
                 .flatMap(user -> Mono.just(requireNonNull(user).getFavouriteMeals().contains(mealId)));
     }
+
 }
