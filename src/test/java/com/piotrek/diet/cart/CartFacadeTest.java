@@ -5,8 +5,9 @@ import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
-import com.piotrek.diet.user.UserValidation;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -17,9 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class CartFacadeTest {
-
-    @Mock
-    private UserValidation userValidation;
 
     @Mock
     private CartService cartService;

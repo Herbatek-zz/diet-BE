@@ -1,7 +1,5 @@
 package com.piotrek.diet.cart;
 
-import com.piotrek.diet.meal.Meal;
-import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;

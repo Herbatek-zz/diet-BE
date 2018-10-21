@@ -1,16 +1,11 @@
 package com.piotrek.diet.cart;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
-import com.piotrek.diet.meal.Meal;
-import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
-import com.piotrek.diet.product.Product;
-import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.MealSample;

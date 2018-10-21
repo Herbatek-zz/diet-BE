@@ -5,7 +5,6 @@ import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
