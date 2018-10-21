@@ -21,8 +21,6 @@ public class MealSample {
         meal.setRecipe("Rób dobre pierogi, to cały przepis");
         meal.setImageUrl("https://www.kwestiasmaku.com/sites/kwestiasmaku.com/files/img_1013_0.jpg");
         meal.setUserId("123four");
-        meal.getProducts().add(ProductSample.breadWithId());
-        meal.getProducts().add(ProductSample.bananaWithId());
         return meal;
     }
 
@@ -41,8 +39,6 @@ public class MealSample {
         meal.setRecipe("Rób dobre pierogi, to cały przepis");
         meal.setImageUrl("https://www.kwestiasmaku.com/sites/kwestiasmaku.com/files/img_1013_0.jpg");
         meal.setUserId("123four");
-        meal.getProducts().add(ProductSample.breadWithIdDto());
-        meal.getProducts().add(ProductSample.bananaWithIdDto());
         return meal;
     }
 
@@ -61,8 +57,6 @@ public class MealSample {
         );
         meal.setRecipe("Rób tą kawę");
         meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
-        meal.getProducts().add(ProductSample.breadWithId());
-        meal.getProducts().add(ProductSample.bananaWithId());
         return meal;
     }
 
@@ -81,8 +75,6 @@ public class MealSample {
         );
         meal.setRecipe("Rób tą kawę");
         meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
-        meal.getProducts().add(ProductSample.breadWithIdDto());
-        meal.getProducts().add(ProductSample.bananaWithIdDto());
         return meal;
     }
 

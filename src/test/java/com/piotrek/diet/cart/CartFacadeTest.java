@@ -68,7 +68,7 @@ class CartFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(2, block.getAllProducts().size())
+                () -> assertEquals(0, block.getAllProducts().size())
         );
         verify(cartService, times(1)).findById(cart.getId());
         verify(mealService, times(1)).findById(meal.getId());
@@ -102,7 +102,7 @@ class CartFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(4, block.getAllProducts().size())
+                () -> assertEquals(0, block.getAllProducts().size())
         );
         verify(cartService, times(1)).findById(cart.getId());
         verify(mealService, times(1)).findById(meal.getId());
@@ -138,7 +138,7 @@ class CartFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(3, block.getAllProducts().size())
+                () -> assertEquals(1, block.getAllProducts().size())
         );
         verify(cartService, times(1)).findById(cart.getId());
         verify(mealService, times(1)).findById(meal.getId());
@@ -296,7 +296,7 @@ class CartFacadeTest {
                 () -> assertEquals(cart.getUserId(), block.getUserId()),
                 () -> assertEquals(cart.getDate(), block.getDate()),
                 () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(3, block.getAllProducts().size())
+                () -> assertEquals(1, block.getAllProducts().size())
         );
         verify(cartService, times(1)).findById(cart.getId());
         verify(productService, times(1)).findById(product.getId());

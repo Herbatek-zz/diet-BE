@@ -20,7 +20,7 @@ public class CartController {
         return cartFacade.addMealToCart(cartId, mealId);
     }
 
-    @PutMapping("/{cartId}/products/{mealId}")
+    @PutMapping("/{cartId}/products/{productId}")
     @ResponseStatus(OK)
     Mono<CartDto> addProductToCart(@PathVariable String cartId, @PathVariable String productId) {
         return cartFacade.addProductToCart(cartId, productId);
@@ -32,7 +32,7 @@ public class CartController {
         return cartFacade.deleteMealFromCart(cartId, mealId);
     }
 
-    @DeleteMapping("/{cartId}/products/{mealId}")
+    @DeleteMapping("/{cartId}/products/{productId}")
     @ResponseStatus(NO_CONTENT)
     Mono<CartDto> deleteProductFromCart(@PathVariable String cartId, @PathVariable String productId) {
         return cartFacade.deleteProductFromCart(cartId, productId);
