@@ -5,9 +5,12 @@ import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
+import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductService;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -114,7 +118,8 @@ public class UserFacade {
     Mono<Void> addToFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
 
-        var user = userService.findById(userId).block();
+        User user = userService.findById(userId).block();
+
         var meal = mealService.findById(mealId).block();
 
         user.getFavouriteMeals().add(meal.getId());
@@ -140,6 +145,50 @@ public class UserFacade {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .flatMap(user -> Mono.just(requireNonNull(user).getFavouriteMeals().contains(mealId)));
+    }
+
+    Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date) {
+        Cart cart = cartService.findByUserIdAndDate(userId, date)
+                .defaultIfEmpty(new Cart(userId, date)).block();
+        userValidation.validateUserWithPrincipal(cart.getUserId());
+        Meal meal = mealService.findById(mealId).block();
+        cart.getMeals().add(meal);
+        return cartService.save(cart).map(cartDtoConverter::toDto);
+    }
+
+    Mono<CartDto> deleteMealFromCart(String userId, String mealId, LocalDate date) {
+        Cart cart = cartService.findByUserIdAndDate(userId, date)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
+                        " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
+        userValidation.validateUserWithPrincipal(cart.getUserId());
+        Meal meal = mealService.findById(mealId).block();
+        if(cart.getMeals().contains(meal)) {
+            cart.getMeals().remove(meal);
+            cart = cartService.save(cart).block();
+        }
+        return Mono.just(cartDtoConverter.toDto(cart));
+    }
+
+    Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date) {
+        Cart cart = cartService.findByUserIdAndDate(userId, date)
+                .defaultIfEmpty(new Cart(userId, date)).block();
+        userValidation.validateUserWithPrincipal(cart.getUserId());
+        Product product = productService.findById(productId).block();
+        cart.getProducts().add(product);
+        return cartService.save(cart).map(cartDtoConverter::toDto);
+    }
+
+    Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
+        Cart cart = cartService.findByUserIdAndDate(userId, date)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
+                        " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
+        userValidation.validateUserWithPrincipal(cart.getUserId());
+        Product product = productService.findById(productId).block();
+        if(cart.getProducts().contains(product)) {
+            cart.getProducts().remove(product);
+            cart = cartService.save(cart).block();
+        }
+        return Mono.just(cartDtoConverter.toDto(cart));
     }
 
 }

@@ -54,7 +54,7 @@ public class UserController {
 
     @GetMapping("/{id}/carts")
     @ResponseStatus(OK)
-    Mono<CartDto> getOrCreateCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+    Mono<CartDto> getCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
         return userFacade.findDtoCart(id, date);
     }
 
@@ -95,6 +95,34 @@ public class UserController {
     @ResponseStatus(OK)
     Mono<Boolean> isFavouriteMeal(@PathVariable String userId, @PathVariable String mealId) {
         return userFacade.isFavourite(userId, mealId);
+    }
+
+    @PutMapping("/{userId}/carts/meals/{mealId}")
+    @ResponseStatus(OK)
+    Mono<CartDto> addMealToCart(@PathVariable String userId, @PathVariable String mealId,
+                                @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+        return userFacade.addMealToCart(userId, mealId, date);
+    }
+
+    @PutMapping("/{userId}/carts/products/{productId}")
+    @ResponseStatus(OK)
+    Mono<CartDto> addProductToCart(@PathVariable String userId, @PathVariable String productId,
+                                   @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+        return userFacade.addProductToCart(userId, productId, date);
+    }
+
+    @DeleteMapping("/{userId}/carts/meals/{mealId}")
+    @ResponseStatus(NO_CONTENT)
+    Mono<CartDto> deleteMealFromCart(@PathVariable String userId, @PathVariable String mealId,
+                                     @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+        return userFacade.deleteMealFromCart(userId, mealId, date);
+    }
+
+    @DeleteMapping("/{userId}/carts/products/{productId}")
+    @ResponseStatus(NO_CONTENT)
+    Mono<CartDto> deleteProductFromCart(@PathVariable String userId, @PathVariable String productId,
+                                        @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+        return userFacade.deleteProductFromCart(userId, productId, date);
     }
 
     @InitBinder

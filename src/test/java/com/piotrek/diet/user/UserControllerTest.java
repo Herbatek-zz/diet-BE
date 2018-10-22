@@ -12,8 +12,10 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
+import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
@@ -30,10 +32,13 @@ import org.springframework.web.reactive.function.BodyInserters;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import static com.piotrek.diet.sample.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.sample.MealSample.dumplingsWithoutIdDto;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
@@ -51,6 +56,9 @@ class UserControllerTest {
     private CartDtoConverter cartDtoConverter;
 
     @Autowired
+    private MealDtoConverter mealDtoConverter;
+
+    @Autowired
     private UserFacade userFacade;
 
     @Autowired
@@ -58,6 +66,9 @@ class UserControllerTest {
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private ProductService productService;
 
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
@@ -78,6 +89,9 @@ class UserControllerTest {
     @BeforeEach
     void beforeEach() {
         userService.deleteAll().block();
+        productService.deleteAll().block();
+        mealService.deleteAll().block();
+        cartService.deleteAll().block();
         createUser();
         createMeal();
         createCart();
@@ -90,6 +104,9 @@ class UserControllerTest {
     @AfterAll
     void afterAll() {
         userService.deleteAll().block();
+        productService.deleteAll().block();
+        mealService.deleteAll().block();
+        cartService.deleteAll().block();
     }
 
 
@@ -156,10 +173,10 @@ class UserControllerTest {
     @Test
     @DisplayName("Get or create cart, when found cart, then return it")
     void getOrCreateCart_whenFoundCart_thenReturnIt() {
-        final var URI = "/users/" + user.getId() + "/carts?date=03-03-1995";
-
-        cart.setDate(LocalDate.of(1995,Month.MARCH, 3));
+        cart.setDate(LocalDate.of(1995, Month.MARCH, 3));
         cartDto = cartDtoConverter.toDto(cartService.save(cart).block());
+
+        final var URI = "/users/" + user.getId() + "/carts?date=" + cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -169,7 +186,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Get or create cart, when not found cart, then create new and return")
+    @DisplayName("Get or create cart, when not found cart, then throw NotFoundException")
     void getOrCreateCart_whenNotFoundCart_thenCreateAndReturn() {
         final var URI = "/users/" + user.getId() + "/carts?date=04-03-1995";
 
@@ -177,14 +194,7 @@ class UserControllerTest {
 
         webTestClient.get().uri(URI)
                 .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody()
-                .jsonPath("$.userId").isEqualTo(cartDto.getUserId())
-                .jsonPath("$.date").isEqualTo("04-03-1995")
-                .jsonPath("$.products").isEmpty()
-                .jsonPath("$.meals").isEmpty()
-                .jsonPath("$.id").isNotEmpty();
+                .expectStatus().isNotFound();
     }
 
     @Test
@@ -414,6 +424,488 @@ class UserControllerTest {
                 .expectStatus().isBadRequest();
     }
 
+    @Test
+    @DisplayName("Add meal to cart, when cart is empty, then cart has one meal")
+    void addMealToCart_whenCartIsEmpty_thenCartHasOneMeal() throws JsonProcessingException {
+        var mealToAdd = MealSample.coffeeWithoutId();
+        mealToAdd.getProducts().add(ProductSample.breadWithId());
+        mealToAdd = mealService.save(mealToAdd).block();
+
+        cartDto.getMeals().add(mealDtoConverter.toDto(mealToAdd));
+        cartDto.getAllProducts().addAll(mealDtoConverter.toDto(mealToAdd).getProducts());
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), responseBody.getId()),
+                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(1, responseBody.getMeals().size()),
+                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Add meal to cart, when cart has one meal, then cart has two meal")
+    void addMealToCart_whenCartHasOneMeal_thenCartHasTwoMeals() {
+        var mealToAdd = MealSample.dumplingsWithId();
+        mealToAdd.getProducts().add(ProductSample.breadWithId());
+        mealToAdd.getProducts().add(ProductSample.bananaWithId());
+        mealToAdd = mealService.save(mealToAdd).block();
+
+        var mealInCart = MealSample.coffeeWithId();
+        mealInCart.getProducts().add(ProductSample.bananaWithId());
+
+        cart.getMeals().add(mealInCart);
+        cart = cartService.save(cart).block();
+
+        cartDto.getMeals().add(mealDtoConverter.toDto(mealInCart));
+        cartDto.getMeals().add(mealDtoConverter.toDto(mealToAdd));
+        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
+        var duplicatedProduct = ProductSample.bananaWithIdDto();
+        duplicatedProduct.setAmount(duplicatedProduct.getAmount() * 2);
+        cartDto.getAllProducts().add(duplicatedProduct);
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+
+        CartDto responseBody = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), responseBody.getId()),
+                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(2, responseBody.getMeals().size()),
+                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
+                () -> assertEquals(2, responseBody.getAllProducts().size()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Add meal to cart, when cart has one product, then cart has one meal and one product")
+    void addMealToCart_whenCartHasOneProduct_thenCartHasOneMealAndOneProduct() {
+        var mealToAdd = MealSample.dumplingsWithId();
+        mealToAdd.getProducts().add(ProductSample.breadWithId());
+        mealToAdd.getProducts().add(ProductSample.bananaWithId());
+        mealToAdd = mealService.save(mealToAdd).block();
+
+        var productInCart = ProductSample.bananaWithId();
+
+        cart.getProducts().add(productInCart);
+        cart = cartService.save(cart).block();
+
+        cartDto.getMeals().add(mealDtoConverter.toDto(mealToAdd));
+        cartDto.getProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
+        var duplicatedProduct = ProductSample.bananaWithIdDto();
+        duplicatedProduct.setAmount(duplicatedProduct.getAmount() * 2);
+        cartDto.getAllProducts().add(duplicatedProduct);
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+
+        CartDto responseBody = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), responseBody.getId()),
+                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(1, responseBody.getMeals().size()),
+                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(1, responseBody.getProducts().size()),
+                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
+                () -> assertEquals(2, responseBody.getAllProducts().size()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Add product to cart, when cart is empty, then cart has one product")
+    void addProductToCart_whenCartIsEmpty_thenCartHasOneProduct() {
+        var productToAdd = productService.save(ProductSample.bananaWithId()).block();
+
+        cartDto.getProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.bananaWithIdDto());
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+
+        CartDto responseBody = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), responseBody.getId()),
+                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(1, responseBody.getProducts().size()),
+                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Add product to cart, when cart has one product, then cart has two products")
+    void addProductToCart_whenCartHasOneProduct_thenCartHasTwoProducts() {
+        var productToAdd = productService.save(ProductSample.bananaWithId()).block();
+        var productInCart = productService.save(ProductSample.breadWithId()).block();
+
+        cart.getProducts().add(productInCart);
+        cart = cartService.save(cart).block();
+
+
+        cartDto.getProducts().add(ProductSample.breadWithIdDto());
+        cartDto.getProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.bananaWithIdDto());
+
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+
+        CartDto responseBody = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), responseBody.getId()),
+                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(2, responseBody.getProducts().size()),
+                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
+                () -> assertEquals(2, responseBody.getAllProducts().size()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Add product to cart, when cart has one meal, then cart has one meal and one product")
+    void addProductToCart_whenCartHasOneMeal_thenCartHasOneMealAndOneProduct() {
+        var productToAdd = productService.save(ProductSample.bananaWithId()).block();
+
+        var mealInCart = MealSample.coffeeWithId();
+        mealInCart.getProducts().add(ProductSample.bananaWithId());
+
+        cart.getMeals().add(mealInCart);
+        cart = cartService.save(cart).block();
+
+        cartDto.getMeals().add(mealDtoConverter.toDto(mealInCart));
+        cartDto.getProducts().add(ProductSample.bananaWithIdDto());
+        var duplicatedProduct = ProductSample.bananaWithIdDto();
+        duplicatedProduct.setAmount(duplicatedProduct.getAmount() * 2);
+        cartDto.getAllProducts().add(duplicatedProduct);
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+
+        CartDto responseBody = webTestClient.put().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), responseBody.getId()),
+                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(1, responseBody.getMeals().size()),
+                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(1, responseBody.getProducts().size()),
+                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete meal from cart, when cart has one meal, then cart is empty")
+    void deleteMealFromCart_whenCartHasOneMeal_thenCartIsEmpty() {
+        var mealToDelete = MealSample.coffeeWithId();
+        mealToDelete.getProducts().add(ProductSample.bananaWithId());
+        mealToDelete = mealService.save(mealToDelete).block();
+
+        cart.getMeals().add(mealToDelete);
+        cartService.save(cart).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(0, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete meal from cart, when cart has two meals, then cart has one meal")
+    void deleteMealFromCart_whenCartHasTwoMeals_thenCartHasOneMeal() {
+        var mealToDelete = MealSample.coffeeWithId();
+        mealToDelete.getProducts().add(ProductSample.bananaWithId());
+        mealToDelete = mealService.save(mealToDelete).block();
+
+        var mealInCart = MealSample.dumplingsWithId();
+        mealInCart.getProducts().add(ProductSample.breadWithId());
+        mealInCart = mealService.save(mealInCart).block();
+
+        cart.getMeals().add(mealToDelete);
+        cart.getMeals().add(mealInCart);
+        cartService.save(cart).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(1, responseBody.getMeals().size()),
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete meal form cart, when cart has one product and one meal, then cart has one product")
+    void deleteMealFromCart_whenCartHasOneProductAndOneMeal_thenCartHasOneProduct() {
+        var mealToDelete = MealSample.coffeeWithId();
+        mealToDelete.getProducts().add(ProductSample.bananaWithId());
+        mealToDelete = mealService.save(mealToDelete).block();
+
+        var productInCart = productService.save(ProductSample.breadWithId()).block();
+
+        cart.getMeals().add(mealToDelete);
+        cart.getProducts().add(productInCart);
+        cartService.save(cart).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(1, responseBody.getProducts().size()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete meal from cart, when cart is empty, then cart is still empty")
+    void deleteMealFromCart_whenCartIsEmpty_thenCartIsStillEmpty() {
+        var mealToDelete = MealSample.coffeeWithId();
+        mealToDelete.getProducts().add(ProductSample.bananaWithId());
+        mealToDelete = mealService.save(mealToDelete).block();
+
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(0, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete product from cart, when cart has one product, then cart is empty")
+    void deleteProductFromCart_whenCartHasOneProduct_thenCartIsEmpty() {
+        var productToDelete = productService.save(ProductSample.breadWithId()).block();
+
+        cart.getProducts().add(productToDelete);
+        cartService.save(cart).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(0, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete product from cart, when cart has two products, then cart has one product")
+    void deleteProductFromCart_whenCartHasTwoProducts_thenCartHasOneProduct() {
+        var productToDelete = productService.save(ProductSample.breadWithId()).block();
+
+        var productInCart = productService.save(ProductSample.bananaWithId()).block();
+
+        cart.getProducts().add(productToDelete);
+        cart.getProducts().add(productInCart);
+        cartService.save(cart).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(1, responseBody.getProducts().size()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete product form cart, when cart has one product and one meal, then cart has one meal")
+    void deleteProductFromCart_whenCartHasOneProductAndOneMeal_thenCartHasOneMeal() {
+        var mealInCart = MealSample.coffeeWithId();
+        mealInCart.getProducts().add(ProductSample.bananaWithId());
+        mealInCart = mealService.save(mealInCart).block();
+
+        var productToDelete = productService.save(ProductSample.breadWithId()).block();
+
+        cart.getMeals().add(mealInCart);
+        cart.getProducts().add(productToDelete);
+        cartService.save(cart).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(1, responseBody.getMeals().size()),
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(1, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
+    @Test
+    @DisplayName("Delete product from cart, when cart is empty, then cart is still empty")
+    void deleteProductFromCart_whenCartIsEmpty_thenCartIsStillEmpty() {
+        var productToDelete = productService.save(ProductSample.breadWithId()).block();
+
+        final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        CartDto responseBody = webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(CartDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), responseBody.getId()),
+                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(0, responseBody.getMeals().size()),
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(0, responseBody.getAllProducts().size()),
+                () -> assertEquals(cart.getDate(), responseBody.getDate())
+        );
+    }
+
     private void createUser() {
         user = UserSample.johnWithoutId();
         user = userService.save(user).block();
@@ -430,7 +922,7 @@ class UserControllerTest {
     private void createCart() {
         cart = CartSample.cart1();
         cart.setUserId(user.getId());
-        cartDto = userFacade.findDtoCart(user.getId(), cart.getDate()).block();
+        cartDto = cartDtoConverter.toDto(cartService.save(cart).block());
         cart.setId(cartDto.getId());
         cart.setUserId(cartDto.getUserId());
     }

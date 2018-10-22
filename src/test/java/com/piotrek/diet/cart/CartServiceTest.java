@@ -1,5 +1,6 @@
 package com.piotrek.diet.cart;
 
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.UserSample;
 import com.piotrek.diet.user.User;
@@ -53,13 +54,11 @@ class CartServiceTest {
     }
 
     @Test
-    @DisplayName("Find cart by id, when not found, then return null in mono")
+    @DisplayName("Find cart by id, when not found, then throw NotFoundException")
     void findById_whenNotFound_thenReturnMonoEmpty() {
         when(cartRepository.findById(cart.getId())).thenReturn(Mono.empty());
 
-        final Cart block = cartService.findById(cart.getId()).block();
-
-        assertNull(block);
+        assertThrows(NotFoundException.class, () -> cartService.findById(cart.getId()).block());
         verify(cartRepository, times(1)).findById(cart.getId());
         verifyNoMoreInteractions(cartRepository);
     }
