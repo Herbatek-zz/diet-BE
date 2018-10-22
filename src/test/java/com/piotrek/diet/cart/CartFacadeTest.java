@@ -5,6 +5,7 @@ import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
+import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class CartFacadeTest {
 
     @Mock
     private ProductService productService;
+
+    @Mock
+    private UserValidation userValidation;
 
     @InjectMocks
     private CartFacade cartFacade;
