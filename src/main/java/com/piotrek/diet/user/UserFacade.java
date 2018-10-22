@@ -44,10 +44,7 @@ public class UserFacade {
     }
 
     Mono<Cart> findCart(String userId, LocalDate date) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date).block();
-        if(cart == null)
-                return cartService.save(new Cart(userId, date));
-        return Mono.just(cart);
+        return cartService.findByUserIdAndDate(userId, date);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
@@ -117,14 +114,17 @@ public class UserFacade {
 
     Mono<Void> addToFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
+        userService.findById(userId)
+                .subscribe((user) -> {
+                    mealService.findById(mealId).subscribe(
+                            (meal -> {
+                                user.getFavouriteMeals().add(meal.getId());
+                                userService.save(user).block();
+                            })
+                    );
+                });
+        return Mono.empty();
 
-        User user = userService.findById(userId).block();
-
-        var meal = mealService.findById(mealId).block();
-
-        user.getFavouriteMeals().add(meal.getId());
-
-        return userService.save(user).then();
     }
 
     Mono<Void> deleteFromFavourite(String userId, String mealId) {
@@ -149,7 +149,7 @@ public class UserFacade {
 
     Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date) {
         Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .defaultIfEmpty(new Cart(userId, date)).block();
+                .onErrorReturn(new Cart(userId, date)).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
         cart.getMeals().add(meal);
@@ -162,7 +162,7 @@ public class UserFacade {
                         " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
-        if(cart.getMeals().contains(meal)) {
+        if (cart.getMeals().contains(meal)) {
             cart.getMeals().remove(meal);
             cart = cartService.save(cart).block();
         }
@@ -184,7 +184,7 @@ public class UserFacade {
                         " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
-        if(cart.getProducts().contains(product)) {
+        if (cart.getProducts().contains(product)) {
             cart.getProducts().remove(product);
             cart = cartService.save(cart).block();
         }

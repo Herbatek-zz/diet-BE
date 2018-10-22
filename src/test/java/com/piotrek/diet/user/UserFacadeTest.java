@@ -117,18 +117,11 @@ class UserFacadeTest {
     @Test
     @DisplayName("Find cart, when found, then return it")
     void findCart_whenNotFound_thenSaveNewCartAndReturn() {
-        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.empty());
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenThrow(NotFoundException.class);
         when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        var block = userFacade.findDtoCart(user.getId(), cart.getDate()).block();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate())
-        );
+        assertThrows(NotFoundException.class, () -> userFacade.findDtoCart(cart.getUserId(), cart.getDate()).block());
     }
 
     @Test
