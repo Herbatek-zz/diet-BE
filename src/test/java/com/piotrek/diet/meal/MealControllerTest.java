@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import static com.piotrek.diet.sample.MealSample.*;
 import static com.piotrek.diet.sample.ProductSample.bananaWithIdDto;
 import static com.piotrek.diet.sample.ProductSample.breadWithIdDto;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 
@@ -115,15 +117,14 @@ class MealControllerTest {
 
     @Test
     @DisplayName("When findMealDtoById finds a single meal, meal will be returned as dto")
-    void findById_whenFound_thenReturnMeal() {
+    void findById_whenFound_thenReturnMeal() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
 
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(MealDto.class)
-                .isEqualTo(mealDto1);
+                .expectBody().json(objectMapper.writeValueAsString(mealDto1));
     }
 
     @Test
@@ -225,7 +226,15 @@ class MealControllerTest {
     @DisplayName("When we add products to a meal, then the meal should be with added products")
     void updateMeal_whenUpdateMeal_thenMealShouldBeUpdated() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
-        final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
+        final var productDtos = new ArrayList<ProductDto>(2);
+
+        var firstProduct = bananaWithIdDto();
+        firstProduct.setAmount(100);
+        productDtos.add(firstProduct);
+
+        var secondProduct = breadWithIdDto();
+        secondProduct.setAmount(50);
+        productDtos.add(secondProduct);
 
         providePrincipal();
 
@@ -236,26 +245,33 @@ class MealControllerTest {
         update.setImageUrl("new image");
         update.setProducts(productDtos);
 
-        update.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        update.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        update.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        update.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        update.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        update.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        update.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
-        webTestClient.put().uri(URI)
+        MealDto responseBody = webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(update));
+                .expectBody(MealDto.class)
+                .returnResult()
+                .getResponseBody();
 
-        webTestClient.get().uri(URI)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(update));
+        assertAll(
+                () -> assertEquals(update.getName(), responseBody.getName()),
+                () -> assertEquals(update.getId(), responseBody.getId()),
+                () -> assertEquals(update.getRecipe(), responseBody.getRecipe()),
+                () -> assertEquals(update.getDescription(), responseBody.getDescription()),
+                () -> assertEquals(update.getImageUrl(), responseBody.getImageUrl()),
+                () -> assertEquals(update.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(firstProduct.getAmount() + secondProduct.getAmount(), responseBody.getAmount()),
+                () -> assertEquals(firstProduct.getCarbohydrateExchange() + secondProduct.getCarbohydrateExchange() * 0.5,
+                        responseBody.getCarbohydrateExchange()),
+                () -> assertEquals(firstProduct.getCarbohydrate() + secondProduct.getCarbohydrate() * 0.5, responseBody.getCarbohydrate()),
+                () -> assertEquals(firstProduct.getProteinAndFatEquivalent(), secondProduct.getProteinAndFatEquivalent() * 0.5,
+                        responseBody.getProteinAndFatEquivalent()),
+                () -> assertEquals(firstProduct.getProtein(), secondProduct.getProtein() * 0.5, responseBody.getProtein()),
+                () -> assertEquals(firstProduct.getFibre(), secondProduct.getFibre() * 0.5, responseBody.getFibre()),
+                () -> assertEquals(firstProduct.getFat(), secondProduct.getFat() * 0.5, responseBody.getFat()),
+                () -> assertEquals(firstProduct.getKcal(), secondProduct.getKcal() * 0.5, responseBody.getKcal())
+        );
     }
 
     @Test
@@ -322,19 +338,9 @@ class MealControllerTest {
     @DisplayName("When update meal, and there is missing imageUrl, then throw BadRequestException")
     void updateMeal_whenUpdateHasNoImageUrl_throwBadRequestException() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
-        final var productDtos = new ArrayList<ProductDto>(Arrays.asList(bananaWithIdDto(), breadWithIdDto()));
 
         final var update = dumplingsWithIdDto();
         update.setImageUrl(null);
-        update.setProducts(productDtos);
-
-        update.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        update.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        update.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        update.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        update.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        update.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        update.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
 
         webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))

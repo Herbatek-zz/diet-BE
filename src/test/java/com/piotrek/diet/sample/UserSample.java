@@ -27,18 +27,13 @@ public class UserSample {
         return user;
     }
 
-    public static UserDto johnWithoutIdDto() {
+    public static UserDto johnWithIdDto() {
         var userDto = new UserDto();
         userDto.setEmail("CoreySanders@dayrep.com");
         userDto.setFirstName("Corey");
         userDto.setLastName("Sanders");
         userDto.setUsername("Brulty");
-        return userDto;
-    }
-
-    public static UserDto johnWithIdDto() {
-        var userDto = johnWithoutIdDto();
-        userDto.setId(johnWithId().getId());
+        userDto.setId(JOHN_ID);
         return userDto;
     }
 
@@ -57,18 +52,13 @@ public class UserSample {
         return user;
     }
 
-    public static UserDto baileyWithoutIdDto() {
+    public static UserDto baileyWithIdDto() {
         var userDto = new UserDto();
         userDto.setUsername("Cougge1940");
         userDto.setEmail("BaileyHancock@teleworm.us");
         userDto.setFirstName("Bailey");
         userDto.setLastName("Hancock");
-        return userDto;
-    }
-
-    public static UserDto baileyWithIdDto() {
-        var userDto = baileyWithoutIdDto();
-        userDto.setId(baileyWithId().getId());
+        userDto.setId(BAILEY_ID);
         return userDto;
     }
 }
