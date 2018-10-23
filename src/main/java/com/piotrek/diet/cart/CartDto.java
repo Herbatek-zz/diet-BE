@@ -20,6 +20,8 @@ public class CartDto {
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
+    private int itemCounter;
+
     private ArrayList<MealDto> meals = new ArrayList<>();
     private ArrayList<ProductDto> products = new ArrayList<>();
     private ArrayList<ProductDto> allProducts = new ArrayList<>();

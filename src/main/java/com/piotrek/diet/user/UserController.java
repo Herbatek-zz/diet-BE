@@ -100,15 +100,17 @@ public class UserController {
     @PutMapping("/{userId}/carts/meals/{mealId}")
     @ResponseStatus(OK)
     Mono<CartDto> addMealToCart(@PathVariable String userId, @PathVariable String mealId,
-                                @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.addMealToCart(userId, mealId, date);
+                                @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
+                                @RequestParam int amount) {
+        return userFacade.addMealToCart(userId, mealId, date, amount);
     }
 
     @PutMapping("/{userId}/carts/products/{productId}")
     @ResponseStatus(OK)
     Mono<CartDto> addProductToCart(@PathVariable String userId, @PathVariable String productId,
-                                   @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.addProductToCart(userId, productId, date);
+                                   @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
+                                   @RequestParam int amount) {
+        return userFacade.addProductToCart(userId, productId, date, amount);
     }
 
     @DeleteMapping("/{userId}/carts/meals/{mealId}")

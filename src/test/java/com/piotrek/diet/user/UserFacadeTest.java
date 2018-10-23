@@ -532,7 +532,7 @@ class UserFacadeTest {
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
 
-        final var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate()).block();
+        final var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -566,7 +566,7 @@ class UserFacadeTest {
         cartDto.getAllProducts().addAll(mealDto.getProducts());
         cartDto.getAllProducts().addAll(MealSample.dumplingsWithIdDto().getProducts());
 
-        var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate()).block();
+        var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -602,7 +602,7 @@ class UserFacadeTest {
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
 
-        var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate()).block();
+        var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -691,7 +691,7 @@ class UserFacadeTest {
         cartDto.getProducts().add(productDto);
         cartDto.getAllProducts().add(productDto);
 
-        final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate()).block();
+        final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -725,7 +725,7 @@ class UserFacadeTest {
         cartDto.getAllProducts().add(productDto);
         cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
 
-        var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate()).block();
+        var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),
@@ -760,7 +760,7 @@ class UserFacadeTest {
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
 
-        var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate()).block();
+        var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertAll(
                 () -> assertEquals(cart.getId(), block.getId()),

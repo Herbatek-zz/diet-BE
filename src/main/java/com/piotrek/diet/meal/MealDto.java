@@ -27,6 +27,7 @@ public class MealDto {
     private double fat;
     private double fibre;
     private double kcal;
+    private int amount;
 
     private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
 

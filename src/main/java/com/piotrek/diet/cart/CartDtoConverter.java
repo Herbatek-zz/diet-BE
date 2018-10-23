@@ -24,6 +24,7 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         cartDto.setDate(entity.getDate());
         cartDto.setMeals(mealDtoConverter.listToDto(entity.getMeals()));
         cartDto.setProducts(productDtoConverter.listToDto(entity.getProducts()));
+        cartDto.setItemCounter(entity.getMeals().size() + entity.getProducts().size());
 
         var productsFromMeals = retrieveProductsFromMeals(cartDto.getMeals());
         var allProducts = sumProductsAndProductsFromMeals(cartDto.getProducts(), productsFromMeals);
@@ -56,15 +57,19 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
     }
 
     private ArrayList<ProductDto> sumProductsAndProductsFromMeals(ArrayList<ProductDto> products, ArrayList<ProductDto> productsFromMeals) {
-        var allProducts = new ArrayList<ProductDto>(products);
+        var allProducts = new ArrayList<ProductDto>();
+        allProducts.addAll(products);
+        allProducts.addAll(productsFromMeals);
 
-        productsFromMeals.forEach(productToAdd -> {
-            if (allProducts.contains(productToAdd))
-                sumAmountDuplicatedProduct(allProducts, productToAdd);
+        var productsWithoutDuplicates = new ArrayList<ProductDto>();
+
+        allProducts.forEach(productToAdd -> {
+            if (productsWithoutDuplicates.contains(productToAdd))
+                sumAmountDuplicatedProduct(productsWithoutDuplicates, productToAdd);
             else
-                allProducts.add(productToAdd);
+                productsWithoutDuplicates.add(productToAdd);
         });
-        return allProducts;
+        return productsWithoutDuplicates;
     }
 
     private void sumAmountDuplicatedProduct(ArrayList<ProductDto> mainProductList, ProductDto duplicatedProduct) {

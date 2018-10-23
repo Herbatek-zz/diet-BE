@@ -98,10 +98,21 @@ public class MealService {
 
     private void addProductsToMeal(Meal meal, MealDto update) {
         meal.setProducts(productDtoConverter.listFromDto(update.getProducts()));
-        updateMealInfoAfterAddProducts(meal);
+        meal.getProducts()
+                .forEach(product -> {
+                    var divider = product.getAmount() / 100.0;
+                    product.setProtein(product.getProtein() * divider);
+                    product.setCarbohydrate(product.getCarbohydrate() * divider);
+                    product.setFat(product.getFat() * divider);
+                    product.setFibre(product.getFibre() * divider);
+                    product.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() * divider);
+                    product.setCarbohydrateExchange(product.getCarbohydrateExchange() * divider);
+                    product.setKcal(product.getKcal() * divider);
+                });
+        calculateMealInformation(meal);
     }
 
-    private void updateMealInfoAfterAddProducts(Meal meal) {
+    public void calculateMealInformation(Meal meal) {
         calculateProtein(meal);
         calculateCarbohydrate(meal);
         calculateFat(meal);
@@ -109,68 +120,78 @@ public class MealService {
         calculateCarbohydrateExchange(meal);
         calculateProteinAndFatEquivalent(meal);
         calculateKcal(meal);
+        calculateAmount(meal);
+    }
+
+    private void calculateAmount(Meal meal) {
+        int amountValue = meal.getProducts()
+                .stream()
+                .mapToInt(Product::getAmount)
+                .sum();
+
+        meal.setAmount(amountValue);
     }
 
     private void calculateProtein(Meal meal) {
-        double protein = 0;
+        var proteinValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getProtein)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            protein += product.getProtein() * (double) product.getAmount() / 100;
-
-        meal.setProtein(protein);
+        meal.setProtein(proteinValue);
     }
 
     private void calculateFibre(Meal meal) {
-        double fibre = 0;
+        var fibreValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getFibre)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            fibre += product.getFibre() * (double) product.getAmount() / 100;
-
-        meal.setFibre(fibre);
+        meal.setFibre(fibreValue);
     }
 
     private void calculateFat(Meal meal) {
-        double fat = 0;
+        var fatValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getFat)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            fat += product.getFat() * (double) product.getAmount() / 100;
-
-        meal.setFat(fat);
+        meal.setFat(fatValue);
     }
 
     private void calculateCarbohydrate(Meal meal) {
-        double carbohydrate = 0;
+        var carbohydrateValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getCarbohydrate)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            carbohydrate += product.getCarbohydrate() * (double) product.getAmount() / 100;
-
-        meal.setCarbohydrate(carbohydrate);
+        meal.setCarbohydrate(carbohydrateValue);
     }
 
     private void calculateProteinAndFatEquivalent(Meal meal) {
-        double proteinAndFatEquivalent = 0;
+        var proteinAndFatEquivalentValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getProteinAndFatEquivalent)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            proteinAndFatEquivalent += product.getProteinAndFatEquivalent() * (double) product.getAmount() / 100;
-
-        meal.setProteinAndFatEquivalent(proteinAndFatEquivalent);
+        meal.setProteinAndFatEquivalent(proteinAndFatEquivalentValue);
     }
 
     private void calculateCarbohydrateExchange(Meal meal) {
-        double carbohydrateExchange = 0;
+        var carbohydrateExchangeValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getCarbohydrateExchange)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            carbohydrateExchange += product.getCarbohydrateExchange() * (double) product.getAmount() / 100;
-
-        meal.setCarbohydrateExchange(carbohydrateExchange);
+        meal.setCarbohydrateExchange(carbohydrateExchangeValue);
     }
 
     private void calculateKcal(Meal meal) {
-        double kcal = 0;
+        double kcalValue = meal.getProducts()
+                .stream()
+                .mapToDouble(Product::getKcal)
+                .sum();
 
-        for (Product product : meal.getProducts())
-            kcal += product.getKcal() * (double) product.getAmount() / 100;
-
-        meal.setKcal(kcal);
+        meal.setKcal(kcalValue);
     }
 }

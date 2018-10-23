@@ -37,6 +37,8 @@ public class Meal {
 
     private double kcal;
 
+    private int amount;
+
     @NotNull
     private String imageUrl;
 
