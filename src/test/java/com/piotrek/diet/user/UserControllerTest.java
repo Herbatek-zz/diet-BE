@@ -435,7 +435,7 @@ class UserControllerTest {
         cartDto.getAllProducts().addAll(mealDtoConverter.toDto(mealToAdd).getProducts());
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
         CartDto responseBody = webTestClient.put().uri(URI)
                 .exchange()
@@ -479,7 +479,7 @@ class UserControllerTest {
         cartDto.getAllProducts().add(duplicatedProduct);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
         CartDto responseBody = webTestClient.put().uri(URI)
@@ -523,7 +523,7 @@ class UserControllerTest {
         cartDto.getAllProducts().add(duplicatedProduct);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
         CartDto responseBody = webTestClient.put().uri(URI)
@@ -556,7 +556,7 @@ class UserControllerTest {
         cartDto.getAllProducts().add(ProductSample.bananaWithIdDto());
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
         CartDto responseBody = webTestClient.put().uri(URI)
@@ -597,7 +597,7 @@ class UserControllerTest {
 
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
         CartDto responseBody = webTestClient.put().uri(URI)
@@ -639,7 +639,7 @@ class UserControllerTest {
         cartDto.getAllProducts().add(duplicatedProduct);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
         CartDto responseBody = webTestClient.put().uri(URI)

@@ -27,6 +27,11 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        cartService.deleteAll().block();
+        productService.deleteAll().block();
+        mealService.deleteAll().block();
+        cartService.deleteAll().block();
+
         User user = userService.findByEmail("fake@mail.com").block();
         if (user == null) {
             user = new User(123L, "fake@mail.com", "Janusz", "Monkey");
@@ -77,10 +82,7 @@ public class Bootstrap implements CommandLineRunner {
         meal.setName("Dobre");
         list.add(meal);
         cart.setMeals(list);
-        cartService.deleteAll().block();
         cartService.save(cart).block();
-
-        cartService.findByUserIdAndDate("123123", LocalDate.now()).block().getMeals().forEach(i -> System.out.println(i.getName()));
 
     }
 }

@@ -62,7 +62,7 @@ public class ProductService {
     }
 
     public Flux<Product> findAll(long skipNumber, int limitNumber) {
-        return Flux.fromStream(productRepository.findAll().skip(skipNumber).toStream().limit(limitNumber));
+        return productRepository.findAll().skip(skipNumber).take(limitNumber);
     }
 
     public Flux<Product> findAllByUserId(String userId) {
