@@ -560,6 +560,38 @@ class UserFacadeTest {
     }
 
     @Test
+    @DisplayName("Add meal to cart, when cart is empty, then cart should has 1 meal")
+    void addMealToCart_whenThereIsNoCart_thenCreateCartAndAddMeal() {
+        final var meal = MealSample.coffeeWithId();
+        final var mealDto = MealSample.coffeeWithIdDto();
+
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+
+        cartDto.getMeals().add(mealDto);
+        cartDto.getAllProducts().addAll(mealDto.getProducts());
+
+        final var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
+
+        assertAll(
+                () -> assertEquals(cartDto.getId(), block.getId()),
+                () -> assertEquals(cartDto.getMeals().size(), block.getMeals().size()),
+                () -> assertEquals(cartDto.getUserId(), block.getUserId()),
+                () -> assertEquals(cartDto.getDate(), block.getDate()),
+                () -> assertEquals(cartDto.getProducts().size(), block.getProducts().size()),
+                () -> assertEquals(cartDto.getAllProducts(), block.getAllProducts())
+        );
+        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).calculateMealInformation(meal);
+        verify(cartService, times(1)).save(any(Cart.class));
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+    }
+
+    @Test
     @DisplayName("Add meal to cart, when cart had one meal, then cart should has 2 meals")
     void addMealToCart_whenCartHadOneMeal_thenCartShouldHasTwoMeals() {
         final var meal = MealSample.coffeeWithId();
@@ -685,6 +717,37 @@ class UserFacadeTest {
         assertEquals(0, cart.getMeals().size());
         verify(mealService, times(1)).findById(meal.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+    }
+
+    @Test
+    @DisplayName("Add product to cart, when there is no cart, then cart should be created and product should be added")
+    void addProductToCart_whenThereIsNoCart_thenCreateCartAndAddProduct() {
+        final var product = ProductSample.bananaWithId();
+        final var productDto = ProductSample.bananaWithIdDto();
+
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
+        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
+        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+
+        cartDto.getProducts().add(productDto);
+        cartDto.getAllProducts().add(productDto);
+
+        final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
+
+        assertAll(
+                () -> assertEquals(cart.getId(), block.getId()),
+                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
+                () -> assertEquals(cart.getUserId(), block.getUserId()),
+                () -> assertEquals(cart.getDate(), block.getDate()),
+                () -> assertEquals(1, block.getProducts().size()),
+                () -> assertEquals(1, block.getAllProducts().size())
+        );
+        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
+        verify(productService, times(1)).findById(product.getId());
+        verify(cartService, times(1)).save(any(Cart.class));
         verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
     }

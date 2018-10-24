@@ -191,7 +191,7 @@ public class UserFacade {
 
     Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
         Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .defaultIfEmpty(new Cart(userId, date)).block();
+                .onErrorReturn(new Cart(userId, date)).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
         product.setAmount(amount);

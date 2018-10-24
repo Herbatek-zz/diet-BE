@@ -1,6 +1,7 @@
 package com.piotrek.diet.cart;
 
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.sample.CartEquals;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.UserSample;
 import com.piotrek.diet.user.User;
@@ -12,7 +13,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class CartServiceTest {
@@ -43,12 +45,7 @@ class CartServiceTest {
 
         final Cart block = cartService.findById(cart.getId()).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals(), block.getMeals()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getUserId(), block.getUserId())
-        );
+        assertTrue(CartEquals.cartEquals(cart, block));
         verify(cartRepository, times(1)).findById(cart.getId());
         verifyNoMoreInteractions(cartRepository);
     }
@@ -69,12 +66,18 @@ class CartServiceTest {
 
         final Cart block = cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals(), block.getMeals()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getUserId(), block.getUserId())
-        );
+        assertTrue(CartEquals.cartEquals(cart, block));
+        verify(cartRepository, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
+        verifyNoMoreInteractions(cartRepository);
+    }
+
+    @Test
+    @DisplayName("Find by userId and date, when not found, then throw NotFoundException")
+    void findByUserIdAndDate_whenNotFound_thenThrowNotFoundException() {
+        when(cartRepository.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.empty());
+
+        assertThrows(NotFoundException.class, () -> cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block());
+
         verify(cartRepository, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
         verifyNoMoreInteractions(cartRepository);
     }
@@ -85,12 +88,7 @@ class CartServiceTest {
 
         final Cart block = cartService.save(cart).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals(), block.getMeals()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getUserId(), block.getUserId())
-        );
+        assertTrue(CartEquals.cartEquals(cart, block));
         verify(cartRepository, times(1)).save(cart);
         verifyNoMoreInteractions(cartRepository);
     }

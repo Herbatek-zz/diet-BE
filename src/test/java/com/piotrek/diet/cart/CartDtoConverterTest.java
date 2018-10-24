@@ -2,6 +2,7 @@ package com.piotrek.diet.cart;
 
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.product.ProductDtoConverter;
+import com.piotrek.diet.sample.CartEquals;
 import com.piotrek.diet.sample.CartSample;
 import com.piotrek.diet.sample.MealSample;
 import com.piotrek.diet.sample.ProductSample;
@@ -28,16 +29,7 @@ class CartDtoConverterTest {
     @Test
     void toDto() {
         final var converted = cartDtoConverter.toDto(cart);
-
-        assertAll(
-                () -> assertEquals(cartDto.getId(), converted.getId()),
-                () -> assertEquals(cartDto.getDate(), converted.getDate()),
-                () -> assertEquals(cartDto.getUserId(), converted.getUserId()),
-                () -> assertEquals(cartDto.getMeals(), converted.getMeals()),
-                () -> assertEquals(cartDto.getProducts(), converted.getProducts()),
-                () -> assertEquals(cartDto.getAllProducts(), converted.getAllProducts()),
-                () -> assertEquals(0, converted.getItemCounter())
-        );
+        assertTrue(CartEquals.cartDtoEquals(cartDto, converted));
     }
 
     @Test
@@ -46,30 +38,13 @@ class CartDtoConverterTest {
         addMeals();
 
         final var converted = cartDtoConverter.toDto(cart);
-
-        assertAll(
-                () -> assertEquals(cartDto.getId(), converted.getId()),
-                () -> assertEquals(cartDto.getDate(), converted.getDate()),
-                () -> assertEquals(cartDto.getUserId(), converted.getUserId()),
-                () -> assertEquals(cartDto.getMeals(), converted.getMeals()),
-                () -> assertEquals(2, cartDto.getMeals().size()),
-                () -> assertEquals(2, converted.getProducts().size()),
-                () -> assertEquals(2, converted.getAllProducts().size()),
-                () -> assertEquals(4, converted.getItemCounter())
-        );
+        assertTrue(CartEquals.cartDtoEquals(cartDto, converted));
     }
 
     @Test
     void fromDto() {
         final Cart converted = cartDtoConverter.fromDto(cartDto);
-
-        assertAll(
-                () -> assertEquals(cart.getId(), converted.getId()),
-                () -> assertEquals(cart.getDate(), converted.getDate()),
-                () -> assertEquals(cart.getUserId(), converted.getUserId()),
-                () -> assertEquals(cart.getMeals(), converted.getMeals()),
-                () -> assertEquals(cart.getProducts(), converted.getProducts())
-        );
+        assertTrue(CartEquals.cartEquals(cart, converted));
     }
 
     @Test
@@ -78,16 +53,7 @@ class CartDtoConverterTest {
         addProducts();
 
         final Cart converted = cartDtoConverter.fromDto(cartDto);
-
-        assertAll(
-                () -> assertEquals(cart.getId(), converted.getId()),
-                () -> assertEquals(cart.getDate(), converted.getDate()),
-                () -> assertEquals(cart.getUserId(), converted.getUserId()),
-                () -> assertEquals(cart.getMeals(), converted.getMeals()),
-                () -> assertEquals(cart.getProducts(), converted.getProducts()),
-                () -> assertEquals(2, cart.getProducts().size()),
-                () -> assertEquals(2, cart.getMeals().size())
-        );
+        assertTrue(CartEquals.cartEquals(cart, converted));
     }
 
     private void addProducts() {
@@ -96,6 +62,8 @@ class CartDtoConverterTest {
 
         cartDto.getProducts().add(ProductSample.bananaWithIdDto());
         cartDto.getProducts().add(ProductSample.breadWithIdDto());
+        cartDto.setItemCounter(cartDto.getItemCounter() + 2);
+        cartDto.getAllProducts().addAll(cartDto.getProducts());
     }
 
     private void addMeals() {
@@ -104,6 +72,7 @@ class CartDtoConverterTest {
 
         cartDto.getMeals().add(MealSample.coffeeWithIdDto());
         cartDto.getMeals().add(MealSample.dumplingsWithIdDto());
+        cartDto.setItemCounter(cartDto.getItemCounter() + 2);
     }
 
 }
