@@ -46,13 +46,8 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
 
     private ArrayList<ProductDto> retrieveProductsFromMeals(ArrayList<MealDto> mealDtos) {
         var productsFromMeals = new ArrayList<ProductDto>();
-
-        mealDtos.forEach(mealDto -> mealDto.getProducts().forEach(productToAdd -> {
-            if (productsFromMeals.contains(productToAdd))
-                sumAmountDuplicatedProduct(productsFromMeals, productToAdd);
-            else
-                productsFromMeals.add(productToAdd);
-        }));
+        mealDtos
+                .forEach(mealDto -> productsFromMeals.addAll(mealDto.getProducts()));
         return productsFromMeals;
     }
 
@@ -72,10 +67,25 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         return productsWithoutDuplicates;
     }
 
-    private void sumAmountDuplicatedProduct(ArrayList<ProductDto> mainProductList, ProductDto duplicatedProduct) {
-        int indexOfDuplicatedProduct = mainProductList.indexOf(duplicatedProduct);
-        duplicatedProduct = mainProductList.remove(indexOfDuplicatedProduct);
-        duplicatedProduct.setAmount(duplicatedProduct.getAmount() + duplicatedProduct.getAmount());
-        mainProductList.add(duplicatedProduct);
+    private void sumAmountDuplicatedProduct(ArrayList<ProductDto> mainProductList, ProductDto productToAdd) {
+        int indexOfDuplicatedProduct = mainProductList.indexOf(productToAdd);
+        var duplicatedProduct = mainProductList.remove(indexOfDuplicatedProduct);
+
+        var sumDuplicated = new ProductDto();
+        sumDuplicated.setAmount(duplicatedProduct.getAmount() + productToAdd.getAmount());
+        sumDuplicated.setProtein(duplicatedProduct.getProtein() + productToAdd.getProtein());
+        sumDuplicated.setCarbohydrateExchange(duplicatedProduct.getCarbohydrateExchange() + productToAdd.getCarbohydrateExchange());
+        sumDuplicated.setCarbohydrate(duplicatedProduct.getCarbohydrate() + productToAdd.getCarbohydrate());
+        sumDuplicated.setFat(duplicatedProduct.getFat() + productToAdd.getFat());
+        sumDuplicated.setFibre(duplicatedProduct.getFibre() + productToAdd.getFibre());
+        sumDuplicated.setDescription(productToAdd.getDescription());
+        sumDuplicated.setUserId(productToAdd.getUserId());
+        sumDuplicated.setProteinAndFatEquivalent(duplicatedProduct.getProteinAndFatEquivalent() + productToAdd.getProteinAndFatEquivalent());
+        sumDuplicated.setId(productToAdd.getId());
+        sumDuplicated.setImageUrl(productToAdd.getImageUrl());
+        sumDuplicated.setKcal(duplicatedProduct.getKcal() + productToAdd.getKcal());
+        sumDuplicated.setName(productToAdd.getName());
+
+        mainProductList.add(sumDuplicated);
     }
 }

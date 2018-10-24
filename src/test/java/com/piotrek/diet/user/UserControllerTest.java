@@ -14,6 +14,7 @@ import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
+import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.sample.CartSample;
@@ -460,13 +461,22 @@ class UserControllerTest {
     @Test
     @DisplayName("Add meal to cart, when cart has one meal, then cart has two meal")
     void addMealToCart_whenCartHasOneMeal_thenCartHasTwoMeals() {
+        var firstProductInMealToAdd = ProductSample.breadWithId();
+        firstProductInMealToAdd.setAmount(50);
+
+        var secondProductInMealToAdd = ProductSample.bananaWithId();
+        secondProductInMealToAdd.setAmount(100);
+
         var mealToAdd = MealSample.dumplingsWithId();
-        mealToAdd.getProducts().add(ProductSample.breadWithId());
-        mealToAdd.getProducts().add(ProductSample.bananaWithId());
+        mealToAdd.getProducts().add(firstProductInMealToAdd);
+        mealToAdd.getProducts().add(secondProductInMealToAdd);
         mealToAdd = mealService.save(mealToAdd).block();
 
+        var productInMealInCart = ProductSample.bananaWithId();
+        productInMealInCart.setAmount(60);
+
         var mealInCart = MealSample.coffeeWithId();
-        mealInCart.getProducts().add(ProductSample.bananaWithId());
+        mealInCart.getProducts().add(productInMealInCart);
 
         cart.getMeals().add(mealInCart);
         cart = cartService.save(cart).block();
@@ -493,12 +503,10 @@ class UserControllerTest {
         assertAll(
                 () -> assertEquals(cartDto.getId(), responseBody.getId()),
                 () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
+                () -> assertEquals(cartDto.getDate(), responseBody.getDate()),
                 () -> assertEquals(2, responseBody.getMeals().size()),
-                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
-                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
-                () -> assertEquals(2, responseBody.getAllProducts().size()),
-                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
+                () -> assertEquals(0, responseBody.getProducts().size()),
+                () -> assertEquals(2, responseBody.getAllProducts().size())
         );
     }
 

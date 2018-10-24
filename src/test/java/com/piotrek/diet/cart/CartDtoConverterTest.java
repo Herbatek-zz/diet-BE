@@ -35,7 +35,8 @@ class CartDtoConverterTest {
                 () -> assertEquals(cartDto.getUserId(), converted.getUserId()),
                 () -> assertEquals(cartDto.getMeals(), converted.getMeals()),
                 () -> assertEquals(cartDto.getProducts(), converted.getProducts()),
-                () -> assertEquals(cartDto.getAllProducts(), converted.getAllProducts())
+                () -> assertEquals(cartDto.getAllProducts(), converted.getAllProducts()),
+                () -> assertEquals(0, converted.getItemCounter())
         );
     }
 
@@ -52,10 +53,9 @@ class CartDtoConverterTest {
                 () -> assertEquals(cartDto.getUserId(), converted.getUserId()),
                 () -> assertEquals(cartDto.getMeals(), converted.getMeals()),
                 () -> assertEquals(2, cartDto.getMeals().size()),
-                () -> assertEquals(cartDto.getProducts(), converted.getProducts()),
                 () -> assertEquals(2, converted.getProducts().size()),
-                () -> assertNotEquals(cartDto.getAllProducts(), converted.getAllProducts()),
-                () -> assertEquals(2, converted.getAllProducts().size())
+                () -> assertEquals(2, converted.getAllProducts().size()),
+                () -> assertEquals(4, converted.getItemCounter())
         );
     }
 

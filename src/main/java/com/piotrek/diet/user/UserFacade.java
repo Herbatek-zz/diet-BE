@@ -152,7 +152,6 @@ public class UserFacade {
                 .onErrorReturn(new Cart(userId, date)).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
-
         if(cart.getMeals().contains(meal)) {
             int indexOfDuplicated = cart.getMeals().indexOf(meal);
             amount += cart.getMeals().get(indexOfDuplicated).getAmount();
