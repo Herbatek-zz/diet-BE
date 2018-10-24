@@ -46,8 +46,7 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
 
     private ArrayList<ProductDto> retrieveProductsFromMeals(ArrayList<MealDto> mealDtos) {
         var productsFromMeals = new ArrayList<ProductDto>();
-        mealDtos
-                .forEach(mealDto -> productsFromMeals.addAll(mealDto.getProducts()));
+        mealDtos.forEach(mealDto -> productsFromMeals.addAll(mealDto.getProducts()));
         return productsFromMeals;
     }
 
