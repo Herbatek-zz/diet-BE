@@ -7,7 +7,7 @@ import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.sample.ProductSample;
+import com.piotrek.diet.helpers.ProductSample;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

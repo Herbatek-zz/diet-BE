@@ -1,6 +1,6 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;

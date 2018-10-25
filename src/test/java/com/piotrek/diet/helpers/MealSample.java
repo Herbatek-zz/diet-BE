@@ -1,4 +1,4 @@
-package com.piotrek.diet.sample;
+package com.piotrek.diet.helpers;
 
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
@@ -57,6 +57,7 @@ public class MealSample {
         );
         meal.setRecipe("Rób tą kawę");
         meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
+        meal.setUserId(UserSample.johnWithId().getId());
         return meal;
     }
 
@@ -75,6 +76,7 @@ public class MealSample {
         );
         meal.setRecipe("Rób tą kawę");
         meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
+        meal.setUserId(UserSample.johnWithId().getId());
         return meal;
     }
 

@@ -1,7 +1,7 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

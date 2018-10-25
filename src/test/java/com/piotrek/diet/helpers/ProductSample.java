@@ -1,6 +1,5 @@
-package com.piotrek.diet.sample;
+package com.piotrek.diet.helpers;
 
-import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 

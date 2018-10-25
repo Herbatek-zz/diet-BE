@@ -1,9 +1,9 @@
 package com.piotrek.diet.cart;
 
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.sample.CartEquals;
-import com.piotrek.diet.sample.CartSample;
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.CartEquals;
+import com.piotrek.diet.helpers.CartSample;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

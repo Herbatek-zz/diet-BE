@@ -15,10 +15,10 @@ import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductService;
-import com.piotrek.diet.sample.CartSample;
-import com.piotrek.diet.sample.MealSample;
-import com.piotrek.diet.sample.ProductSample;
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.CartSample;
+import com.piotrek.diet.helpers.MealSample;
+import com.piotrek.diet.helpers.ProductSample;
+import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.piotrek.diet.sample.MealSample.*;
-import static com.piotrek.diet.sample.ProductSample.bananaWithId;
-import static com.piotrek.diet.sample.ProductSample.bananaWithIdDto;
+import static com.piotrek.diet.helpers.MealSample.*;
+import static com.piotrek.diet.helpers.ProductSample.bananaWithId;
+import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

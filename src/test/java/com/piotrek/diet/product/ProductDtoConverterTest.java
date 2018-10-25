@@ -1,6 +1,6 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.sample.ProductSample;
+import com.piotrek.diet.helpers.ProductSample;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

@@ -8,6 +8,8 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.helpers.MealEquals;
+import com.piotrek.diet.helpers.ProductEquals;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.piotrek.diet.sample.MealSample.*;
-import static com.piotrek.diet.sample.ProductSample.bananaWithIdDto;
-import static com.piotrek.diet.sample.ProductSample.breadWithIdDto;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.piotrek.diet.helpers.MealSample.*;
+import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
+import static com.piotrek.diet.helpers.ProductSample.breadWithIdDto;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 
@@ -223,22 +224,24 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When we add products to a meal, then the meal should be with added products")
-    void updateMeal_whenUpdateMeal_thenMealShouldBeUpdated() throws JsonProcessingException {
+    @DisplayName("Update meal, then meal should be updated")
+    void updateMeal_whenUpdateMeal_thenMealShouldBeUpdated() {
         final var URI = "/meals/" + meal1.getId();
         final var productDtos = new ArrayList<ProductDto>(2);
 
-        var firstProduct = bananaWithIdDto();
-        firstProduct.setAmount(100);
-        productDtos.add(firstProduct);
+        final var firstProductInUpdate = bananaWithIdDto();
+        firstProductInUpdate.setAmount(100);
+        firstProductInUpdate.setUserId("someId");
+        productDtos.add(firstProductInUpdate);
 
-        var secondProduct = breadWithIdDto();
-        secondProduct.setAmount(50);
-        productDtos.add(secondProduct);
+        final var secondProductInUpdate = breadWithIdDto();
+        secondProductInUpdate.setAmount(30);
+        secondProductInUpdate.setUserId("id");
+        productDtos.add(secondProductInUpdate);
 
         providePrincipal();
 
-        final var update = dumplingsWithIdDto();
+        final MealDto update = dumplingsWithIdDto();
         update.setName("updated name");
         update.setRecipe("updated recipe");
         update.setDescription("updated description");
@@ -254,23 +257,37 @@ class MealControllerTest {
                 .returnResult()
                 .getResponseBody();
 
+
+        final MealDto expected = dumplingsWithIdDto();
+        expected.setName("updated name");
+        expected.setRecipe("updated recipe");
+        expected.setDescription("updated description");
+        expected.setImageUrl("new image");
+        expected.setProducts(productDtos);
+        expected.setAmount(firstProductInUpdate.getAmount() + secondProductInUpdate.getAmount());
+        expected.setProtein(firstProductInUpdate.getProtein() + secondProductInUpdate.getProtein() * 0.3);
+        expected.setProteinAndFatEquivalent(firstProductInUpdate.getProteinAndFatEquivalent() + secondProductInUpdate.getProteinAndFatEquivalent() * 0.3);
+        expected.setFat(firstProductInUpdate.getFat() + secondProductInUpdate.getFat() * 0.3);
+        expected.setFibre(firstProductInUpdate.getFibre() + secondProductInUpdate.getFibre() * 0.3);
+        expected.setCarbohydrate(firstProductInUpdate.getCarbohydrate() + secondProductInUpdate.getCarbohydrate() * 0.3);
+        expected.setCarbohydrateExchange(firstProductInUpdate.getCarbohydrateExchange() + secondProductInUpdate.getCarbohydrateExchange() * 0.3);
+        expected.setKcal(firstProductInUpdate.getKcal() + secondProductInUpdate.getKcal() * 0.3);
+
+        final var expectedSecondProduct = expected.getProducts().get(1);
+        expectedSecondProduct.setKcal(expectedSecondProduct.getKcal() * 0.3);
+        expectedSecondProduct.setProteinAndFatEquivalent(expectedSecondProduct.getProteinAndFatEquivalent() * 0.3);
+        expectedSecondProduct.setProtein(expectedSecondProduct.getProtein() * 0.3);
+        expectedSecondProduct.setFibre(expectedSecondProduct.getFibre() * 0.3);
+        expectedSecondProduct.setFat(expectedSecondProduct.getFat() * 0.3);
+        expectedSecondProduct.setCarbohydrate(expectedSecondProduct.getCarbohydrate() * 0.3);
+        expectedSecondProduct.setCarbohydrateExchange(expectedSecondProduct.getCarbohydrateExchange() * 0.3);
+
+
+        assertNotNull(responseBody);
         assertAll(
-                () -> assertEquals(update.getName(), responseBody.getName()),
-                () -> assertEquals(update.getId(), responseBody.getId()),
-                () -> assertEquals(update.getRecipe(), responseBody.getRecipe()),
-                () -> assertEquals(update.getDescription(), responseBody.getDescription()),
-                () -> assertEquals(update.getImageUrl(), responseBody.getImageUrl()),
-                () -> assertEquals(update.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(firstProduct.getAmount() + secondProduct.getAmount(), responseBody.getAmount()),
-                () -> assertEquals(firstProduct.getCarbohydrateExchange() + secondProduct.getCarbohydrateExchange() * 0.5,
-                        responseBody.getCarbohydrateExchange()),
-                () -> assertEquals(firstProduct.getCarbohydrate() + secondProduct.getCarbohydrate() * 0.5, responseBody.getCarbohydrate()),
-                () -> assertEquals(firstProduct.getProteinAndFatEquivalent(), secondProduct.getProteinAndFatEquivalent() * 0.5,
-                        responseBody.getProteinAndFatEquivalent()),
-                () -> assertEquals(firstProduct.getProtein(), secondProduct.getProtein() * 0.5, responseBody.getProtein()),
-                () -> assertEquals(firstProduct.getFibre(), secondProduct.getFibre() * 0.5, responseBody.getFibre()),
-                () -> assertEquals(firstProduct.getFat(), secondProduct.getFat() * 0.5, responseBody.getFat()),
-                () -> assertEquals(firstProduct.getKcal(), secondProduct.getKcal() * 0.5, responseBody.getKcal())
+                () -> assertTrue(MealEquals.mealDtoEquals(expected, responseBody)),
+                () -> assertTrue(ProductEquals.productDtoEquals(expected.getProducts().get(0), responseBody.getProducts().get(0))),
+                () -> assertTrue(ProductEquals.productDtoEquals(expected.getProducts().get(1), responseBody.getProducts().get(1)))
         );
     }
 

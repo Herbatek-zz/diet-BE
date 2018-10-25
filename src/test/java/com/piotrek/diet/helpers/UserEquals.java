@@ -1,4 +1,4 @@
-package com.piotrek.diet.sample;
+package com.piotrek.diet.helpers;
 
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserDto;

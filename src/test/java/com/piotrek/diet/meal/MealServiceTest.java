@@ -5,7 +5,7 @@ import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.piotrek.diet.sample.MealSample.*;
-import static com.piotrek.diet.sample.ProductSample.*;
+import static com.piotrek.diet.helpers.MealSample.*;
+import static com.piotrek.diet.helpers.ProductSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

@@ -3,7 +3,7 @@ package com.piotrek.diet.security.token;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

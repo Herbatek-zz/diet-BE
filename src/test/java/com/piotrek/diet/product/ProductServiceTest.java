@@ -3,7 +3,7 @@ package com.piotrek.diet.product;
 import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.sample.UserSample;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.piotrek.diet.sample.ProductSample.*;
+import static com.piotrek.diet.helpers.ProductSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
