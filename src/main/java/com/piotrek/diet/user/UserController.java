@@ -126,11 +126,4 @@ public class UserController {
                                         @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
         return userFacade.deleteProductFromCart(userId, productId, date);
     }
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        dateFormat.setLenient(false);
-        binder.registerCustomEditor(LocalDate.class, new CustomDateEditor(dateFormat, false));
-    }
 }

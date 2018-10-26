@@ -45,7 +45,6 @@ dependencies {
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok:1.18.2')
     annotationProcessor('org.projectlombok:lombok:1.18.2')
-    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7')
     
     // data
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')

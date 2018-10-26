@@ -1,5 +1,6 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.helpers.MealEquals;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.Product;
@@ -60,23 +61,7 @@ class MealServiceTest {
         final var byId = mealService.findById(meal1.getId()).block();
 
         assertNotNull(byId);
-        assertAll(
-                () -> assertEquals(meal1.getId(), byId.getId()),
-                () -> assertEquals(meal1.getName(), byId.getName()),
-                () -> assertEquals(meal1.getDescription(), byId.getDescription()),
-                () -> assertEquals(meal1.getRecipe(), byId.getRecipe()),
-                () -> assertEquals(meal1.getImageUrl(), byId.getImageUrl()),
-                () -> assertEquals(meal1.getCarbohydrate(), byId.getCarbohydrate()),
-                () -> assertEquals(meal1.getFibre(), byId.getFibre()),
-                () -> assertEquals(meal1.getFat(), byId.getFat()),
-                () -> assertEquals(meal1.getProtein(), byId.getProtein()),
-                () -> assertEquals(meal1.getProteinAndFatEquivalent(), byId.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal1.getCarbohydrateExchange(), byId.getCarbohydrateExchange()),
-                () -> assertEquals(meal1.getProducts(), byId.getProducts()),
-                () -> assertEquals(meal1.getUserId(), byId.getUserId()),
-                () -> assertEquals(meal1.getKcal(), byId.getKcal())
-        );
-
+        assertTrue(MealEquals.mealEquals(meal1, byId));
         verify(mealRepository, times(1)).findById(meal1.getId());
         verifyNoMoreInteractions(mealRepository);
     }
@@ -88,7 +73,6 @@ class MealServiceTest {
         when(mealRepository.findById(ID)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> mealService.findById(ID).block());
-
         verify(mealRepository, times(1)).findById(ID);
         verifyNoMoreInteractions(mealRepository);
     }
@@ -102,26 +86,10 @@ class MealServiceTest {
         final var byId = mealService.findDtoById(meal1.getId()).block();
 
         assertNotNull(byId);
-        assertAll(
-                () -> assertEquals(meal1.getId(), byId.getId()),
-                () -> assertEquals(meal1.getName(), byId.getName()),
-                () -> assertEquals(meal1.getDescription(), byId.getDescription()),
-                () -> assertEquals(meal1.getRecipe(), byId.getRecipe()),
-                () -> assertEquals(meal1.getImageUrl(), byId.getImageUrl()),
-                () -> assertEquals(meal1.getCarbohydrate(), byId.getCarbohydrate()),
-                () -> assertEquals(meal1.getFibre(), byId.getFibre()),
-                () -> assertEquals(meal1.getFat(), byId.getFat()),
-                () -> assertEquals(meal1.getProtein(), byId.getProtein()),
-                () -> assertEquals(meal1.getProteinAndFatEquivalent(), byId.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal1.getCarbohydrateExchange(), byId.getCarbohydrateExchange()),
-                () -> assertEquals(meal1.getProducts().size(), byId.getProducts().size()),
-                () -> assertEquals(meal1.getUserId(), byId.getUserId()),
-                () -> assertEquals(meal1.getKcal(), byId.getKcal())
-        );
-
+        assertTrue(MealEquals.mealDtoEquals(meal1Dto, byId));
         verify(mealRepository, times(1)).findById(meal1.getId());
         verify(mealDtoConverter, times(1)).toDto(meal1);
-        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
     }
 
     @Test
@@ -131,7 +99,6 @@ class MealServiceTest {
         when(mealRepository.findById(ID)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> mealService.findDtoById(ID).block());
-
         verify(mealRepository, times(1)).findById(ID);
         verifyNoMoreInteractions(mealRepository);
     }
@@ -237,7 +204,12 @@ class MealServiceTest {
 
         assertAll(
                 () -> assertEquals(mealList, meals),
-                () -> assertEquals(mealList.size(), meals.size())
+                () -> assertEquals(mealList.size(), meals.size()),
+                () -> assertTrue(MealEquals.mealEquals(mealList.get(0), meals.get(0))),
+                () -> assertTrue(MealEquals.mealEquals(mealList.get(1), meals.get(1))),
+                () -> assertTrue(MealEquals.mealEquals(mealList.get(2), meals.get(2))),
+                () -> assertTrue(MealEquals.mealEquals(mealList.get(3), meals.get(3))),
+                () -> assertTrue(MealEquals.mealEquals(mealList.get(4), meals.get(4)))
         );
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
         verifyNoMoreInteractions(mealRepository);

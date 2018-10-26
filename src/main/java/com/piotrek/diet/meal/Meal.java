@@ -3,6 +3,7 @@ package com.piotrek.diet.meal;
 import com.piotrek.diet.product.Product;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 @Data
 @Document
 @EqualsAndHashCode(of = {"id"})
+@NoArgsConstructor
 public class Meal {
 
     @Id
@@ -50,4 +52,8 @@ public class Meal {
 
     @NotNull
     private String userId;
+
+    public Meal(String id) {
+        this.id = id;
+    }
 }

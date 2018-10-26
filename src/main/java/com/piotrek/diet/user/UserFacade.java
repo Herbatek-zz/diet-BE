@@ -23,8 +23,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.requireNonNull;
-
 @Component
 @RequiredArgsConstructor
 public class UserFacade {
@@ -98,41 +96,38 @@ public class UserFacade {
 
 
     Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
-        var favouriteMealListId = requireNonNull(userService.findById(userId).block()).getFavouriteMeals();
-
-        var collect = favouriteMealListId
-                .stream()
-                .skip(pageable.getPageNumber() * pageable.getPageSize())
-                .limit(pageable.getPageSize())
-                .map(mealService::findById)
-                .map(Mono::block)
-                .map(mealDtoConverter::toDto)
-                .collect(Collectors.toList());
-
-        return Mono.just(new Page<>(collect, pageable.getPageNumber(), pageable.getPageSize(), favouriteMealListId.size()));
+        return userService.findById(userId)
+                .map(User::getFavouriteMeals)
+                .flatMap(meals -> {
+                    var size = meals.size();
+                    var collection = meals
+                            .stream()
+                            .skip(pageable.getPageNumber() * pageable.getPageSize())
+                            .limit(pageable.getPageSize())
+                            .map(mealDtoConverter::toDto)
+                            .collect(Collectors.toList());
+                    return Mono.just(new Page<>(collection, pageable.getPageNumber(), pageable.getPageSize(), size));
+                });
     }
 
     Mono<Void> addToFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
-        userService.findById(userId)
-                .subscribe((user) -> {
-                    mealService.findById(mealId).subscribe(
-                            (meal -> {
-                                user.getFavouriteMeals().add(meal.getId());
-                                userService.save(user).block();
-                            })
-                    );
-                });
-        return Mono.empty();
-
+        return userService.findById(userId)
+                .flatMap(user -> mealService.findById(mealId)
+                        .flatMap(meal -> {
+                            user.getFavouriteMeals().add(meal);
+                            return userService.save(user);
+                        }))
+                .then();
     }
 
     Mono<Void> deleteFromFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
-
         return userService.findById(userId)
-                .doOnNext(user -> requireNonNull(user).getFavouriteMeals().remove(mealId))
-                .flatMap(userService::save)
+                .flatMap(user -> {
+                    user.getFavouriteMeals().remove(new Meal(mealId));
+                    return userService.save(user);
+                })
                 .then();
     }
 
@@ -144,7 +139,7 @@ public class UserFacade {
     Mono<Boolean> isFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
-                .flatMap(user -> Mono.just(requireNonNull(user).getFavouriteMeals().contains(mealId)));
+                .map(user -> user.getFavouriteMeals().contains(new Meal(mealId)));
     }
 
     Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
@@ -152,14 +147,13 @@ public class UserFacade {
                 .onErrorReturn(new Cart(userId, date)).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
-        if(cart.getMeals().contains(meal)) {
+        if (cart.getMeals().contains(meal)) {
             int indexOfDuplicated = cart.getMeals().indexOf(meal);
-            amount += cart.getMeals().get(indexOfDuplicated).getAmount();
-            cart.getMeals().remove(indexOfDuplicated);
+            Meal duplicated = cart.getMeals().remove(indexOfDuplicated);
+            amount += duplicated.getAmount();
         }
 
         double divider = (double) meal.getAmount() / amount;
-        meal.setAmount(amount);
         meal.getProducts()
                 .forEach(product -> {
                     product.setAmount((int) (product.getAmount() / divider));
@@ -172,6 +166,7 @@ public class UserFacade {
                     product.setKcal(product.getKcal() / divider);
                 });
         mealService.calculateMealInformation(meal);
+        meal.setAmount(amount);
         cart.getMeals().add(meal);
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }

@@ -4,7 +4,7 @@ import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
-import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.*;
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
@@ -15,10 +15,6 @@ import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductService;
-import com.piotrek.diet.helpers.CartSample;
-import com.piotrek.diet.helpers.MealSample;
-import com.piotrek.diet.helpers.ProductSample;
-import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,10 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.MealSample.*;
@@ -367,11 +360,9 @@ class UserFacadeTest {
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-        user.setFavouriteMeals(new HashSet<>(Set.of(meal.getId(), meal2.getId())));
+        user.setFavouriteMeals(new HashSet<>(Set.of(meal, meal2)));
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(mealService.findById(meal2.getId())).thenReturn(Mono.just(meal2));
         when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
         when(mealDtoConverter.toDto(meal2)).thenReturn(mealDto2);
 
@@ -384,11 +375,9 @@ class UserFacadeTest {
                 () -> assertEquals(expected.getPageNumber(), block.getPageNumber())
         );
         verify(userService, times(1)).findById(user.getId());
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).findById(meal2.getId());
         verify(mealDtoConverter, times(1)).toDto(meal);
         verify(mealDtoConverter, times(1)).toDto(meal2);
-        verifyNoMoreInteractions(userService, mealService, mealDtoConverter);
+        verifyNoMoreInteractions(userService, mealDtoConverter);
     }
 
     @Test
@@ -415,8 +404,8 @@ class UserFacadeTest {
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(userService.save(user)).thenReturn(Mono.just(user));
 
-        user.getFavouriteMeals().add("firstId");
-        user.getFavouriteMeals().add("secondId");
+        user.getFavouriteMeals().add(new Meal(UUID.randomUUID().toString()));
+        user.getFavouriteMeals().add(new Meal(UUID.randomUUID().toString()));
 
         userFacade.addToFavourite(user.getId(), meal.getId()).block();
 
@@ -434,8 +423,8 @@ class UserFacadeTest {
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(userService.save(user)).thenReturn(Mono.just(user));
 
-        user.getFavouriteMeals().add("firstId");
-        user.getFavouriteMeals().add(meal.getId());
+        user.getFavouriteMeals().add(new Meal());
+        user.getFavouriteMeals().add(meal);
 
         userFacade.addToFavourite(user.getId(), meal.getId()).block();
 
@@ -447,14 +436,16 @@ class UserFacadeTest {
     }
 
     @Test
-    @DisplayName("Delete meal from favourite list, then user has no longer this meal in favourites")
+    @DisplayName("Delete from favourites, when user ")
     void deleteFromFavourites_whenMethodIsInvoked_thenUserHasNoLongerThisMealInFavouriteList() {
-        user.setFavouriteMeals(new HashSet<>(Set.of("123sandwich", "321bread", "222potato")));
+        final var ID_TO_DELETE = UUID.randomUUID().toString();
+        user.setFavouriteMeals(new HashSet<>(Set.of(new Meal(ID_TO_DELETE),
+                new Meal(UUID.randomUUID().toString()), new Meal(UUID.randomUUID().toString()))));
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(userService.save(user)).thenReturn(Mono.just(user));
 
-        userFacade.deleteFromFavourite(user.getId(), "222potato").block();
+        userFacade.deleteFromFavourite(user.getId(), ID_TO_DELETE).block();
 
         assertEquals(2, user.getFavouriteMeals().size());
         verify(userService, times(1)).findById(user.getId());
@@ -491,8 +482,8 @@ class UserFacadeTest {
     void isFavourite_whenUserFavouritesContainsCheckingMeal_thenReturnTrue() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
 
-        var set = new HashSet<String>();
-        set.add(meal.getId());
+        var set = new HashSet<Meal>();
+        set.add(meal);
         user.setFavouriteMeals(set);
 
         Boolean block = userFacade.isFavourite(user.getId(), meal.getId()).block();

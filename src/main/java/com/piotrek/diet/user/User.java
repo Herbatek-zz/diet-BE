@@ -1,6 +1,7 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.enums.Role;
+import com.piotrek.diet.meal.Meal;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -60,7 +61,7 @@ public class User {
     @NotNull
     private String role;
 
-    private HashSet<String> favouriteMeals = new HashSet<>();
+    private HashSet<Meal> favouriteMeals = new HashSet<>();
 
     public User(long facebookId, String email, String firstName, String lastName) {
         this.facebookId = facebookId;

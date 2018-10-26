@@ -39,4 +39,9 @@ public class MealDto {
     private ArrayList<ProductDto> products = new ArrayList<>();
 
     private String userId;
+
+    @Override
+    public String toString() {
+        return "{id=" + id + ", name=" + name + ", description=" + description + ", recipe=" + recipe + ", protein=" + protein + ", carbohydrate=" + carbohydrate + ", fat=" + fat + ", fibre=" + fibre + ", kcal=" + kcal + ", amount=" + amount + ", carbohydrateExchange=" + carbohydrateExchange + ", proteinAndFatEquivalent=" + proteinAndFatEquivalent + ", imageUrl=" + imageUrl + ", products=" + products + ", userId=" + userId + "}";
+    }
 }

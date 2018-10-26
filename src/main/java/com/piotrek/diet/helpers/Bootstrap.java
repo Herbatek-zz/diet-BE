@@ -30,7 +30,6 @@ public class Bootstrap implements CommandLineRunner {
         cartService.deleteAll().block();
         productService.deleteAll().block();
         mealService.deleteAll().block();
-        cartService.deleteAll().block();
 
         User user = userService.findByEmail("fake@mail.com").block();
         if (user == null) {

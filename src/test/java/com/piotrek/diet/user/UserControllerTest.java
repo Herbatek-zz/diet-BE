@@ -7,7 +7,7 @@ import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
-import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.*;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.meal.Meal;
@@ -16,10 +16,6 @@ import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductService;
-import com.piotrek.diet.helpers.CartSample;
-import com.piotrek.diet.helpers.MealSample;
-import com.piotrek.diet.helpers.ProductSample;
-import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +30,11 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithoutIdDto;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
@@ -115,7 +111,7 @@ class UserControllerTest {
     void isMealFavourite_whenUserHasAMealInFavourites_thenReturnTrue() {
         final var URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";
 
-        user.getFavouriteMeals().add(meal.getId());
+        user.getFavouriteMeals().add(meal);
         userService.save(user).block();
 
         webTestClient.get().uri(URI)
@@ -143,9 +139,11 @@ class UserControllerTest {
     void findFavouritesMeals_whenUserHasFavourites_thenReturnList() throws JsonProcessingException {
         final var URI = "/users/" + user.getId() + "/meals/favourites";
         final var list = new ArrayList<MealDto>();
+        mealDto.setUserId(user.getId());
+        meal.setUserId(user.getId());
         list.add(mealDto);
 
-        user.getFavouriteMeals().add(mealDto.getId());
+        user.getFavouriteMeals().add(meal);
         userService.save(user).block();
 
         var expected = new Page<>(list, 0, 10, list.size());
@@ -230,9 +228,13 @@ class UserControllerTest {
         final var FIND_URI = "/users/" + user.getId() + "/meals/favourites";
 
         final var list = new ArrayList<MealDto>(1);
+
+        meal.setUserId(user.getId());
+        mealDto.setUserId(user.getId());
+
         list.add(mealDto);
 
-        user.getFavouriteMeals().add(meal.getId());
+        user.getFavouriteMeals().add(meal);
         userService.save(user).block();
 
         webTestClient.get().uri(FIND_URI)
