@@ -687,7 +687,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -722,7 +722,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -755,7 +755,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -783,7 +783,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -811,7 +811,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -842,7 +842,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -875,7 +875,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();
@@ -900,7 +900,7 @@ class UserControllerTest {
 
         CartDto responseBody = webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(CartDto.class)
                 .returnResult()
                 .getResponseBody();

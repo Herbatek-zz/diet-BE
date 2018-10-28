@@ -114,14 +114,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}/carts/meals/{mealId}")
-    @ResponseStatus(NO_CONTENT)
+    @ResponseStatus(OK)
     Mono<CartDto> deleteMealFromCart(@PathVariable String userId, @PathVariable String mealId,
                                      @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
         return userFacade.deleteMealFromCart(userId, mealId, date);
     }
 
     @DeleteMapping("/{userId}/carts/products/{productId}")
-    @ResponseStatus(NO_CONTENT)
+    @ResponseStatus(OK)
     Mono<CartDto> deleteProductFromCart(@PathVariable String userId, @PathVariable String productId,
                                         @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
         return userFacade.deleteProductFromCart(userId, productId, date);
