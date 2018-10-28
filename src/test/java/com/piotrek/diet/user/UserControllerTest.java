@@ -439,7 +439,7 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
-        CartDto responseBody = webTestClient.put().uri(URI)
+        CartDto responseBody = webTestClient.post().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -493,7 +493,7 @@ class UserControllerTest {
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
-        CartDto responseBody = webTestClient.put().uri(URI)
+        CartDto responseBody = webTestClient.post().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -535,7 +535,7 @@ class UserControllerTest {
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
-        CartDto responseBody = webTestClient.put().uri(URI)
+        CartDto responseBody = webTestClient.post().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -568,7 +568,7 @@ class UserControllerTest {
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
-        CartDto responseBody = webTestClient.put().uri(URI)
+        CartDto responseBody = webTestClient.post().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -609,7 +609,7 @@ class UserControllerTest {
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
-        CartDto responseBody = webTestClient.put().uri(URI)
+        CartDto responseBody = webTestClient.post().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -651,7 +651,7 @@ class UserControllerTest {
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
 
 
-        CartDto responseBody = webTestClient.put().uri(URI)
+        CartDto responseBody = webTestClient.post().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)

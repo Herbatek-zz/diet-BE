@@ -97,7 +97,7 @@ public class UserController {
         return userFacade.isFavourite(userId, mealId);
     }
 
-    @PutMapping("/{userId}/carts/meals/{mealId}")
+    @PostMapping("/{userId}/carts/meals/{mealId}")
     @ResponseStatus(OK)
     Mono<CartDto> addMealToCart(@PathVariable String userId, @PathVariable String mealId,
                                 @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
@@ -105,7 +105,7 @@ public class UserController {
         return userFacade.addMealToCart(userId, mealId, date, amount);
     }
 
-    @PutMapping("/{userId}/carts/products/{productId}")
+    @PostMapping("/{userId}/carts/products/{productId}")
     @ResponseStatus(OK)
     Mono<CartDto> addProductToCart(@PathVariable String userId, @PathVariable String productId,
                                    @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
