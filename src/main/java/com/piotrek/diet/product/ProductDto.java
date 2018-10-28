@@ -18,7 +18,7 @@ public class ProductDto {
     private String name;
 
     @NotNull
-    @Size(min = 10, max = 1000)
+    @Size(min = 10, max = 3000)
     private String description;
 
     @NotNull
