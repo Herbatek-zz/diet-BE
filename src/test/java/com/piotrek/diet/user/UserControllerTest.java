@@ -685,21 +685,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(0, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -720,21 +708,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(1, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(1, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -753,21 +729,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(1, responseBody.getProducts().size()),
-                () -> assertEquals(1, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -781,21 +745,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(0, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -809,21 +761,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(0, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -840,21 +780,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(1, responseBody.getProducts().size()),
-                () -> assertEquals(1, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -873,21 +801,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(1, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(1, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     @Test
@@ -898,21 +814,9 @@ class UserControllerTest {
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        CartDto responseBody = webTestClient.delete().uri(URI)
+        webTestClient.delete().uri(URI)
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody(CartDto.class)
-                .returnResult()
-                .getResponseBody();
-
-        assertAll(
-                () -> assertEquals(cart.getId(), responseBody.getId()),
-                () -> assertEquals(cart.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(0, responseBody.getAllProducts().size()),
-                () -> assertEquals(cart.getDate(), responseBody.getDate())
-        );
+                .expectStatus().isNoContent();
     }
 
     private void createUser() {

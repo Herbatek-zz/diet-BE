@@ -171,7 +171,7 @@ public class UserFacade {
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
-    Mono<CartDto> deleteMealFromCart(String userId, String mealId, LocalDate date) {
+    Mono<Void> deleteMealFromCart(String userId, String mealId, LocalDate date) {
         Cart cart = cartService.findByUserIdAndDate(userId, date)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
                         " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
@@ -179,9 +179,9 @@ public class UserFacade {
         Meal meal = mealService.findById(mealId).block();
         if (cart.getMeals().contains(meal)) {
             cart.getMeals().remove(meal);
-            cart = cartService.save(cart).block();
+            cartService.save(cart).block();
         }
-        return Mono.just(cartDtoConverter.toDto(cart));
+        return Mono.empty();
     }
 
     Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
@@ -199,7 +199,7 @@ public class UserFacade {
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
-    Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
+    Mono<Void> deleteProductFromCart(String userId, String productId, LocalDate date) {
         Cart cart = cartService.findByUserIdAndDate(userId, date)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
                         " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
@@ -207,9 +207,9 @@ public class UserFacade {
         Product product = productService.findById(productId).block();
         if (cart.getProducts().contains(product)) {
             cart.getProducts().remove(product);
-            cart = cartService.save(cart).block();
+            cartService.save(cart).block();
         }
-        return Mono.just(cartDtoConverter.toDto(cart));
+        return Mono.empty();
     }
 
 }
