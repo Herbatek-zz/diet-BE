@@ -68,10 +68,8 @@ public class UserFacade {
     Mono<MealDto> createMeal(String userId, MealDto mealDto) {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
-                .flatMap(user -> {
-                    mealDto.setUserId(user.getId());
-                    return mealService.save(mealDto);
-                })
+                .doOnNext(user -> mealDto.setUserId(user.getId()))
+                .flatMap(user ->  mealService.save(mealDto))
                 .map(mealDtoConverter::toDto);
     }
 
