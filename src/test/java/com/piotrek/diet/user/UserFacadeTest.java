@@ -659,7 +659,6 @@ class UserFacadeTest {
     void deleteMealFromCart_whenCartHad1Meal_thenCartShouldBeEmpty() {
         final var meal = MealSample.coffeeWithId();
 
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(cartService.save(cart)).thenReturn(Mono.just(cart));
@@ -676,7 +675,6 @@ class UserFacadeTest {
                 () -> assertEquals(0, cart.getMeals().size())
         );
         assertEquals(0, cart.getMeals().size());
-        verify(mealService, times(1)).findById(meal.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
@@ -689,7 +687,6 @@ class UserFacadeTest {
         final var meal = MealSample.coffeeWithId();
 
         cart.getMeals().add(meal);
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(cartService.save(cart)).thenReturn(Mono.just(cart));
@@ -705,7 +702,6 @@ class UserFacadeTest {
         );
 
         assertEquals(0, cart.getMeals().size());
-        verify(mealService, times(1)).findById(meal.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartService, times(1)).save(any(Cart.class));
         verify(cartDtoConverter, times(1)).toDto(any(Cart.class));

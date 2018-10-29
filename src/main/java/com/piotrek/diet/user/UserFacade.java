@@ -5,7 +5,6 @@ import com.piotrek.diet.cart.CartDto;
 import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,8 +35,7 @@ public class UserFacade {
     private final MealDtoConverter mealDtoConverter;
 
     Mono<CartDto> findDtoCart(String userId, LocalDate date) {
-        return findCart(userId, date)
-                .map(cartDtoConverter::toDto);
+        return findCart(userId, date).map(cartDtoConverter::toDto);
     }
 
     Mono<Cart> findCart(String userId, LocalDate date) {
@@ -47,11 +44,11 @@ public class UserFacade {
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
         userValidation.validateUserWithPrincipal(userId);
-        var user = userService.findById(userId).block();
-        var product = productDtoConverter.fromDto(productDto);
-        product.setUserId(user.getId());
-
-        return productService.save(product).map(productDtoConverter::toDto);
+        return userService.findById(userId)
+                .doOnNext(user -> productDto.setUserId(user.getId()))
+                .map(user -> productDtoConverter.fromDto(productDto))
+                .flatMap(productService::save)
+                .map(productDtoConverter::toDto);
     }
 
     Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {
@@ -59,24 +56,22 @@ public class UserFacade {
                 .then(productService
                         .findAllByUserId(userId)
                         .collectList()
-                        .map(list -> new Page<>(
-                                list
-                                        .stream()
-                                        .skip(pageable.getPageNumber() * pageable.getPageSize())
-                                        .limit(pageable.getPageSize())
-                                        .map(productDtoConverter::toDto)
-                                        .collect(Collectors.toList()),
+                        .map(list -> new Page<>(list
+                                .stream()
+                                .skip(pageable.getPageNumber() * pageable.getPageSize())
+                                .limit(pageable.getPageSize())
+                                .map(productDtoConverter::toDto)
+                                .collect(Collectors.toList()),
                                 pageable.getPageNumber(), pageable.getPageSize(), list.size())));
     }
 
     Mono<MealDto> createMeal(String userId, MealDto mealDto) {
         userValidation.validateUserWithPrincipal(userId);
-        userService.findById(userId).block();
-
-        mealDto.setUserId(userId);
-
-        return mealService
-                .save(mealDto)
+        return userService.findById(userId)
+                .flatMap(user -> {
+                    mealDto.setUserId(user.getId());
+                    return mealService.save(mealDto);
+                })
                 .map(mealDtoConverter::toDto);
     }
 
@@ -84,13 +79,12 @@ public class UserFacade {
         return userService.findById(userId).then(mealService
                 .findAllByUserId(userId)
                 .collectList()
-                .map(list -> new Page<>(
-                        list
-                                .stream()
-                                .skip(pageable.getPageNumber() * pageable.getPageSize())
-                                .limit(pageable.getPageSize())
-                                .map(mealDtoConverter::toDto)
-                                .collect(Collectors.toList()),
+                .map(list -> new Page<>(list
+                        .stream()
+                        .skip(pageable.getPageNumber() * pageable.getPageSize())
+                        .limit(pageable.getPageSize())
+                        .map(mealDtoConverter::toDto)
+                        .collect(Collectors.toList()),
                         pageable.getPageNumber(), pageable.getPageSize(), list.size())));
     }
 
@@ -98,42 +92,33 @@ public class UserFacade {
     Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
         return userService.findById(userId)
                 .map(User::getFavouriteMeals)
-                .flatMap(meals -> {
-                    var size = meals.size();
-                    var collection = meals
-                            .stream()
-                            .skip(pageable.getPageNumber() * pageable.getPageSize())
-                            .limit(pageable.getPageSize())
-                            .map(mealDtoConverter::toDto)
-                            .collect(Collectors.toList());
-                    return Mono.just(new Page<>(collection, pageable.getPageNumber(), pageable.getPageSize(), size));
-                });
+                .flatMap(meals -> Mono.just(new Page<>(meals
+                        .stream()
+                        .skip(pageable.getPageNumber() * pageable.getPageSize())
+                        .limit(pageable.getPageSize())
+                        .map(mealDtoConverter::toDto)
+                        .collect(Collectors.toList()), pageable.getPageNumber(), pageable.getPageSize(), meals.size())));
     }
 
     Mono<Void> addToFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .flatMap(user -> mealService.findById(mealId)
-                        .flatMap(meal -> {
-                            user.getFavouriteMeals().add(meal);
-                            return userService.save(user);
-                        }))
+                        .doOnNext(meal -> user.getFavouriteMeals().add(meal))
+                        .flatMap(meal -> userService.save(user)))
                 .then();
     }
 
     Mono<Void> deleteFromFavourite(String userId, String mealId) {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
-                .flatMap(user -> {
-                    user.getFavouriteMeals().remove(new Meal(mealId));
-                    return userService.save(user);
-                })
+                .doOnNext(user -> user.getFavouriteMeals().remove(new Meal(mealId)))
+                .flatMap(userService::save)
                 .then();
     }
 
     Mono<MealDto> findMealDtoById(String id) {
-        return mealService.findById(id)
-                .map(mealDtoConverter::toDto);
+        return mealService.findById(id).map(mealDtoConverter::toDto);
     }
 
     Mono<Boolean> isFavourite(String userId, String mealId) {
@@ -172,16 +157,16 @@ public class UserFacade {
     }
 
     Mono<CartDto> deleteMealFromCart(String userId, String mealId, LocalDate date) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
-                        " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
-        userValidation.validateUserWithPrincipal(cart.getUserId());
-        Meal meal = mealService.findById(mealId).block();
-        if (cart.getMeals().contains(meal)) {
-            cart.getMeals().remove(meal);
-            cart = cartService.save(cart).block();
-        }
-        return Mono.just(cartDtoConverter.toDto(cart));
+        userValidation.validateUserWithPrincipal(userId);
+        return cartService.findByUserIdAndDate(userId, date)
+                .flatMap(cart -> {
+                    Meal meal = new Meal(mealId);
+                    if (cart.getMeals().contains(meal)) {
+                        cart.getMeals().remove(meal);
+                        return cartService.save(cart);
+                    } else
+                        return Mono.just(cart);
+                }).map(cartDtoConverter::toDto);
     }
 
     Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
@@ -200,9 +185,7 @@ public class UserFacade {
     }
 
     Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
-                        " and date: " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]")))).block();
+        Cart cart = cartService.findByUserIdAndDate(userId, date).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
         if (cart.getProducts().contains(product)) {

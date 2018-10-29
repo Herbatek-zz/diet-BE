@@ -21,8 +21,7 @@ public class UserService {
     }
 
     Mono<UserDto> findDtoById(String id) {
-        return findById(id)
-                .map(userDtoConverter::toDto);
+        return findById(id).map(userDtoConverter::toDto);
     }
 
     public Mono<User> findByFacebookId(Long facebookId) {
