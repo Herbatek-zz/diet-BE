@@ -1,5 +1,6 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.helpers.PrincipalProvider;
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.Test;
@@ -15,17 +16,13 @@ class UserValidationTest {
 
     @Test
     void validateUserWithPrincipal_whenTheyHaveTheSameIt_thenDoNothing() {
-        var testingAuthentication = new TestingAuthenticationToken(user.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
+        PrincipalProvider.provide(user.getId());
         userValidation.validateUserWithPrincipal(user.getId());
     }
 
     @Test
     void validateUserWithPrincipal_whenTheyHaveDifferent_thenThrowBadRequestException() {
-        var testingAuthentication = new TestingAuthenticationToken(user.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-
+        PrincipalProvider.provide(user.getId());
         assertThrows(BadRequestException.class, () -> userValidation.validateUserWithPrincipal("badUserId"));
     }
 }

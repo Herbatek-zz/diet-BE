@@ -33,14 +33,17 @@ public class UserFacade {
     private final ProductService productService;
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
-    private final UserDtoConverter userDtoConverter;
 
     Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
         return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
     }
 
-    Mono<UserDto> findDtoUser(String id) {
-        return userService.findById(id).map(userDtoConverter::toDto);
+    Mono<UserDto> findDtoUser(String userId) {
+        return userService.findDtoById(userId);
+    }
+
+    Mono<UserDto> updateUser(String userId, UserDto userDto ) {
+        return userService.update(userId, userDto);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
@@ -48,8 +51,7 @@ public class UserFacade {
         return userService.findById(userId)
                 .doOnNext(user -> productDto.setUserId(user.getId()))
                 .map(user -> productDtoConverter.fromDto(productDto))
-                .flatMap(productService::save)
-                .map(productDtoConverter::toDto);
+                .flatMap(productService::save);
     }
 
     Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {

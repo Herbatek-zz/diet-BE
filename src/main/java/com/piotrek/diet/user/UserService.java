@@ -14,6 +14,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserValidation userValidation;
+    private final UserDtoConverter userDtoConverter;
+
+    public Mono<UserDto> findDtoById(String id) {
+        return findById(id).map(userDtoConverter::toDto);
+    }
 
     public Mono<User> findById(String id) {
         return userRepository.findById(id)
@@ -36,7 +41,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Mono<User> update(String userId, UserDto userDto) {
+    public Mono<User> save(UserDto userDto) {
+        return userRepository.save(userDtoConverter.fromDto(userDto));
+    }
+
+    public Mono<UserDto> update(String userId, UserDto userDto) {
         userValidation.validateUserWithPrincipal(userId);
         return findById(userId)
                 .doOnNext(user -> user.setUsername(userDto.getUsername()))
@@ -47,7 +56,8 @@ public class UserService {
                 .doOnNext(user -> user.setAge(userDto.getAge()))
                 .doOnNext(user -> user.setWeight(userDto.getWeight()))
                 .doOnNext(user -> user.setHeight(userDto.getHeight()))
-                .flatMap(userRepository::save);
+                .flatMap(userRepository::save)
+                .map(userDtoConverter::toDto);
     }
 
     Mono<Void> deleteById(String userId) {

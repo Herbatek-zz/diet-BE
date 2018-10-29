@@ -46,6 +46,7 @@ class ProductControllerTest {
     private Product product1;
     private Product product2;
     private ProductDto productDto1;
+    private ProductDto productDto2;
 
     @BeforeEach
     void beforeEach() {
@@ -209,9 +210,10 @@ class ProductControllerTest {
         product1 = ProductSample.bananaWithoutId();
         product2 = ProductSample.breadWithoutId();
 
-        product1 = productService.save(product1).block();
-        product2 = productService.save(product2).block();
+        productDto1 = productService.save(product1).block();
+        productDto2 = productService.save(product2).block();
 
-        productDto1 = productDtoConverter.toDto(product1);
+        product1 = productDtoConverter.fromDto(productDto1);
+        product2 = productDtoConverter.fromDto(productDto2);
     }
 }

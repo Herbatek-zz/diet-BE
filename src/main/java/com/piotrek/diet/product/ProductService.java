@@ -69,14 +69,14 @@ public class ProductService {
         return productRepository.findAllByUserId(userId);
     }
 
-    public Mono<Product> save(Product product) {
+    public Mono<ProductDto> save(Product product) {
         var carbohydrateExchange = diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
         product.setCarbohydrateExchange(carbohydrateExchange);
 
         var proteinAndFatEquivalent = diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         product.setProteinAndFatEquivalent(proteinAndFatEquivalent);
 
-        return productRepository.save(product);
+        return productRepository.save(product).map(productDtoConverter::toDto);
     }
 
     Mono<Void> deleteById(String id) {

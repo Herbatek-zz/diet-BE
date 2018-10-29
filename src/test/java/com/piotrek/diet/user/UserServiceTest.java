@@ -25,6 +25,9 @@ class UserServiceTest {
     @Mock
     private UserValidation userValidation;
 
+    @Mock
+    private UserDtoConverter userDtoConverter;
+
     @InjectMocks
     private UserService userService;
 
@@ -192,13 +195,16 @@ class UserServiceTest {
 
         when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
         when(userRepository.save(updatedUser)).thenReturn(Mono.just(updatedUser));
+        when(userDtoConverter.toDto(updatedUser)).thenReturn(updatedUserDto);
 
-        User actualUser = userService.update(user.getId(), updatedUserDto).block();
 
-        this.assertEqualAllUserFields(updatedUser, actualUser);
+        UserDto actualUser = userService.update(user.getId(), updatedUserDto).block();
+
+        this.assertEqualAllUserDtoFields(updatedUserDto, actualUser);
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(updatedUser);
-        verifyNoMoreInteractions(userRepository);
+        verify(userDtoConverter, times(1)).toDto(updatedUser);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
     @Test
     void deleteById() {
@@ -231,6 +237,20 @@ class UserServiceTest {
                 () -> assertEquals(expected.getLastVisit(), actual.getLastVisit()),
                 () -> assertEquals(expected.getRole(), actual.getRole()),
                 () -> assertEquals(expected.getFavouriteMeals().size(), actual.getFavouriteMeals().size())
+        );
+    }
+
+    private void assertEqualAllUserDtoFields(UserDto expected, UserDto actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getUsername(), actual.getUsername()),
+                () -> assertEquals(expected.getEmail(), actual.getEmail()),
+                () -> assertEquals(expected.getFirstName(), actual.getFirstName()),
+                () -> assertEquals(expected.getLastName(), actual.getLastName()),
+                () -> assertEquals(expected.getAge(), actual.getAge()),
+                () -> assertEquals(expected.getHeight(), actual.getHeight()),
+                () -> assertEquals(expected.getWeight(), actual.getWeight())
         );
     }
 }

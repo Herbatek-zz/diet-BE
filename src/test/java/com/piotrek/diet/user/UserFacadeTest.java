@@ -96,14 +96,7 @@ class UserFacadeTest {
 
         final var block = userFacade.findDtoCartByUserAndDate(user.getId(), cart.getDate()).block();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), block.getId()),
-                () -> assertEquals(cartDto.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cartDto.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(cartDto.getAllProducts(), block.getAllProducts()),
-                () -> assertEquals(cartDto.getUserId(), block.getUserId()),
-                () -> assertEquals(cartDto.getDate(), block.getDate())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartService, cartDtoConverter);
@@ -113,30 +106,16 @@ class UserFacadeTest {
     @Test
     void createProduct_whenPrincipalEqualUserId_thenSuccess() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        when(productService.save(product)).thenReturn(Mono.just(product));
+        when(productService.save(product)).thenReturn(Mono.just(productDto));
         when(productDtoConverter.fromDto(productDto)).thenReturn(product);
         when(productDtoConverter.toDto(product)).thenReturn(productDto);
 
         var created = userFacade.createProduct(user.getId(), productDto).block();
 
-        assertAll(
-                () -> assertEquals(productDto.getId(), created.getId()),
-                () -> assertEquals(productDto.getName(), created.getName()),
-                () -> assertEquals(productDto.getDescription(), created.getDescription()),
-                () -> assertEquals(productDto.getProtein(), created.getProtein()),
-                () -> assertEquals(productDto.getCarbohydrate(), created.getCarbohydrate()),
-                () -> assertEquals(productDto.getFat(), created.getFat()),
-                () -> assertEquals(productDto.getFibre(), created.getFibre()),
-                () -> assertEquals(productDto.getKcal(), created.getKcal()),
-                () -> assertEquals(productDto.getCarbohydrateExchange(), created.getCarbohydrateExchange()),
-                () -> assertEquals(productDto.getProteinAndFatEquivalent(), created.getProteinAndFatEquivalent()),
-                () -> assertEquals(productDto.getAmount(), created.getAmount())
-        );
-
+        this.assertEqualsAllProductDtoFields(productDto, created);
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).save(product);
         verify(productDtoConverter, times(1)).fromDto(productDto);
-        verify(productDtoConverter, times(1)).toDto(product);
         verifyNoMoreInteractions(userService, productService, productDtoConverter);
     }
 
@@ -176,7 +155,6 @@ class UserFacadeTest {
         var firstPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
-
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).findAllByUserId(user.getId());
         verify(productDtoConverter, times(10)).toDto(product);
@@ -201,7 +179,6 @@ class UserFacadeTest {
         var firstPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
-
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).findAllByUserId(user.getId());
         verify(productDtoConverter, times(0)).toDto(product);
@@ -214,6 +191,9 @@ class UserFacadeTest {
 
         assertThrows(BadRequestException.class,
                 () -> userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(1, 10)).block());
+
+        verify(userService, times(1)).findById(user.getId());
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -224,17 +204,23 @@ class UserFacadeTest {
 
         var created = userFacade.createMeal(user.getId(), mealDto).block();
 
-        assertEquals(mealDto, created);
+        this.assertEqualsAllMealDtoFields(mealDto, created);
+        verify(userService, times(1)).findById(user.getId());
+        verify(mealService, times(1)).save(mealDto);
+        verify(mealDtoConverter, times(1)).toDto(meal);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
+        verifyNoMoreInteractions(userService, mealService, mealDtoConverter, userValidation);
     }
 
     @Test
     void createMeal_whenPrincipalNotEqualUserId_thenFailure() {
-
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.save(meal)).thenReturn(Mono.just(meal));
         doThrow(BadRequestException.class).when(userValidation).validateUserWithPrincipal(user.getId());
 
         assertThrows(BadRequestException.class, () -> userFacade.createMeal(user.getId(), mealDto).block());
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
+        verifyNoMoreInteractions(userService, mealService, userValidation);
     }
 
     @Test
@@ -380,11 +366,12 @@ class UserFacadeTest {
         userFacade.addToFavourite(user.getId(), meal.getId()).block();
 
         assertEquals(1, user.getFavouriteMeals().size());
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userService, times(1)).findById(user.getId());
         verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealDtoConverter, times(0)).toDto(meal);
-        verifyNoMoreInteractions(userService, mealService);
+        verifyNoMoreInteractions(userService, mealService, userValidation);
     }
 
     @Test
@@ -400,10 +387,11 @@ class UserFacadeTest {
         userFacade.addToFavourite(user.getId(), meal.getId()).block();
 
         assertEquals(3, user.getFavouriteMeals().size());
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userService, times(1)).findById(user.getId());
         verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
-        verifyNoMoreInteractions(userService, mealService);
+        verifyNoMoreInteractions(userService, mealService, userValidation);
     }
 
     @Test
@@ -524,20 +512,14 @@ class UserFacadeTest {
 
         final var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(0, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -556,20 +538,14 @@ class UserFacadeTest {
 
         final var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), block.getId()),
-                () -> assertEquals(cartDto.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cartDto.getUserId(), block.getUserId()),
-                () -> assertEquals(cartDto.getDate(), block.getDate()),
-                () -> assertEquals(cartDto.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(cartDto.getAllProducts(), block.getAllProducts())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(any(Cart.class));
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -591,20 +567,14 @@ class UserFacadeTest {
 
         var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), block.getId()),
-                () -> assertEquals(cartDto.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cartDto.getUserId(), block.getUserId()),
-                () -> assertEquals(cartDto.getDate(), block.getDate()),
-                () -> assertEquals(cartDto.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(0, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -628,20 +598,14 @@ class UserFacadeTest {
 
         var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(1, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -714,19 +678,13 @@ class UserFacadeTest {
 
         final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(1, block.getProducts().size()),
-                () -> assertEquals(1, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(any(Cart.class));
         verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -745,19 +703,13 @@ class UserFacadeTest {
 
         final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cart.getId(), block.getId()),
-                () -> assertEquals(cart.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cart.getUserId(), block.getUserId()),
-                () -> assertEquals(cart.getDate(), block.getDate()),
-                () -> assertEquals(cart.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(1, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -779,19 +731,13 @@ class UserFacadeTest {
 
         var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), block.getId()),
-                () -> assertEquals(cartDto.getMeals().size(), block.getMeals().size()),
-                () -> assertEquals(cartDto.getUserId(), block.getUserId()),
-                () -> assertEquals(cartDto.getDate(), block.getDate()),
-                () -> assertEquals(cartDto.getProducts().size(), block.getProducts().size()),
-                () -> assertEquals(2, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -823,20 +769,13 @@ class UserFacadeTest {
 
         var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), block.getId()),
-                () -> assertEquals(cartDto.getUserId(), block.getUserId()),
-                () -> assertEquals(cartDto.getDate(), block.getDate()),
-                () -> assertEquals(1, block.getMeals().size()),
-                () -> assertEquals(mealDto.getProtein(), block.getMeals().get(0).getProtein()),
-                () -> assertEquals(1, block.getProducts().size()),
-                () -> assertEquals(1, block.getAllProducts().size())
-        );
+        this.assertEqualsAllCartDtoFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, productService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, productService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -860,11 +799,12 @@ class UserFacadeTest {
                 () -> assertEquals(0, cart.getProducts().size()),
                 () -> assertEquals(0, cart.getMeals().size())
         );
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, productService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, productService, cartDtoConverter, userValidation);
     }
 
     @Test
@@ -939,4 +879,54 @@ class UserFacadeTest {
 
         return arrayList;
     }
+
+    private void assertEqualsAllCartDtoFields(CartDto expected, CartDto actual) {
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getMeals().size(), actual.getMeals().size()),
+                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
+                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId()),
+                () -> assertEquals(expected.getDate(), actual.getDate())
+        );
+    }
+
+    private void assertEqualsAllProductDtoFields(ProductDto expected, ProductDto actual) {
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
+    }
+
+    private void assertEqualsAllMealDtoFields(MealDto expected, MealDto actual) {
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId()),
+                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size())
+        );
+    }
+
+
 }

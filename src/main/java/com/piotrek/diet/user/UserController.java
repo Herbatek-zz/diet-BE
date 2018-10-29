@@ -30,6 +30,12 @@ public class UserController {
         return userFacade.findDtoUser(id);
     }
 
+    @PutMapping("/{id}")
+    @ResponseStatus(OK)
+    Mono<UserDto> updateUser(@PathVariable String id, @RequestBody @Valid UserDto userDto) {
+        return userFacade.updateUser(id, userDto);
+    }
+
     @GetMapping("/{id}/products")
     @ResponseStatus(OK)
     Mono<Page<ProductDto>> findUserProducts(

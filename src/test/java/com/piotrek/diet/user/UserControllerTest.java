@@ -593,9 +593,9 @@ class UserControllerTest {
     @DisplayName("Add product to cart, when cart has one product, then cart has two products")
     void addProductToCart_whenCartHasOneProduct_thenCartHasTwoProducts() {
         var productToAdd = productService.save(ProductSample.bananaWithId()).block();
-        var productInCart = productService.save(ProductSample.breadWithId()).block();
+        productService.save(ProductSample.breadWithId()).block();
 
-        cart.getProducts().add(productInCart);
+        cart.getProducts().add(ProductSample.breadWithId());
         cart = cartService.save(cart).block();
 
 
@@ -744,10 +744,10 @@ class UserControllerTest {
         mealToDelete.getProducts().add(ProductSample.bananaWithId());
         mealToDelete = mealService.save(mealToDelete).block();
 
-        var productInCart = productService.save(ProductSample.breadWithId()).block();
+        productService.save(ProductSample.breadWithId()).block();
 
         cart.getMeals().add(mealToDelete);
-        cart.getProducts().add(productInCart);
+        cart.getProducts().add(ProductSample.breadWithId());
         cartService.save(cart).block();
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
@@ -803,7 +803,7 @@ class UserControllerTest {
     void deleteProductFromCart_whenCartHasOneProduct_thenCartIsEmpty() {
         var productToDelete = productService.save(ProductSample.breadWithId()).block();
 
-        cart.getProducts().add(productToDelete);
+        cart.getProducts().add(ProductSample.breadWithId());
         cartService.save(cart).block();
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
@@ -833,8 +833,8 @@ class UserControllerTest {
 
         var productInCart = productService.save(ProductSample.bananaWithId()).block();
 
-        cart.getProducts().add(productToDelete);
-        cart.getProducts().add(productInCart);
+        cart.getProducts().add(ProductSample.breadWithId());
+        cart.getProducts().add(ProductSample.bananaWithId());
         cartService.save(cart).block();
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
@@ -865,9 +865,10 @@ class UserControllerTest {
         mealInCart = mealService.save(mealInCart).block();
 
         var productToDelete = productService.save(ProductSample.breadWithId()).block();
+        var productDtoToDelete = ProductSample.breadWithId();
 
         cart.getMeals().add(mealInCart);
-        cart.getProducts().add(productToDelete);
+        cart.getProducts().add(productDtoToDelete);
         cartService.save(cart).block();
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +

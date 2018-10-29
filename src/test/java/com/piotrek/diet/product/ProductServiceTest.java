@@ -323,13 +323,15 @@ class ProductServiceTest {
     @Test
     void save() {
         when(productRepository.save(product)).thenReturn(Mono.just(product));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
 
-        assertEquals(product, productService.save(product).block());
+        assertEquals(productDto, productService.save(product).block());
 
         verify(productRepository, times(1)).save(product);
+        verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, diabetesCalculator, productDtoConverter);
     }
 
     @Test
