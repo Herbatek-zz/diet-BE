@@ -92,7 +92,7 @@ class UserControllerTest {
         createMeal();
         createCart();
         webTestClient = WebTestClient
-                .bindToController(new UserController(userService, userFacade))
+                .bindToController(new UserController( userFacade))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
@@ -922,7 +922,7 @@ class UserControllerTest {
     }
 
     private void createMeal() {
-        providePrincipal();
+        PrincipalProvider.provide(user.getId());
         meal = MealSample.dumplingsWithoutId();
         mealDto = userFacade.createMeal(user.getId(), MealSample.dumplingsWithoutIdDto()).block();
         meal.setId(mealDto.getId());
@@ -936,8 +936,4 @@ class UserControllerTest {
         cart.setUserId(cartDto.getUserId());
     }
 
-    private void providePrincipal() {
-        var testingAuthentication = new TestingAuthenticationToken(user.getId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-    }
 }

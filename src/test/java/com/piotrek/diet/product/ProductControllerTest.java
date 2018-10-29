@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.PrincipalProvider;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
@@ -191,7 +192,7 @@ class ProductControllerTest {
 
     @Test
     void deleteById() {
-        providePrincipal();
+        PrincipalProvider.provide(product1.getUserId());
         final var URI = "/products/" + product1.getId();
         webTestClient.delete().uri(URI)
                 .exchange()
@@ -212,10 +213,5 @@ class ProductControllerTest {
         product2 = productService.save(product2).block();
 
         productDto1 = productDtoConverter.toDto(product1);
-    }
-
-    private void providePrincipal() {
-        var testingAuthentication = new TestingAuthenticationToken(product1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
     }
 }

@@ -13,15 +13,11 @@ import reactor.core.publisher.Mono;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserDtoConverter userDtoConverter;
+    private final UserValidation userValidation;
 
     public Mono<User> findById(String id) {
         return userRepository.findById(id)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found user [id = " + id + "]"))));
-    }
-
-    Mono<UserDto> findDtoById(String id) {
-        return findById(id).map(userDtoConverter::toDto);
     }
 
     public Mono<User> findByFacebookId(Long facebookId) {
@@ -38,6 +34,20 @@ public class UserService {
 
     public Mono<User> save(User user) {
         return userRepository.save(user);
+    }
+
+    public Mono<User> update(String userId, UserDto userDto) {
+        userValidation.validateUserWithPrincipal(userId);
+        return findById(userId)
+                .doOnNext(user -> user.setUsername(userDto.getUsername()))
+                .doOnNext(user -> user.setFirstName(userDto.getFirstName()))
+                .doOnNext(user -> user.setLastName(userDto.getLastName()))
+                .doOnNext(user -> user.setEmail(userDto.getEmail()))
+                .doOnNext(user -> user.setPictureUrl(userDto.getPicture_url()))
+                .doOnNext(user -> user.setAge(userDto.getAge()))
+                .doOnNext(user -> user.setWeight(userDto.getWeight()))
+                .doOnNext(user -> user.setHeight(userDto.getHeight()))
+                .flatMap(userRepository::save);
     }
 
     Mono<Void> deleteById(String userId) {

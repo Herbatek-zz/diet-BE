@@ -94,7 +94,7 @@ class UserFacadeTest {
         when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        final var block = userFacade.findDtoCart(user.getId(), cart.getDate()).block();
+        final var block = userFacade.findDtoCartByUserAndDate(user.getId(), cart.getDate()).block();
 
         assertAll(
                 () -> assertEquals(cartDto.getId(), block.getId()),
@@ -109,16 +109,6 @@ class UserFacadeTest {
         verifyNoMoreInteractions(cartService, cartDtoConverter);
     }
 
-    @Test
-    @DisplayName("Find cart, when cart not found, then throw NotFoundException")
-    void findCart_whenNotFound_thenSaveNewCartAndReturn() {
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenThrow(NotFoundException.class);
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        assertThrows(NotFoundException.class, () -> userFacade.findCart(cart.getUserId(), cart.getDate()).block());
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verifyNoMoreInteractions(cartService, cartDtoConverter);
-    }
 
     @Test
     void createProduct_whenPrincipalEqualUserId_thenSuccess() {

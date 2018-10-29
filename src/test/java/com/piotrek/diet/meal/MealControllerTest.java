@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.PrincipalProvider;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
@@ -239,7 +240,7 @@ class MealControllerTest {
         secondProductInUpdate.setUserId("id");
         productDtos.add(secondProductInUpdate);
 
-        providePrincipal();
+        PrincipalProvider.provide(meal1.getUserId());
 
         final MealDto update = dumplingsWithIdDto();
         update.setName("updated name");
@@ -397,8 +398,4 @@ class MealControllerTest {
         mealDto2 = mealDtoConverter.toDto(meal2);
     }
 
-    private void providePrincipal() {
-        var testingAuthentication = new TestingAuthenticationToken(meal1.getUserId(), null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
-    }
 }

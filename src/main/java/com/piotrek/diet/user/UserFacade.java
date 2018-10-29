@@ -33,13 +33,14 @@ public class UserFacade {
     private final ProductService productService;
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
+    private final UserDtoConverter userDtoConverter;
 
-    Mono<CartDto> findDtoCart(String userId, LocalDate date) {
-        return findCart(userId, date).map(cartDtoConverter::toDto);
+    Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
+        return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
     }
 
-    Mono<Cart> findCart(String userId, LocalDate date) {
-        return cartService.findByUserIdAndDate(userId, date);
+    Mono<UserDto> findDtoUser(String id) {
+        return userService.findById(id).map(userDtoConverter::toDto);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {

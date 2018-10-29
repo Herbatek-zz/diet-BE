@@ -22,18 +22,17 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
     private final UserFacade userFacade;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<UserDto> getUserById(@PathVariable String id) {
-        return userService.findDtoById(id);
+    Mono<UserDto> findUserById(@PathVariable String id) {
+        return userFacade.findDtoUser(id);
     }
 
     @GetMapping("/{id}/products")
     @ResponseStatus(OK)
-    Mono<Page<ProductDto>> getUserProducts(
+    Mono<Page<ProductDto>> findUserProducts(
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
@@ -42,7 +41,7 @@ public class UserController {
 
     @GetMapping("/{id}/meals")
     @ResponseStatus(OK)
-    Mono<Page<MealDto>> getUserMeals(
+    Mono<Page<MealDto>> findUserMeals(
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
@@ -51,8 +50,8 @@ public class UserController {
 
     @GetMapping("/{id}/carts")
     @ResponseStatus(OK)
-    Mono<CartDto> getCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.findDtoCart(id, date);
+    Mono<CartDto> findUserCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+        return userFacade.findDtoCartByUserAndDate(id, date);
     }
 
     @PostMapping("/{id}/products")
