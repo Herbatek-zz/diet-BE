@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 
+import static com.piotrek.diet.security.helpers.SecurityConstants.COOKIE_MAX_AGE;
 import static com.piotrek.diet.security.helpers.SecurityConstants.SECRET;
 
 @Slf4j
@@ -66,6 +67,7 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
 
         Cookie cookie = new Cookie("Token", token.getToken());
         cookie.setPath("/");
+        cookie.setMaxAge(COOKIE_MAX_AGE);
         response.addCookie(cookie);
 
         response.sendRedirect("http://localhost:3000");

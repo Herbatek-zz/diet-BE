@@ -9,14 +9,11 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.helpers.MealEquals;
 import com.piotrek.diet.helpers.ProductEquals;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -286,7 +283,7 @@ class MealControllerTest {
 
         assertNotNull(responseBody);
         assertAll(
-                () -> assertTrue(MealEquals.mealDtoEquals(expected, responseBody)),
+                () -> assertEquals(expected, responseBody),
                 () -> assertTrue(ProductEquals.productDtoEquals(expected.getProducts().get(0), responseBody.getProducts().get(0))),
                 () -> assertTrue(ProductEquals.productDtoEquals(expected.getProducts().get(1), responseBody.getProducts().get(1)))
         );

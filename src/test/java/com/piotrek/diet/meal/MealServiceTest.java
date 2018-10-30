@@ -1,16 +1,16 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.helpers.MealEquals;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.MealSample.*;
@@ -40,204 +41,221 @@ class MealServiceTest {
     @Mock
     private UserValidation userValidation;
 
+    @InjectMocks
     private MealService mealService;
 
-    private Meal meal1;
-    private MealDto meal1Dto;
+    private Meal meal;
+    private MealDto mealDto;
 
     @BeforeEach
     void beforeEach() {
         MockitoAnnotations.initMocks(this);
-        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
-        meal1 = dumplingsWithId();
-        meal1Dto = dumplingsWithIdDto();
+        meal = dumplingsWithId();
+        mealDto = dumplingsWithIdDto();
     }
 
     @Test
-    @DisplayName("When findMealDtoById and found meal, then the meal should be returned")
-    void findById_whenSuccess_thenReturnMeal() {
-        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+    @DisplayName("Find a meal by id, when found, then return the meal")
+    void findById_whenFound_thenReturn() {
+        when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
 
-        final var byId = mealService.findById(meal1.getId()).block();
+        final var mealById = mealService.findById(meal.getId()).block();
 
-        assertNotNull(byId);
-        assertTrue(MealEquals.mealEquals(meal1, byId));
-        verify(mealRepository, times(1)).findById(meal1.getId());
-        verifyNoMoreInteractions(mealRepository);
+        this.assertEqualMealAllFields(meal, mealById);
+        verify(mealRepository, times(1)).findById(meal.getId());
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findMealDtoById with id that doesn't exist, NotFoundException should be thrown")
-    void findById_whenNotFoundMeal_thenThrowNotFoundException() {
-        final var ID = "@#@#@ID";
-        when(mealRepository.findById(ID)).thenReturn(Mono.empty());
+    @DisplayName("Find a meal by id, when not found, then throw NotFoundException")
+    void findById_whenNotFound_thenThrowNotFoundException() {
+        final var WRONG_ID = UUID.randomUUID().toString();
+        when(mealRepository.findById(WRONG_ID)).thenReturn(Mono.empty());
 
-        assertThrows(NotFoundException.class, () -> mealService.findById(ID).block());
-        verify(mealRepository, times(1)).findById(ID);
-        verifyNoMoreInteractions(mealRepository);
+        assertThrows(NotFoundException.class, mealService.findById(WRONG_ID)::block);
+        verify(mealRepository, times(1)).findById(WRONG_ID);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findDtoById, and found meal, then the meal should be returned")
-    void findDtoById_whenSuccess_thenReturnMeal() {
-        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        when(mealDtoConverter.toDto(meal1)).thenReturn(meal1Dto);
+    @DisplayName("Find a meal dto by id, when found, then return")
+    void findDtoById_whenFound_thenReturn() {
+        when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
 
-        final var byId = mealService.findDtoById(meal1.getId()).block();
+        final var mealDtoById = mealService.findDtoById(meal.getId()).block();
 
-        assertNotNull(byId);
-        assertTrue(MealEquals.mealDtoEquals(meal1Dto, byId));
-        verify(mealRepository, times(1)).findById(meal1.getId());
-        verify(mealDtoConverter, times(1)).toDto(meal1);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        this.assertEqualMealDtoAllFields(mealDto, mealDtoById);
+        verify(mealRepository, times(1)).findById(meal.getId());
+        verify(mealDtoConverter, times(1)).toDto(meal);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findDtoById with id that doesn't exist, NotFoundException should be thrown")
-    void findDtoById_whenNotFoundMeal_thenThrowNotFoundException() {
-        final var ID = "@#@#@ID";
-        when(mealRepository.findById(ID)).thenReturn(Mono.empty());
+    @DisplayName("Find a meal dto by id, when not found, then throw NotFoundException")
+    void findDtoById_whenNotFound_thenThrowNotFoundException() {
+        final var INCORRECT_ID = UUID.randomUUID().toString();
+        when(mealRepository.findById(INCORRECT_ID)).thenReturn(Mono.empty());
 
-        assertThrows(NotFoundException.class, () -> mealService.findDtoById(ID).block());
-        verify(mealRepository, times(1)).findById(ID);
-        verifyNoMoreInteractions(mealRepository);
+        assertThrows(NotFoundException.class, mealService.findDtoById(INCORRECT_ID)::block);
+        verify(mealRepository, times(1)).findById(INCORRECT_ID);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When search meals and there are not meals in db, then return empty page")
-    void searchByName_whenNoMealsAndNoResult_thenReturnEmptyPage() {
+    @DisplayName("Search meals by name, when nothing found, then return empty page")
+    void searchByName_whenNothingFound_thenReturnEmptyPage() {
         final var page = 0;
         final var pageSize = 10;
         final var totalElements = 0;
-        final var query = "name";
+        final var query = "query";
         final var mealList = createMealList(totalElements, COFFEE);
-        final var productDtoList = createMealDtoList(totalElements, COFFEE);
-        final var expected = new Page<>(productDtoList
+        final var mealDtoList = createMealDtoList(totalElements, COFFEE);
+        final var expected = new Page<>(mealDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-
         when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList));
-        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
+        final var actualPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
 
-        final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
-
-
-        assertEquals(expected, firstPage);
+        assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(mealDtoConverter, times(0)).toDto(coffeeWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("Search meals, when there are two meals in db, should be returned page with 2 meals")
-    void searchByName_when2ProductsAnd2Results_thenReturnPageWithTwoMeals() {
+    @DisplayName("Search meals, when found 2 meals, return page with 2 meals")
+    void searchByName_whenFoundTwoMeals_thenReturnPageWithTwoMeals() {
         final var page = 0;
         final var pageSize = 10;
         final var totalElements = 2;
         final var query = coffeeWithId().getName();
-        final var productList = createMealList(totalElements, COFFEE);
-        final var productDtoList = createMealDtoList(totalElements, COFFEE);
-        final var expected = new Page<>(productDtoList
+        final var mealList = createMealList(totalElements, COFFEE);
+        final var mealDtoList = createMealDtoList(totalElements, COFFEE);
+        final var expected = new Page<>(mealDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-
-        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList));
         when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
+        final var actualPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
 
-        final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
-
-
-        assertEquals(expected, firstPage);
+        assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("Search meals, when there are twenty two meals in db but query matches for 12, then should be returned first page with ten meals")
-    void searchByName_when22MealsAnd12Results_thenReturnPageWith10ResultsInFirstPage() {
+    @DisplayName("Search meals, when there are twenty-two meals, but query matches for 12, then return first page with 10 meals")
+    void searchByName_when22MealsAnd12ResultsAndFirstPage_thenReturnPageWith10ResultsInFirstPage() {
         final var page = 0;
         final var pageSize = 10;
-        final var totalElements = 22;
+        final var totalElementsMatchesToQuery = 12;
         final var query = coffeeWithId().getName();
-        final var productList = createMealList(12, COFFEE);
-        productList.addAll(createMealList(10, DUMPLINGS));
-        final var productDtoList = createMealDtoList(12, COFFEE);
-        productDtoList.addAll(createMealDtoList(10, DUMPLINGS));
-        final var expected = new Page<>(productDtoList
+
+        final var mealList = createMealList(totalElementsMatchesToQuery, COFFEE);
+        mealList.addAll(createMealList(10, DUMPLINGS));
+
+        final var mealDtoList = createMealDtoList(totalElementsMatchesToQuery, COFFEE);
+        mealDtoList.addAll(createMealDtoList(10, DUMPLINGS));
+
+        final var expected = new Page<>(mealDtoList
                 .stream()
+                .skip(page * pageSize)
                 .limit(pageSize)
-                .collect(Collectors.toList()), page, pageSize, totalElements);
+                .collect(Collectors.toList()), page, pageSize, totalElementsMatchesToQuery);
 
-
-        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList.subList(0, totalElementsMatchesToQuery)));
         when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
-
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
-
 
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(mealDtoConverter, times(pageSize)).toDto(coffeeWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findAllByUserId and user has 5 meals, then returned should be 5 meals")
+    @DisplayName("Search meals, when there are twenty-two meals, but query matches for 12, then return second page with two meals")
+    void searchByName_when22MealsAnd12ResultsAndSecondPage_thenReturnPageWithTwoResultsInSecondPage() {
+        final var page = 1;
+        final var pageSize = 10;
+        final var totalElementsMatchesToQuery = 12;
+        final var query = coffeeWithId().getName();
+
+        final var mealList = createMealList(totalElementsMatchesToQuery, COFFEE);
+        mealList.addAll(createMealList(10, DUMPLINGS));
+
+        final var mealDtoList = createMealDtoList(totalElementsMatchesToQuery, COFFEE);
+        mealDtoList.addAll(createMealDtoList(10, DUMPLINGS));
+
+        final var expected = new Page<>(mealDtoList
+                .stream()
+                .skip(page * pageSize)
+                .limit(totalElementsMatchesToQuery - page * pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElementsMatchesToQuery);
+
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList.subList(0,totalElementsMatchesToQuery)));
+        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+
+        final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
+
+        assertEquals(expected, firstPage);
+        verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
+        verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+    }
+
+    @Test
+    @DisplayName("Find all user meals, when user has 5 meals, then return 5 meals")
     void findAllByUserId_whenUserHas5Meals_thenReturn5Meals() {
         final var mealList = createMealList(5, DUMPLINGS);
         final var user = UserSample.johnWithId();
 
-
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
 
+        final var userMeals = mealService.findAllByUserId(user.getId()).collectList().block();
 
-        final var meals = mealService.findAllByUserId(user.getId()).toStream().collect(Collectors.toList());
-
-
+        assertNotNull(userMeals);
         assertAll(
-                () -> assertEquals(mealList, meals),
-                () -> assertEquals(mealList.size(), meals.size()),
-                () -> assertTrue(MealEquals.mealEquals(mealList.get(0), meals.get(0))),
-                () -> assertTrue(MealEquals.mealEquals(mealList.get(1), meals.get(1))),
-                () -> assertTrue(MealEquals.mealEquals(mealList.get(2), meals.get(2))),
-                () -> assertTrue(MealEquals.mealEquals(mealList.get(3), meals.get(3))),
-                () -> assertTrue(MealEquals.mealEquals(mealList.get(4), meals.get(4)))
+                () -> assertEquals(mealList, userMeals),
+                () -> this.assertEqualMealAllFields(mealList.get(0), userMeals.get(0)),
+                () -> this.assertEqualMealAllFields(mealList.get(1), userMeals.get(1)),
+                () -> this.assertEqualMealAllFields(mealList.get(2), userMeals.get(2)),
+                () -> this.assertEqualMealAllFields(mealList.get(3), userMeals.get(3)),
+                () -> this.assertEqualMealAllFields(mealList.get(4), userMeals.get(4))
         );
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findAllByUserId and user has no meals, then returned should be empty list")
+    @DisplayName("Find all user meals, when user has no meals, then return empty list")
     void findAllByUserId_whenUserHasNoMeals_thenReturnEmptyList() {
-        final var mealList = new ArrayList<Meal>();
+        final var expectedList = new ArrayList<Meal>();
         final var user = UserSample.johnWithId();
-
 
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.empty());
 
+        final var userMeals = mealService.findAllByUserId(user.getId()).collectList().block();
 
-        final var allByUserId = mealService.findAllByUserId(user.getId()).toStream().collect(Collectors.toList());
-
-
+        assertNotNull(userMeals);
         assertAll(
-                () -> assertEquals(mealList, allByUserId),
-                () -> assertEquals(mealList.size(), allByUserId.size())
+                () -> assertEquals(expectedList, userMeals),
+                () -> assertEquals(expectedList.size(), userMeals.size())
         );
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findAllPageable and there are twenty meals, then should be returned first page with 10 meals")
+    @DisplayName("Find all meals pageable, when there are 20 meals and first page, then return first page with 10 meals")
     void findAllPageable_whenTotalElements20PageSize10Page0_thenReturnFirstPageWith10Meals() {
         final var page = 0;
         final var pageSize = 10;
@@ -246,25 +264,23 @@ class MealServiceTest {
         final var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
         final var expected = new Page<>(mealDtoList
                 .stream()
+                .skip(page * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
-
 
         when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
         when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
 
+        final var actualFirstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
-        final var firstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
-
-
-        assertEquals(expected, firstPage);
+        assertEquals(expected, actualFirstPage);
         verify(mealRepository, times(1)).findAll();
         verify(mealDtoConverter, times(10)).toDto(dumplingsWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findAllPageable and there are twenty meals and page = 1, should be returned second page(because first = 0)")
+    @DisplayName("Find all meals pageable, when there is 20 meals and second page, then return second page with 10 meals")
     void findAllPageable_whenTotalElements20PageSize10Page1_thenReturnSecondPageWith10Products() {
         final var page = 1;
         final var pageSize = 10;
@@ -273,26 +289,23 @@ class MealServiceTest {
         final var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
         final var expected = new Page<>(mealDtoList
                 .stream()
-                .skip(pageSize)
+                .skip(pageSize * page)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
-
 
         when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
         when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
 
+        final var actualSecondPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
-        final var firstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
-
-
-        assertEquals(expected, firstPage);
+        assertEquals(expected, actualSecondPage);
         verify(mealRepository, times(1)).findAll();
         verify(mealDtoConverter, times(10)).toDto(dumplingsWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When findAllPagaable and there are no meals in db, returned should be empty page")
+    @DisplayName("Find all meals pageable, when no meals, then return empty page")
     void findAllPageable_whenTotalElements0PageSize10Page0_thenReturnFirstPageWithEmptyList() {
         final var page = 0;
         final var pageSize = 10;
@@ -301,63 +314,64 @@ class MealServiceTest {
         final var meaLDtoList = createMealDtoList(totalElements, DUMPLINGS);
         final var expected = new Page<>(meaLDtoList
                 .stream()
+                .skip(page * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
-
         when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealLis));
-
 
         final var firstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
-
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAll();
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When save, then mealRespository.save() should be used and Mono<Meal> should be returned")
+    @DisplayName("Save meal, then save and return the meal")
     void save() {
-        when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
+        when(mealRepository.save(meal)).thenReturn(Mono.just(meal));
 
-        assertEquals(meal1, mealService.save(meal1).block());
+        final Meal savedMeal = mealService.save(meal).block();
 
-        verify(mealRepository, times(1)).save(meal1);
-        verifyNoMoreInteractions(mealRepository);
+        this.assertEqualMealAllFields(meal, savedMeal);
+        verify(mealRepository, times(1)).save(meal);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When save as argument MealDto - then should be used mealRepository.save(), dtoConverter.fromDto() and element should be returned")
+    @DisplayName("Save a meal dto, then save and return the meal")
     void saveDto() {
-        when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
-        when(mealDtoConverter.fromDto(meal1Dto)).thenReturn(meal1);
+        when(mealRepository.save(meal)).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.fromDto(mealDto)).thenReturn(meal);
 
-        assertEquals(meal1, mealService.save(meal1Dto).block());
+        final Meal savedMeal = mealService.save(mealDto).block();
 
-        verify(mealRepository, times(1)).save(meal1);
-        verify(mealDtoConverter, times(1)).fromDto(meal1Dto);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter);
+        this.assertEqualMealAllFields(meal, savedMeal);
+        verify(mealRepository, times(1)).save(meal);
+        verify(mealDtoConverter, times(1)).fromDto(mealDto);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("DeletedAll, Mono.empty() should be returned and mealRepository.deleteAll() should be used")
+    @DisplayName("Deleted all meals, then return Mono.empty()")
     void deleteAll() {
         assertEquals(Mono.empty().block(), mealService.deleteAll());
 
         verify(mealRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(mealRepository);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("When deleteById, then returned should be Mono.empty() and mealRepository.deleteById(id) should be used")
+    @DisplayName("Delete meal by id, then Mono.empty()")
     void deleteById() {
-        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
 
-        assertEquals(Mono.empty().block(), mealService.deleteById(meal1.getId()));
-        verify(mealRepository, times(1)).deleteById(meal1.getId());
-        verify(mealRepository, times(1)).findById(meal1.getId());
-        verifyNoMoreInteractions(mealRepository);
+        assertEquals(Mono.empty().block(), mealService.deleteById(meal.getId()));
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
+        verify(mealRepository, times(1)).deleteById(meal.getId());
+        verify(mealRepository, times(1)).findById(meal.getId());
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
@@ -369,13 +383,13 @@ class MealServiceTest {
         final var afterUpdate = dumplingsWithIdDto();
         afterUpdate.setProducts(productDtos);
 
-        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        when(mealRepository.save(meal1)).thenReturn(Mono.just(meal1));
-        when(mealDtoConverter.toDto(meal1)).thenReturn(afterUpdate);
+        when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealRepository.save(meal)).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.toDto(meal)).thenReturn(afterUpdate);
         when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
-        final var mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdate).block();
+        final var mealWithProducts = mealService.updateMeal(meal.getId(), afterUpdate).block();
 
 
         assertNotNull(mealWithProducts);
@@ -388,18 +402,18 @@ class MealServiceTest {
                 () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
                 () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
                 () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal1.getUserId(), mealWithProducts.getUserId()),
-                () -> assertEquals(meal1.getDescription(), mealWithProducts.getDescription()),
-                () -> assertEquals(meal1.getRecipe(), mealWithProducts.getRecipe()),
-                () -> assertEquals(meal1.getName(), mealWithProducts.getName()),
-                () -> assertEquals(meal1.getImageUrl(), mealWithProducts.getImageUrl()),
-                () -> assertEquals(meal1.getId(), mealWithProducts.getId())
+                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
+                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
+                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
+                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
+                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
+                () -> assertEquals(meal.getId(), mealWithProducts.getId())
         );
-        verify(mealRepository, times(1)).findById(meal1.getId());
-        verify(mealRepository, times(1)).save(meal1);
-        verify(mealDtoConverter, times(1)).toDto(meal1);
+        verify(mealRepository, times(1)).findById(meal.getId());
+        verify(mealRepository, times(1)).save(meal);
+        verify(mealDtoConverter, times(1)).toDto(meal);
         verify(productDtoConverter, times(1)).listFromDto(productDtos);
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal1.getUserId());
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
@@ -423,13 +437,13 @@ class MealServiceTest {
         afterUpdateDto.setImageUrl("some updated image");
         afterUpdateDto.setProducts(products);
 
-        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
-        when(mealRepository.save(meal1)).thenReturn(Mono.just(afterUpdateDto));
+        when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealRepository.save(meal)).thenReturn(Mono.just(afterUpdateDto));
         when(mealDtoConverter.toDto(afterUpdateDto)).thenReturn(afterUpdate);
         when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
-        final var mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdate).block();
+        final var mealWithProducts = mealService.updateMeal(meal.getId(), afterUpdate).block();
 
 
         assertNotNull(mealWithProducts);
@@ -442,18 +456,18 @@ class MealServiceTest {
                 () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
                 () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
                 () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal1.getUserId(), mealWithProducts.getUserId()),
-                () -> assertEquals(meal1.getDescription(), mealWithProducts.getDescription()),
-                () -> assertEquals(meal1.getRecipe(), mealWithProducts.getRecipe()),
-                () -> assertEquals(meal1.getName(), mealWithProducts.getName()),
-                () -> assertEquals(meal1.getImageUrl(), mealWithProducts.getImageUrl()),
-                () -> assertEquals(meal1.getId(), mealWithProducts.getId())
+                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
+                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
+                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
+                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
+                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
+                () -> assertEquals(meal.getId(), mealWithProducts.getId())
         );
-        verify(mealRepository, times(1)).findById(meal1.getId());
-        verify(mealRepository, times(1)).save(meal1);
-        verify(mealDtoConverter, times(1)).toDto(meal1);
+        verify(mealRepository, times(1)).findById(meal.getId());
+        verify(mealRepository, times(1)).save(meal);
+        verify(mealDtoConverter, times(1)).toDto(meal);
         verify(productDtoConverter, times(1)).listFromDto(productDtos);
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal1.getUserId());
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
@@ -485,13 +499,13 @@ class MealServiceTest {
         afterUpdateDto.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
 
 
-        when(mealRepository.findById(meal1.getId())).thenReturn(Mono.just(meal1));
+        when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(mealRepository.save(afterUpdate)).thenReturn(Mono.just(afterUpdate));
         when(mealDtoConverter.toDto(afterUpdate)).thenReturn(afterUpdateDto);
         when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
 
-        MealDto mealWithProducts = mealService.updateMeal(meal1.getId(), afterUpdateDto).block();
+        MealDto mealWithProducts = mealService.updateMeal(meal.getId(), afterUpdateDto).block();
 
 
         assertNotNull(mealWithProducts);
@@ -506,18 +520,18 @@ class MealServiceTest {
                         mealWithProducts.getCarbohydrateExchange()),
                 () -> assertEquals(products.get(0).getProteinAndFatEquivalent() + products.get(1).getProteinAndFatEquivalent(),
                         mealWithProducts.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal1.getUserId(), mealWithProducts.getUserId()),
-                () -> assertEquals(meal1.getDescription(), mealWithProducts.getDescription()),
-                () -> assertEquals(meal1.getRecipe(), mealWithProducts.getRecipe()),
-                () -> assertEquals(meal1.getName(), mealWithProducts.getName()),
-                () -> assertEquals(meal1.getImageUrl(), mealWithProducts.getImageUrl()),
-                () -> assertEquals(meal1.getId(), mealWithProducts.getId())
-                );
-        verify(mealRepository, times(1)).findById(meal1.getId());
-        verify(mealRepository, times(1)).save(meal1);
-        verify(mealDtoConverter, times(1)).toDto(meal1);
+                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
+                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
+                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
+                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
+                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
+                () -> assertEquals(meal.getId(), mealWithProducts.getId())
+        );
+        verify(mealRepository, times(1)).findById(meal.getId());
+        verify(mealRepository, times(1)).save(meal);
+        verify(mealDtoConverter, times(1)).toDto(meal);
         verify(productDtoConverter, times(1)).listFromDto(productDtos);
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal1.getUserId());
+        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
@@ -553,5 +567,47 @@ class MealServiceTest {
         }
 
         return arrayList;
+    }
+
+    private void assertEqualMealAllFields(Meal expected, Meal actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getRecipe(), actual.getRecipe()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
+    }
+
+    private void assertEqualMealDtoAllFields(MealDto expected, MealDto actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getRecipe(), actual.getRecipe()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
     }
 }

@@ -45,7 +45,7 @@ public class UserService {
         return userRepository.save(userDtoConverter.fromDto(userDto));
     }
 
-    public Mono<UserDto> update(String userId, UserDto userDto) {
+    public Mono<User> update(String userId, UserDto userDto) {
         userValidation.validateUserWithPrincipal(userId);
         return findById(userId)
                 .doOnNext(user -> user.setUsername(userDto.getUsername()))
@@ -56,8 +56,7 @@ public class UserService {
                 .doOnNext(user -> user.setAge(userDto.getAge()))
                 .doOnNext(user -> user.setWeight(userDto.getWeight()))
                 .doOnNext(user -> user.setHeight(userDto.getHeight()))
-                .flatMap(userRepository::save)
-                .map(userDtoConverter::toDto);
+                .flatMap(userRepository::save);
     }
 
     Mono<Void> deleteById(String userId) {

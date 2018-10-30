@@ -13,6 +13,7 @@ import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.product.ProductService;
+import com.piotrek.diet.security.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,8 @@ public class UserFacade {
     private final ProductService productService;
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
+    private final TokenService tokenService;
+    private final UserDtoConverter userDtoConverter;
 
     Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
         return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
@@ -42,8 +45,11 @@ public class UserFacade {
         return userService.findDtoById(userId);
     }
 
-    Mono<UserDto> updateUser(String userId, UserDto userDto ) {
-        return userService.update(userId, userDto);
+    Mono<UserDto> updateUser(String userId, UserDto userDto) {
+        User user = userService.update(userId, userDto).block();
+        String tokenValue = tokenService.generateToken(user);
+        tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
+        return Mono.just(userDtoConverter.toDto(user));
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
@@ -72,7 +78,7 @@ public class UserFacade {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .doOnNext(user -> mealDto.setUserId(user.getId()))
-                .flatMap(user ->  mealService.save(mealDto))
+                .flatMap(user -> mealService.save(mealDto))
                 .map(mealDtoConverter::toDto);
     }
 

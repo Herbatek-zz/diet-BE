@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(of = {"id"})
 public class UserDto {
 
-    @NotNull
     private String id;
 
     @NotNull

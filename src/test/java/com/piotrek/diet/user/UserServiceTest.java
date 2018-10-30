@@ -198,12 +198,11 @@ class UserServiceTest {
         when(userDtoConverter.toDto(updatedUser)).thenReturn(updatedUserDto);
 
 
-        UserDto actualUser = userService.update(user.getId(), updatedUserDto).block();
+        User actualUser = userService.update(user.getId(), updatedUserDto).block();
 
-        this.assertEqualAllUserDtoFields(updatedUserDto, actualUser);
+        this.assertEqualAllUserFields(updatedUser, actualUser);
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(updatedUser);
-        verify(userDtoConverter, times(1)).toDto(updatedUser);
         verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
     @Test
