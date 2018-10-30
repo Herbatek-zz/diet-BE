@@ -3,8 +3,6 @@ package com.piotrek.diet.meal;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.product.Product;
-import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
@@ -201,7 +199,7 @@ class MealServiceTest {
                 .limit(totalElementsMatchesToQuery - page * pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElementsMatchesToQuery);
 
-        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList.subList(0,totalElementsMatchesToQuery)));
+        when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList.subList(0, totalElementsMatchesToQuery)));
         when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
 
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
@@ -377,42 +375,21 @@ class MealServiceTest {
     @Test
     @DisplayName("Update meal, when empty list of products, then return meal with empty list")
     void updateMeal_whenEmptyListWithProducts_thenReturnMealWithEmptyList() {
-        final var products = new ArrayList<Product>();
-        final var productDtos = new ArrayList<ProductDto>();
-
-        final var afterUpdate = dumplingsWithIdDto();
-        afterUpdate.setProducts(productDtos);
+        final var expectedMeal = dumplingsWithIdDto();
+        expectedMeal.setProducts(new ArrayList<>());
 
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(mealRepository.save(meal)).thenReturn(Mono.just(meal));
-        when(mealDtoConverter.toDto(meal)).thenReturn(afterUpdate);
-        when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+        when(mealDtoConverter.toDto(meal)).thenReturn(expectedMeal);
+        when(productDtoConverter.listFromDto(new ArrayList<>())).thenReturn(new ArrayList<>());
 
+        final var afterUpdate = mealService.updateMeal(meal.getId(), expectedMeal).block();
 
-        final var mealWithProducts = mealService.updateMeal(meal.getId(), afterUpdate).block();
-
-
-        assertNotNull(mealWithProducts);
-        assertAll(
-                () -> assertEquals(0, mealWithProducts.getProducts().size()),
-                () -> assertEquals(0, mealWithProducts.getProtein()),
-                () -> assertEquals(0, mealWithProducts.getKcal()),
-                () -> assertEquals(0, mealWithProducts.getFibre()),
-                () -> assertEquals(0, mealWithProducts.getFat()),
-                () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
-                () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
-                () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
-                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
-                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
-                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
-                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
-                () -> assertEquals(meal.getId(), mealWithProducts.getId())
-        );
+        this.assertEqualMealDtoAllFields(expectedMeal, afterUpdate);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verify(productDtoConverter, times(1)).listFromDto(productDtos);
+        verify(productDtoConverter, times(1)).listFromDto(new ArrayList<>());
         verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
@@ -420,113 +397,71 @@ class MealServiceTest {
     @Test
     @DisplayName("Update meal, when update object has different fields, then update the meal")
     void updateMeal_whenSomeInformationAreChanged_thenReturnMealUpdated() {
-        final var products = new ArrayList<Product>();
-        final var productDtos = new ArrayList<ProductDto>();
+        final var expectedDto = dumplingsWithIdDto();
+        expectedDto.setName("Update name");
+        expectedDto.setDescription("Update description");
+        expectedDto.setRecipe("Update recipe");
+        expectedDto.setImageUrl("some updated image");
+        expectedDto.setProducts(new ArrayList<>());
 
-        final var afterUpdate = dumplingsWithIdDto();
-        afterUpdate.setName("Update name");
-        afterUpdate.setDescription("Update description");
-        afterUpdate.setRecipe("Update recipe");
-        afterUpdate.setImageUrl("some updated image");
-        afterUpdate.setProducts(productDtos);
-
-        final var afterUpdateDto = dumplingsWithId();
-        afterUpdateDto.setName("Update name");
-        afterUpdateDto.setDescription("Update description");
-        afterUpdateDto.setRecipe("Update recipe");
-        afterUpdateDto.setImageUrl("some updated image");
-        afterUpdateDto.setProducts(products);
+        final var expected = dumplingsWithId();
+        expected.setName("Update name");
+        expected.setDescription("Update description");
+        expected.setRecipe("Update recipe");
+        expected.setImageUrl("some updated image");
+        expected.setProducts(new ArrayList<>());
 
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(mealRepository.save(meal)).thenReturn(Mono.just(afterUpdateDto));
-        when(mealDtoConverter.toDto(afterUpdateDto)).thenReturn(afterUpdate);
-        when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
+        when(mealRepository.save(meal)).thenReturn(Mono.just(expected));
+        when(mealDtoConverter.toDto(expected)).thenReturn(expectedDto);
+        when(productDtoConverter.listFromDto(new ArrayList<>())).thenReturn(new ArrayList<>());
 
+        final var actualMeal = mealService.updateMeal(meal.getId(), expectedDto).block();
 
-        final var mealWithProducts = mealService.updateMeal(meal.getId(), afterUpdate).block();
-
-
-        assertNotNull(mealWithProducts);
-        assertAll(
-                () -> assertEquals(0, mealWithProducts.getProducts().size()),
-                () -> assertEquals(0, mealWithProducts.getProtein()),
-                () -> assertEquals(0, mealWithProducts.getKcal()),
-                () -> assertEquals(0, mealWithProducts.getFibre()),
-                () -> assertEquals(0, mealWithProducts.getFat()),
-                () -> assertEquals(0, mealWithProducts.getCarbohydrate()),
-                () -> assertEquals(0, mealWithProducts.getCarbohydrateExchange()),
-                () -> assertEquals(0, mealWithProducts.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
-                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
-                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
-                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
-                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
-                () -> assertEquals(meal.getId(), mealWithProducts.getId())
-        );
+        this.assertEqualMealDtoAllFields(expectedDto, actualMeal);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verify(productDtoConverter, times(1)).listFromDto(productDtos);
+        verify(productDtoConverter, times(1)).listFromDto(new ArrayList<>());
         verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
-    @DisplayName("Update meal, when the only change is 2 products, then return the meal calculated with 2 products")
+    @DisplayName("Update meal, when the only change is 2 products added, then return the meal calculated with 2 products")
     void updateMeal_whenOnlyListIsChanged_thenReturnMealWith2Products() {
-        var products = new ArrayList<Product>(Arrays.asList(breadWithId(), bananaWithId()));
-        var productDtos = new ArrayList<ProductDto>(Arrays.asList(breadWithIdDto(), bananaWithIdDto()));
+        var products = new ArrayList<>(Arrays.asList(breadWithId(), bananaWithId()));
+        var productDtos = new ArrayList<>(Arrays.asList(breadWithIdDto(), bananaWithIdDto()));
 
-        final var afterUpdate = dumplingsWithId();
-        final var afterUpdateDto = dumplingsWithIdDto();
+        final var expected = dumplingsWithId();
+        final var expectedDto = dumplingsWithIdDto();
 
-        afterUpdate.setProducts(products);
-        afterUpdate.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        afterUpdate.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        afterUpdate.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        afterUpdate.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        afterUpdate.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        afterUpdate.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        afterUpdate.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
+        expected.setProducts(products);
+        expected.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        expected.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        expected.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        expected.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        expected.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        expected.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        expected.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
 
-        afterUpdateDto.setProducts(productDtos);
-        afterUpdateDto.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
-        afterUpdateDto.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
-        afterUpdateDto.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
-        afterUpdateDto.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
-        afterUpdateDto.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
-        afterUpdateDto.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
-        afterUpdateDto.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
-
+        expectedDto.setProducts(productDtos);
+        expectedDto.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
+        expectedDto.setFat(productDtos.get(0).getFat() + productDtos.get(1).getFat());
+        expectedDto.setCarbohydrate(productDtos.get(0).getCarbohydrate() + productDtos.get(1).getCarbohydrate());
+        expectedDto.setFibre(productDtos.get(0).getFibre() + productDtos.get(1).getFibre());
+        expectedDto.setKcal(productDtos.get(0).getKcal() + productDtos.get(1).getKcal());
+        expectedDto.setProteinAndFatEquivalent(productDtos.get(0).getProteinAndFatEquivalent() + productDtos.get(1).getProteinAndFatEquivalent());
+        expectedDto.setCarbohydrateExchange(productDtos.get(0).getCarbohydrateExchange() + productDtos.get(1).getCarbohydrateExchange());
 
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(mealRepository.save(afterUpdate)).thenReturn(Mono.just(afterUpdate));
-        when(mealDtoConverter.toDto(afterUpdate)).thenReturn(afterUpdateDto);
+        when(mealRepository.save(expected)).thenReturn(Mono.just(expected));
+        when(mealDtoConverter.toDto(expected)).thenReturn(expectedDto);
         when(productDtoConverter.listFromDto(productDtos)).thenReturn(products);
 
+        MealDto actual = mealService.updateMeal(meal.getId(), expectedDto).block();
 
-        MealDto mealWithProducts = mealService.updateMeal(meal.getId(), afterUpdateDto).block();
-
-
-        assertNotNull(mealWithProducts);
-        assertAll(
-                () -> assertEquals(products.size(), mealWithProducts.getProducts().size()),
-                () -> assertEquals(products.get(0).getProtein() + products.get(1).getProtein(), mealWithProducts.getProtein()),
-                () -> assertEquals(products.get(0).getKcal() + products.get(1).getKcal(), mealWithProducts.getKcal()),
-                () -> assertEquals(products.get(0).getFibre() + products.get(1).getFibre(), mealWithProducts.getFibre()),
-                () -> assertEquals(products.get(0).getFat() + products.get(1).getFat(), mealWithProducts.getFat()),
-                () -> assertEquals(products.get(0).getCarbohydrate() + products.get(1).getCarbohydrate(), mealWithProducts.getCarbohydrate()),
-                () -> assertEquals(products.get(0).getCarbohydrateExchange() + products.get(1).getCarbohydrateExchange(),
-                        mealWithProducts.getCarbohydrateExchange()),
-                () -> assertEquals(products.get(0).getProteinAndFatEquivalent() + products.get(1).getProteinAndFatEquivalent(),
-                        mealWithProducts.getProteinAndFatEquivalent()),
-                () -> assertEquals(meal.getUserId(), mealWithProducts.getUserId()),
-                () -> assertEquals(meal.getDescription(), mealWithProducts.getDescription()),
-                () -> assertEquals(meal.getRecipe(), mealWithProducts.getRecipe()),
-                () -> assertEquals(meal.getName(), mealWithProducts.getName()),
-                () -> assertEquals(meal.getImageUrl(), mealWithProducts.getImageUrl()),
-                () -> assertEquals(meal.getId(), mealWithProducts.getId())
-        );
+        this.assertEqualMealDtoAllFields(expectedDto, actual);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
@@ -548,7 +483,6 @@ class MealServiceTest {
                     arrayList.add(coffeeWithId());
                 break;
         }
-
         return arrayList;
     }
 
@@ -565,7 +499,6 @@ class MealServiceTest {
                     arrayList.add(coffeeWithIdDto());
                 break;
         }
-
         return arrayList;
     }
 
