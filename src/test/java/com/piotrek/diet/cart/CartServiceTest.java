@@ -43,13 +43,11 @@ class CartServiceTest {
     @DisplayName("Find cart by userId and date, when found, then return")
     void findByUserIdAndDate_whenFound_thenReturn() {
         when(cartRepository.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        final CartDto block = cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block();
+        final Cart block = cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block();
 
-        this.assertEqualsAllCartFields(cartDto, block);
+        this.assertEqualsAllCartFields(cart, block);
         verify(cartRepository, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
     }
 
@@ -68,27 +66,23 @@ class CartServiceTest {
     void save() {
         when(cartRepository.save(cart)).thenReturn(Mono.just(cart));
         when(cartDtoConverter.fromDto(cartDto)).thenReturn(cart);
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        final CartDto block = cartService.save(cartDto).block();
+        final Cart block = cartService.save(cartDto).block();
 
-        this.assertEqualsAllCartFields(cartDto, block);
+        this.assertEqualsAllCartFields(cart, block);
         verify(cartRepository, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).fromDto(cartDto);
-        verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
     }
 
     @Test
     void saveDto() {
         when(cartRepository.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        final CartDto block = cartService.save(cart).block();
+        final Cart block = cartService.save(cart).block();
 
-        this.assertEqualsAllCartFields(cartDto, block);
+        this.assertEqualsAllCartFields(cart, block);
         verify(cartRepository, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
     }
 
@@ -111,6 +105,17 @@ class CartServiceTest {
                 () -> assertEquals(expected.getMeals(), actual.getMeals()),
                 () -> assertEquals(expected.getProducts(), actual.getProducts()),
                 () -> assertEquals(expected.getAllProducts(), actual.getAllProducts()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
+    }
+
+    private void assertEqualsAllCartFields(Cart expected, Cart actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getDate(), actual.getDate()),
+                () -> assertEquals(expected.getMeals(), actual.getMeals()),
+                () -> assertEquals(expected.getProducts(), actual.getProducts()),
                 () -> assertEquals(expected.getUserId(), actual.getUserId())
         );
     }

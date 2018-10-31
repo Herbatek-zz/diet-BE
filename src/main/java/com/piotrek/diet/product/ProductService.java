@@ -28,7 +28,7 @@ public class ProductService {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found product [id = " + id + "]"))));
     }
 
-    Mono<ProductDto> findDtoById(String id) {
+    public Mono<ProductDto> findDtoById(String id) {
         return findById(id)
                 .map(productDtoConverter::toDto);
     }

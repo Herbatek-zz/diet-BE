@@ -3,12 +3,14 @@ package com.piotrek.diet.meal;
 import com.piotrek.diet.product.ProductDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 
 @Data
 @EqualsAndHashCode(of = {"id"})
+@NoArgsConstructor
 public class MealDto {
 
     private String id;
@@ -39,6 +41,10 @@ public class MealDto {
     private ArrayList<ProductDto> products = new ArrayList<>();
 
     private String userId;
+
+    public MealDto(String id) {
+        this.id = id;
+    }
 
     @Override
     public String toString() {

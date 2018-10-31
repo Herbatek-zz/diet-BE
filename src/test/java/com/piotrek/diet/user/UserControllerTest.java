@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
+import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.*;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
@@ -48,6 +49,9 @@ class UserControllerTest {
 
     @Autowired
     private MealDtoConverter mealDtoConverter;
+
+    @Autowired
+    private CartDtoConverter cartDtoConverter;
 
     @Autowired
     private UserFacade userFacade;
@@ -168,7 +172,7 @@ class UserControllerTest {
     @DisplayName("Get or create cart, when found cart, then return it")
     void getOrCreateCart_whenFoundCart_thenReturnIt() {
         cart.setDate(LocalDate.of(1995, Month.MARCH, 3));
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
         final var URI = "/users/" + user.getId() + "/carts?date=" + cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
@@ -476,7 +480,7 @@ class UserControllerTest {
         mealInCart.getProducts().add(productInMealInCart);
 
         cart.getMeals().add(mealInCart);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
         cartDto.getMeals().add(mealDtoConverter.toDto(mealInCart));
         cartDto.getMeals().add(mealDtoConverter.toDto(mealToAdd));
@@ -514,17 +518,19 @@ class UserControllerTest {
         mealToAdd.getProducts().add(ProductSample.breadWithId());
         mealToAdd.getProducts().add(ProductSample.bananaWithId());
         mealToAdd = mealService.save(mealToAdd).block();
+        var mealDtoInCart = mealDtoConverter.toDto(mealToAdd);
 
         var productInCart = ProductSample.bananaWithId();
 
         cart.getProducts().add(productInCart);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
-        cartDto.getMeals().add(mealDtoConverter.toDto(mealToAdd));
-        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
         var duplicatedProduct = ProductSample.bananaWithIdDto();
         duplicatedProduct.setAmount(duplicatedProduct.getAmount() * 2);
+        cartDto.getProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
         cartDto.getAllProducts().add(duplicatedProduct);
+        cartDto.getMeals().add(mealDtoInCart);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
@@ -589,10 +595,11 @@ class UserControllerTest {
     void addProductToCart_whenCartHasOneProduct_thenCartHasTwoProducts() {
         final var productAlreadyInCart = ProductSample.bananaWithId();
         cart.getProducts().add(productAlreadyInCart);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
         final var productToAdd = productService.save(ProductSample.breadWithId()).block();
 
+        cartDto = cartDtoConverter.toDto(cart);
         cartDto.getProducts().add(productToAdd);
         cartDto.getAllProducts().add(productToAdd);
         cartDto.setItemCounter(2);
@@ -621,11 +628,14 @@ class UserControllerTest {
         mealInCart.getProducts().add(ProductSample.bananaWithId());
 
         cart.getMeals().add(mealInCart);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
         var duplicatedProduct = ProductSample.bananaWithIdDto();
         duplicatedProduct.setAmount(duplicatedProduct.getAmount() * 2);
         cartDto.getAllProducts().add(duplicatedProduct);
+        cartDto.getProducts().add(productToAdd);
+        cartDto.getMeals().add(mealDtoConverter.toDto(mealInCart));
+        cartDto.setItemCounter(2);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
@@ -650,7 +660,7 @@ class UserControllerTest {
         mealToDelete = mealService.save(mealToDelete).block();
 
         cart.getMeals().add(mealToDelete);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -675,10 +685,14 @@ class UserControllerTest {
         var mealInCart = MealSample.dumplingsWithId();
         mealInCart.getProducts().add(ProductSample.breadWithId());
         mealInCart = mealService.save(mealInCart).block();
+        var mealDtoInCart = mealDtoConverter.toDto(mealInCart);
 
         cart.getMeals().add(mealToDelete);
         cart.getMeals().add(mealInCart);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
+        cartDto.getAllProducts().add(mealDtoInCart.getProducts().get(0));
+        cartDto.getMeals().add(mealDtoInCart);
+        cartDto.setItemCounter(1);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -704,7 +718,9 @@ class UserControllerTest {
 
         cart.getMeals().add(mealToDelete);
         cart.getProducts().add(ProductSample.breadWithId());
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
+        cart.getMeals().remove(0);
+        cartDto = cartDtoConverter.toDto(cart);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -746,7 +762,7 @@ class UserControllerTest {
         var productToDelete = productService.save(ProductSample.breadWithId()).block();
 
         cart.getProducts().add(ProductSample.breadWithId());
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -770,7 +786,11 @@ class UserControllerTest {
 
         cart.getProducts().add(ProductSample.breadWithId());
         cart.getProducts().add(ProductSample.bananaWithId());
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
+
+        cartDto.getProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.setItemCounter(1);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -791,13 +811,18 @@ class UserControllerTest {
         var mealInCart = MealSample.coffeeWithId();
         mealInCart.getProducts().add(ProductSample.bananaWithId());
         mealInCart = mealService.save(mealInCart).block();
+        var mealDtoInCart = mealDtoConverter.toDto(mealInCart);
 
         var productToDelete = productService.save(ProductSample.breadWithId()).block();
         var productDtoToDelete = ProductSample.breadWithId();
 
         cart.getMeals().add(mealInCart);
         cart.getProducts().add(productDtoToDelete);
-        cartDto = cartService.save(cart).block();
+        cart = cartService.save(cart).block();
+
+        cartDto.getMeals().add(mealDtoInCart);
+        cartDto.getAllProducts().add(mealDtoInCart.getProducts().get(0));
+        cartDto.setItemCounter(1);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToDelete.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -846,20 +871,20 @@ class UserControllerTest {
     private void createCart() {
         cart = CartSample.cart1();
         cart.setUserId(user.getId());
-        cartDto = cartService.save(cart).block();
-        cart.setId(cartDto.getId());
+        cart = cartService.save(cart).block();
+        cartDto = cartDtoConverter.toDto(cart);
     }
 
     private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getDate(), actual.getDate()),
-                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter()),
-                () -> assertEquals(expected.getMeals(), actual.getMeals()),
-                () -> assertEquals(expected.getProducts(), actual.getProducts()),
-                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
+                () -> assertEquals(expected.getId(), actual.getId(), "id"),
+                () -> assertEquals(expected.getDate(), actual.getDate(), "date"),
+                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter(), "item coutner"),
+                () -> assertEquals(expected.getMeals(), actual.getMeals(), "meals"),
+                () -> assertEquals(expected.getProducts(), actual.getProducts(), "products"),
+                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts(), "all products"),
+                () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId")
         );
     }
 

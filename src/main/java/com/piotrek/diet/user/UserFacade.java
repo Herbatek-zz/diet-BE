@@ -1,6 +1,8 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
+import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.meal.Meal;
@@ -32,20 +34,21 @@ public class UserFacade {
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
     private final TokenService tokenService;
+    private final CartDtoConverter cartDtoConverter;
 
     Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
-        return cartService.findByUserIdAndDate(userId, date);
+        return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
     }
 
     Mono<UserDto> findDtoUser(String userId) {
         return userService.findDtoById(userId);
     }
 
-    Mono<UserDto> updateUser(String userId, UserDto userDto) {
-        UserDto user = userService.update(userId, userDto).block();
-        String tokenValue = tokenService.generateToken(user);
+    Mono<UserDto> updateUser(String userId, UserDto update) {
+        UserDto userDto = userService.update(userId, update).block();
+        String tokenValue = tokenService.generateToken(userDto);
         tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
-        return Mono.just(user);
+        return Mono.just(userDto);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
@@ -115,18 +118,18 @@ public class UserFacade {
     }
 
     Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
-        CartDto cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new CartDto(userId, date)).block();
+        Cart cart = cartService.findByUserIdAndDate(userId, date)
+                .onErrorReturn(new Cart(userId, date)).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
-        MealDto meaLDto = mealDtoConverter.toDto(mealService.findById(mealId).block());
-        if (cart.getMeals().contains(meaLDto)) {
-            int indexOfDuplicated = cart.getMeals().indexOf(meaLDto);
-            MealDto duplicated = cart.getMeals().remove(indexOfDuplicated);
+        Meal meal = mealService.findById(mealId).block();
+        if (cart.getMeals().contains(meal)) {
+            int indexOfDuplicated = cart.getMeals().indexOf(meal);
+            Meal duplicated = cart.getMeals().remove(indexOfDuplicated);
             amount += duplicated.getAmount();
         }
 
-        double divider = (double) meaLDto.getAmount() / amount;
-        meaLDto.getProducts()
+        double divider = (double) meal.getAmount() / amount;
+        meal.getProducts()
                 .forEach(productDto -> {
                     productDto.setAmount((int) (productDto.getAmount() / divider));
                     productDto.setProtein(productDto.getProtein() / divider);
@@ -137,10 +140,10 @@ public class UserFacade {
                     productDto.setCarbohydrateExchange(productDto.getCarbohydrateExchange() / divider);
                     productDto.setKcal(productDto.getKcal() / divider);
                 });
-        mealService.calculateMealInformation(meaLDto);
-        meaLDto.setAmount(amount);
-        cart.getMeals().add(meaLDto);
-        return cartService.save(cart);
+        mealService.calculateMealInformation(meal);
+        meal.setAmount(amount);
+        cart.getMeals().add(meal);
+        return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
     Mono<CartDto> deleteMealFromCart(String userId, String mealId, LocalDate date) {
@@ -150,36 +153,36 @@ public class UserFacade {
                     Meal meal = new Meal(mealId);
                     if (cart.getMeals().contains(meal)) {
                         cart.getMeals().remove(meal);
-                        return cartService.save(cart);
+                        return cartService.save(cart).map(cartDtoConverter::toDto);
                     } else
-                        return Mono.just(cart);
+                        return Mono.just(cart).map(cartDtoConverter::toDto);
                 });
     }
 
     Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
-        CartDto cartDto = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new CartDto(userId, date)).block();
-        userValidation.validateUserWithPrincipal(cartDto.getUserId());
-        ProductDto productDto = productDtoConverter.toDto(productService.findById(productId).block());
-        productDto.setAmount(amount);
-        if (cartDto.getProducts().contains(productDto)) {
-            int indexOfDuplicated = cartDto.getProducts().indexOf(productDto);
-            var duplicated = cartDto.getProducts().remove(indexOfDuplicated);
-            productDto.setAmount(productDto.getAmount() + duplicated.getAmount());
+        Cart cart = cartService.findByUserIdAndDate(userId, date)
+                .onErrorReturn(new Cart(userId, date)).block();
+        userValidation.validateUserWithPrincipal(cart.getUserId());
+        Product product = productService.findById(productId).block();
+        product.setAmount(amount);
+        if (cart.getProducts().contains(product)) {
+            int indexOfDuplicated = cart.getProducts().indexOf(product);
+            var duplicated = cart.getProducts().remove(indexOfDuplicated);
+            product.setAmount(product.getAmount() + duplicated.getAmount());
         }
-        cartDto.getProducts().add(productDto);
-        return cartService.save(cartDto);
+        cart.getProducts().add(product);
+        return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
     Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
-        CartDto cartDto = cartService.findByUserIdAndDate(userId, date).block();
-        userValidation.validateUserWithPrincipal(cartDto.getUserId());
+        Cart cart = cartService.findByUserIdAndDate(userId, date).block();
+        userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
-        if (cartDto.getProducts().contains(product)) {
-            cartDto.getProducts().remove(product);
-            cartDto = cartService.save(cartDto).block();
+        if (cart.getProducts().contains(product)) {
+            cart.getProducts().remove(product);
+            cart = cartService.save(cart).block();
         }
-        return Mono.just(cartDto);
+        return Mono.just(cart).map(cartDtoConverter::toDto);
     }
 
 }
