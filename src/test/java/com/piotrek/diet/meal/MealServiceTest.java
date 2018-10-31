@@ -1,5 +1,6 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.helpers.MealSample;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
@@ -53,7 +54,7 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("Find a meal by id, when found, then return the meal")
+    @DisplayName("Find meal by id, when found, then return the meal")
     void findById_whenFound_thenReturn() {
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
 
@@ -65,7 +66,7 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("Find a meal by id, when not found, then throw NotFoundException")
+    @DisplayName("Find meal by id, when not found, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
         final var WRONG_ID = UUID.randomUUID().toString();
         when(mealRepository.findById(WRONG_ID)).thenReturn(Mono.empty());
@@ -76,7 +77,7 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("Find a meal dto by id, when found, then return")
+    @DisplayName("Find meal dto by id, when found, then return")
     void findDtoById_whenFound_thenReturn() {
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
@@ -90,7 +91,7 @@ class MealServiceTest {
     }
 
     @Test
-    @DisplayName("Find a meal dto by id, when not found, then throw NotFoundException")
+    @DisplayName("Find meal dto by id, when not found, then throw NotFoundException")
     void findDtoById_whenNotFound_thenThrowNotFoundException() {
         final var INCORRECT_ID = UUID.randomUUID().toString();
         when(mealRepository.findById(INCORRECT_ID)).thenReturn(Mono.empty());
@@ -213,41 +214,49 @@ class MealServiceTest {
     @Test
     @DisplayName("Find all user meals, when user has 5 meals, then return 5 meals")
     void findAllByUserId_whenUserHas5Meals_thenReturn5Meals() {
-        final var mealList = createMealList(5, DUMPLINGS);
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 5;
+        var mealList = createMealList(totalElements, DUMPLINGS);
+        var mealDtoList = createMealDtoList(totalElements, DUMPLINGS);
+        var expected = new Page<>(mealDtoList
+                .stream()
+                .skip(page * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
         final var user = UserSample.johnWithId();
 
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
+        when(mealDtoConverter.toDto(MealSample.dumplingsWithId())).thenReturn(MealSample.dumplingsWithIdDto());
 
-        final var userMeals = mealService.findAllByUserId(user.getId()).collectList().block();
+        final var actualPage = mealService.findAllByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
-        assertNotNull(userMeals);
-        assertAll(
-                () -> assertEquals(mealList, userMeals),
-                () -> this.assertEqualMealAllFields(mealList.get(0), userMeals.get(0)),
-                () -> this.assertEqualMealAllFields(mealList.get(1), userMeals.get(1)),
-                () -> this.assertEqualMealAllFields(mealList.get(2), userMeals.get(2)),
-                () -> this.assertEqualMealAllFields(mealList.get(3), userMeals.get(3)),
-                () -> this.assertEqualMealAllFields(mealList.get(4), userMeals.get(4))
-        );
+        assertNotNull(actualPage);
+        assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
+        verify(mealDtoConverter, times(totalElements)).toDto(MealSample.dumplingsWithId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
     @DisplayName("Find all user meals, when user has no meals, then return empty list")
     void findAllByUserId_whenUserHasNoMeals_thenReturnEmptyList() {
-        final var expectedList = new ArrayList<Meal>();
+        var page = 0;
+        var pageSize = 10;
+        var totalElements = 0;
+        var expected = new Page<>(new ArrayList<>()
+                .stream()
+                .skip(page * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList()), page, pageSize, totalElements);
         final var user = UserSample.johnWithId();
 
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.empty());
 
-        final var userMeals = mealService.findAllByUserId(user.getId()).collectList().block();
+        final var actualPage = mealService.findAllByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
-        assertNotNull(userMeals);
-        assertAll(
-                () -> assertEquals(expectedList, userMeals),
-                () -> assertEquals(expectedList.size(), userMeals.size())
-        );
+        assertNotNull(actualPage);
+        assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }

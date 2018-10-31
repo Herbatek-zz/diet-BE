@@ -1,11 +1,9 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.PrincipalProvider;
-import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.helpers.UserSample;
+import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

@@ -9,7 +9,6 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDto;
-import com.piotrek.diet.helpers.ProductEquals;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +18,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.MealSample.*;
 import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
@@ -47,7 +44,8 @@ class MealControllerTest {
 
     private WebTestClient webTestClient;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private Meal meal1;
     private Meal meal2;
@@ -70,7 +68,7 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Find all without any parameters and when there are no meals, then return empty page")
+    @DisplayName("Find all meals, when there are no meals, then return empty page")
     void findAll_whenDefaultParamsTotalElements0_thenReturnPageWithEmptyList() throws JsonProcessingException {
         final var URI = "/meals";
         final var expected = new Page<MealDto>(new ArrayList<>(), 0, 10, 0);
@@ -85,10 +83,10 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Find all without any parameters and there are two meals, then return page with two meals")
+    @DisplayName("Find all without parameters, when two meals, then return page with two meals")
     void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Meals() throws JsonProcessingException {
         final var URI = "/meals";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2)), 0, 10, 2);
+        final var expected = new Page<>(List.of(mealDto1, mealDto2), 0, 10, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -98,14 +96,10 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When getAll page = 1, pageSize = 1 and there are 2 meals, then should be returned second page(because first page = 0) with one meal")
+    @DisplayName("Find all, page=1, pageSize=1, when two meals, then return second page with one meal")
     void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals?page=1&size=1";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(mealDto1, mealDto2))
-                .stream()
-                .skip(1)
-                .limit(1)
-                .collect(Collectors.toList()), 1, 1, 2);
+        final var expected = new Page<>(List.of(mealDto2), 1, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -115,8 +109,8 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findMealDtoById finds a single meal, meal will be returned as dto")
-    void findById_whenFound_thenReturnMeal() throws JsonProcessingException {
+    @DisplayName("Find meal by id, when found, then return")
+    void findById_whenFound_thenReturn() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
 
         webTestClient.get().uri(URI)
@@ -127,7 +121,7 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("When findMealDtoById doesn't find a meal, throws NotFoundException")
+    @DisplayName("Find meal by id, when not found, throws NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
         final var URI = "/meals/aBadId";
 
@@ -139,8 +133,8 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Search meals, when there is two meals, but query matches for one of them, one of them will be returned in page wrapper")
-    void searchByName_when2MealsAndQueryOneOfThem_thenReturnPageWithOneMeal() throws JsonProcessingException {
+    @DisplayName("Search meals, when two meals and query matches one of them, then return page with one meal")
+    void searchByName_whenTwoMealsAndQueryMatchesOneOfThem_thenReturnPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals/search?query=" + meal1.getName();
         final var expected = new Page<>(List.of(mealDtoConverter.toDto(meal1)), 0, 10, 1);
 
@@ -152,13 +146,10 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Search meals by name, when no query, then all products will be returned in page wrapper")
-    void searchByName_when2MealsAndNoQuery_thenReturnPageWithAllMeals() throws JsonProcessingException {
+    @DisplayName("Search meals by name, when two meals and no query, then return page with all meals")
+    void searchByName_whenTwoMealsAndNoQuery_thenReturnPageWithAllMeals() throws JsonProcessingException {
         final var URI = "/meals/search";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(meal1, meal2))
-                .stream()
-                .map(mealDtoConverter::toDto)
-                .collect(Collectors.toCollection(ArrayList::new)), 0, 10, 2);
+        final var expected = new Page<>(List.of(mealDto1, mealDto2), 0, 10, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -168,7 +159,7 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Search meals by name, when no query and no meals, will be returned empty list wrapped in page")
+    @DisplayName("Search meals by name, when no query and no meals, return empty page")
     void searchByName_whenNoMealsAndNoQuery_thenReturnEmptyPage() throws JsonProcessingException {
         final var URI = "/meals/search";
         final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
@@ -183,8 +174,8 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Search meals, when query doesn't match any meal, then will be returned empty list wrapped in page")
-    void searchByName_when2MealsAndQueryDoesNotMatch_thenReturnEmptyPage() throws JsonProcessingException {
+    @DisplayName("Search meals, when two meals and query doesn't match any of them, then return empty page")
+    void searchByName_whenTwoMealsAndQueryDoesNotMatchAnyOfThem_thenReturnEmptyPage() throws JsonProcessingException {
         final var URI = "/meals/search?query=lol123";
         final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
@@ -197,7 +188,7 @@ class MealControllerTest {
 
     @Test
     @DisplayName("Search meals, when there are two products but query matches only one of them, then return page with one meal")
-    void searchByName_when2MealsAndQueryCapitalCaseMatchOnlyOneOfThem_thenReturnMatchMealInPage() throws JsonProcessingException {
+    void searchByName_whenTwoMealsAndQueryCapitalCaseMatchOnlyOneOfThem_thenReturnMatchMealInPage() throws JsonProcessingException {
         final var URI = "/meals/search?query=" + meal1.getName().toUpperCase();
         final var expected = new Page<>(new ArrayList<>(Collections.singletonList(mealDto1)), 0, 10, 1);
 
@@ -209,8 +200,8 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Search meals, when there are 2 meals, no query and pageSize = 1, then return first page with one meal")
-    void searchByName_when2MealsAndNoQueryAndPageSize1_thenReturnFirstPageWithOneMeal() throws JsonProcessingException {
+    @DisplayName("Search meals, when there are 2 meals, no query and pageSize=1, then return first page with one meal")
+    void searchByName_whenTwoMealsAndNoQueryAndPageSizeOne_thenReturnFirstPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals/search?size=1";
         final var expected = new Page<>(List.of(meal1), 0, 1, 2);
 
@@ -283,9 +274,48 @@ class MealControllerTest {
 
         assertNotNull(responseBody);
         assertAll(
-                () -> assertEquals(expected, responseBody),
-                () -> assertTrue(ProductEquals.productDtoEquals(expected.getProducts().get(0), responseBody.getProducts().get(0))),
-                () -> assertTrue(ProductEquals.productDtoEquals(expected.getProducts().get(1), responseBody.getProducts().get(1)))
+                () -> assertEquals(expected.getId(), responseBody.getId()),
+                () -> assertEquals(expected.getName(), responseBody.getName()),
+                () -> assertEquals(expected.getRecipe(), responseBody.getRecipe()),
+                () -> assertEquals(expected.getDescription(), responseBody.getDescription()),
+                () -> assertEquals(expected.getImageUrl(), responseBody.getImageUrl()),
+                () -> assertEquals(expected.getProducts(), responseBody.getProducts()),
+                () -> assertEquals(expected.getAmount(), responseBody.getAmount()),
+                () -> assertEquals(expected.getProtein(), responseBody.getProtein()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), responseBody.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), responseBody.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getCarbohydrate(), responseBody.getCarbohydrate()),
+                () -> assertEquals(expected.getFat(), responseBody.getFat()),
+                () -> assertEquals(expected.getFibre(), responseBody.getFibre()),
+                () -> assertEquals(expected.getKcal(), responseBody.getKcal()),
+                () -> assertEquals(expected.getUserId(), responseBody.getUserId()),
+                () -> assertEquals(expected.getProducts().get(0).getId(), responseBody.getProducts().get(0).getId()),
+                () -> assertEquals(expected.getProducts().get(0).getName(), responseBody.getProducts().get(0).getName()),
+                () -> assertEquals(expected.getProducts().get(0).getDescription(), responseBody.getProducts().get(0).getDescription()),
+                () -> assertEquals(expected.getProducts().get(0).getImageUrl(), responseBody.getProducts().get(0).getImageUrl()),
+                () -> assertEquals(expected.getProducts().get(0).getAmount(), responseBody.getProducts().get(0).getAmount()),
+                () -> assertEquals(expected.getProducts().get(0).getProtein(), responseBody.getProducts().get(0).getProtein()),
+                () -> assertEquals(expected.getProducts().get(0).getProteinAndFatEquivalent(), responseBody.getProducts().get(0).getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getProducts().get(0).getCarbohydrateExchange(), responseBody.getProducts().get(0).getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProducts().get(0).getCarbohydrate(), responseBody.getProducts().get(0).getCarbohydrate()),
+                () -> assertEquals(expected.getProducts().get(0).getFat(), responseBody.getProducts().get(0).getFat()),
+                () -> assertEquals(expected.getProducts().get(0).getFibre(), responseBody.getProducts().get(0).getFibre()),
+                () -> assertEquals(expected.getProducts().get(0).getKcal(), responseBody.getProducts().get(0).getKcal()),
+                () -> assertEquals(expected.getProducts().get(0).getUserId(), responseBody.getProducts().get(0).getUserId()),
+                () -> assertEquals(expected.getProducts().get(1).getId(), responseBody.getProducts().get(1).getId()),
+                () -> assertEquals(expected.getProducts().get(1).getName(), responseBody.getProducts().get(1).getName()),
+                () -> assertEquals(expected.getProducts().get(1).getDescription(), responseBody.getProducts().get(1).getDescription()),
+                () -> assertEquals(expected.getProducts().get(1).getImageUrl(), responseBody.getProducts().get(1).getImageUrl()),
+                () -> assertEquals(expected.getProducts().get(1).getAmount(), responseBody.getProducts().get(1).getAmount()),
+                () -> assertEquals(expected.getProducts().get(1).getProtein(), responseBody.getProducts().get(1).getProtein()),
+                () -> assertEquals(expected.getProducts().get(1).getProteinAndFatEquivalent(), responseBody.getProducts().get(1).getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getProducts().get(1).getCarbohydrateExchange(), responseBody.getProducts().get(1).getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProducts().get(1).getCarbohydrate(), responseBody.getProducts().get(1).getCarbohydrate()),
+                () -> assertEquals(expected.getProducts().get(1).getFat(), responseBody.getProducts().get(1).getFat()),
+                () -> assertEquals(expected.getProducts().get(1).getFibre(), responseBody.getProducts().get(1).getFibre()),
+                () -> assertEquals(expected.getProducts().get(1).getKcal(), responseBody.getProducts().get(1).getKcal()),
+                () -> assertEquals(expected.getProducts().get(1).getUserId(), responseBody.getProducts().get(1).getUserId())
+
         );
     }
 
@@ -385,11 +415,8 @@ class MealControllerTest {
     }
 
     private void createMeals() {
-        meal1 = dumplingsWithId();
-        meal2 = coffeeWithId();
-
-        meal1 = mealService.save(meal1).block();
-        meal2 = mealService.save(meal2).block();
+        meal1 = mealService.save(dumplingsWithId()).block();
+        meal2 = mealService.save(coffeeWithId()).block();
 
         mealDto1 = mealDtoConverter.toDto(meal1);
         mealDto2 = mealDtoConverter.toDto(meal2);

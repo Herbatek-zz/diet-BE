@@ -3,8 +3,8 @@ package com.piotrek.diet.security.token;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.user.User;
+import com.piotrek.diet.user.UserDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+import static com.piotrek.diet.helpers.UserSample.johnWithId;
+import static com.piotrek.diet.helpers.UserSample.johnWithIdDto;
 import static com.piotrek.diet.security.helpers.SecurityConstants.SECRET;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,7 +30,8 @@ class TokenServiceTest {
     private TokenService tokenService;
 
     private Token token;
-    private User user = UserSample.johnWithId();
+    private User user = johnWithId();
+    private UserDto userDto = johnWithIdDto();
 
     @BeforeEach
     void beforeEach() {
@@ -118,6 +121,21 @@ class TokenServiceTest {
                 () -> assertEquals(user.getId(), decodedToken.getSubject()),
                 () -> assertEquals(user.getUsername(), decodedToken.getClaim("username").asString()),
                 () -> assertEquals(user.getPictureUrl(), decodedToken.getClaim("pictureUrl").asString())
+        );
+    }
+
+    @Test
+    void generateTokenForUserDto() {
+        String tokenValue = tokenService.generateToken(userDto);
+
+        DecodedJWT decodedToken = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
+                .build()
+                .verify(tokenValue);
+
+        assertAll(
+                () -> assertEquals(userDto.getId(), decodedToken.getSubject()),
+                () -> assertEquals(userDto.getUsername(), decodedToken.getClaim("username").asString()),
+                () -> assertEquals(userDto.getPicture_url(), decodedToken.getClaim("pictureUrl").asString())
         );
     }
 

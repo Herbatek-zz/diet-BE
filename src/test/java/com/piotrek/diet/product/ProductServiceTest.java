@@ -2,12 +2,13 @@ package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.helpers.UserSample;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.ProductSample.*;
@@ -36,6 +37,7 @@ class ProductServiceTest {
     @Mock
     private UserValidation userValidation;
 
+    @InjectMocks
     private ProductService productService;
 
     private Product product;
@@ -46,186 +48,151 @@ class ProductServiceTest {
         product = bananaWithId();
         productDto = bananaWithIdDto();
         MockitoAnnotations.initMocks(this);
-        productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    @DisplayName("Find by id, when found a product, then return Mono<Product>")
-    void findById_whenIdIsValid_thenReturnProduct() {
+    @DisplayName("Find product by id, when found, then return")
+    void findById_whenFound_thenReturn() {
         when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
-        final var productById = productService.findById(product.getId()).block();
+        final var actualProduct = productService.findById(this.product.getId()).block();
 
-        assertNotNull(productById);
-        assertAll(
-                () -> assertEquals(product.getId(), productById.getId()),
-                () -> assertEquals(product.getName(), productById.getName()),
-                () -> assertEquals(product.getDescription(), productById.getDescription()),
-                () -> assertEquals(product.getImageUrl(), productById.getImageUrl()),
-                () -> assertEquals(product.getProtein(), productById.getProtein()),
-                () -> assertEquals(product.getCarbohydrate(), productById.getCarbohydrate()),
-                () -> assertEquals(product.getFat(), productById.getFat()),
-                () -> assertEquals(product.getFibre(), productById.getFibre()),
-                () -> assertEquals(product.getKcal(), productById.getKcal()),
-                () -> assertEquals(product.getCarbohydrateExchange(), productById.getCarbohydrateExchange()),
-                () -> assertEquals(product.getProteinAndFatEquivalent(), productById.getProteinAndFatEquivalent()),
-                () -> assertEquals(product.getUserId(), productById.getUserId()),
-                () -> assertEquals(product.getAmount(), productById.getAmount())
-        );
-        verify(productRepository, times(1)).findById(product.getId());
-        verifyNoMoreInteractions(productRepository);
+        this.assertEqualsAllProductFields(product, actualProduct);
+        verify(productRepository, times(1)).findById(this.product.getId());
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
     @DisplayName("Find by id, when not found, then throw NotFoundException")
     void findById_whenIdIsInvalid_thenThrowNotFoundException() {
-        final var ID = "invalid@#@#@ID";
-        when(productRepository.findById(ID)).thenReturn(Mono.empty());
+        final var INVALID_ID = UUID.randomUUID().toString();
+        when(productRepository.findById(INVALID_ID)).thenReturn(Mono.empty());
 
-        assertThrows(NotFoundException.class, () -> productService.findById(ID).block());
+        assertThrows(NotFoundException.class, () -> productService.findById(INVALID_ID).block());
+        verify(productRepository, times(1)).findById(INVALID_ID);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+    }
 
-        verify(productRepository, times(1)).findById(ID);
-        verifyNoMoreInteractions(productRepository);
+    @Test
+    @DisplayName("Find productDto by id, when found, then return")
+    void findDtoById_whenFound_thenReturn() {
+        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+
+        final var actualProductDto = productService.findDtoById(product.getId()).block();
+
+        this.assertEqualsAllProductFields(productDto, actualProductDto);
+        verify(productRepository, times(1)).findById(product.getId());
+        verify(productDtoConverter, times(1)).toDto(product);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
     @DisplayName("Find productDto, when not found, then return NotFoundException")
     void findDtoById_whenNotFound_thenThrowNotFoundException() {
-        final var id = "invalid@#@#@ID";
-        when(productRepository.findById(id)).thenReturn(Mono.empty());
+        final var INVALID_ID = UUID.randomUUID().toString();
+        when(productRepository.findById(INVALID_ID)).thenReturn(Mono.empty());
 
-        assertThrows(NotFoundException.class, () -> productService.findDtoById(id).block());
-
-        verify(productRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(productRepository);
+        assertThrows(NotFoundException.class, () -> productService.findDtoById(INVALID_ID).block());
+        verify(productRepository, times(1)).findById(INVALID_ID);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    @DisplayName("Find productDto, when found a product, then return the productDto")
-    void findDtoById_whenFound_thenReturnProductDto() {
-        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
-        when(productDtoConverter.toDto(product)).thenReturn(productDto);
-
-        final var productDtoById = productService.findDtoById(product.getId()).block();
-
-        assertNotNull(productDtoById);
-        assertAll(
-                () -> assertEquals(product.getId(), productDtoById.getId()),
-                () -> assertEquals(product.getName(), productDtoById.getName()),
-                () -> assertEquals(product.getDescription(), productDtoById.getDescription()),
-                () -> assertEquals(product.getImageUrl(), productDtoById.getImageUrl()),
-                () -> assertEquals(product.getProtein(), productDtoById.getProtein()),
-                () -> assertEquals(product.getCarbohydrate(), productDtoById.getCarbohydrate()),
-                () -> assertEquals(product.getFat(), productDtoById.getFat()),
-                () -> assertEquals(product.getFibre(), productDtoById.getFibre()),
-                () -> assertEquals(product.getKcal(), productDtoById.getKcal()),
-                () -> assertEquals(product.getCarbohydrateExchange(), productDtoById.getCarbohydrateExchange()),
-                () -> assertEquals(product.getProteinAndFatEquivalent(), productDtoById.getProteinAndFatEquivalent()),
-                () -> assertEquals(product.getUserId(), productDtoById.getUserId()),
-                () -> assertEquals(product.getAmount(), productDtoById.getAmount())
-        );
-
-        verify(productRepository, times(1)).findById(product.getId());
-        verifyNoMoreInteractions(productRepository);
-    }
-
-    @Test
-    void searchByName_whenNoProductsAndNoResult_thenReturnEmptyPagable() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 0;
-        var query = "name";
-        var productList = createProductList(totalElements, BANANA);
-        var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new Page<>(productDtoList
+    @DisplayName("Search product by name, when no products, then return empty page")
+    void searchByName_whenNoProducts_thenReturnEmptyPage() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 0;
+        final var query = "name";
+        final var productList = createProductList(totalElements, BANANA);
+        final var productDtoList = createProductDtoList(totalElements, BANANA);
+        final var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
-        var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
+        final var actualPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
-        assertEquals(expected, firstPage);
-
+        assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(productDtoConverter, times(0)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void searchByName_when2ProductsAnd2Results_thenReturnPagableWith2Results() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 2;
-        var query = bananaWithId().getName();
-        var productList = createProductList(totalElements, BANANA);
-        var expected = new Page<>(createProductDtoList(totalElements, BANANA)
-                .stream()
-                .limit(pageSize)
-                .collect(Collectors.toList()), page, pageSize, totalElements);
+    @DisplayName("Search by name, when two products and query matches two of them, then return page with two products")
+    void searchByName_whenTwoProductsAndQueryMatchesTwoOfThem_thenReturnPageWithTwoProducts() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 2;
+        final var query = bananaWithId().getName();
+        final var productList = createProductList(totalElements, BANANA);
+        final var expected = new Page<>(createProductDtoList(totalElements, BANANA), page, pageSize, totalElements);
 
         when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
         when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
-        var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
+        final var actualPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
-        assertEquals(expected, firstPage);
+        assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(productDtoConverter, times(2)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter);
-
+        verify(productDtoConverter, times(totalElements)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void searchByName_when22productsAnd12Results_thenReturnPagableWith10ResultsInFirstPage() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 22;
-        var query = bananaWithId().getName();
-        var productList = createProductList(12, BANANA);
-        productList.addAll(createProductList(10, BREAD));
-        var productDtoList = createProductDtoList(12, BANANA);
-        productDtoList.addAll(createProductDtoList(10, BREAD));
-        var expected = new Page<>(productDtoList
+    void searchByName_whenTwentyTwoProductsAndQueryMatchesThem_thenReturnPageWithTenResultsInFirstPage() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 22;
+        final var query = bananaWithId().getName();
+        final var productList = createProductList(22, BANANA);
+        final var productDtoList = createProductDtoList(22, BANANA);
+        final var expected = new Page<>(productDtoList
                 .stream()
+                .skip(page * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
         when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
-        var firstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
+        final var actualFirstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
-        assertEquals(expected, firstPage);
-
+        assertEquals(expected, actualFirstPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(pageSize)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    @DisplayName("Find all, skip 2 and limit 2, when found 10 products, then skip 2 products, and return next 2 products in Flux")
-    void findAll_when10ProductsAndSkip2AndLimit2_thenReturnFluxWith2Products() {
+    @DisplayName("Find all products, skip two and limit two, when found ten, then skip two and return 2 products")
+    void findAll_whenTenProductsSkipTwoAndLimitTwo_thenReturnTwoProducts() {
         final var productsList = createProductList(10, BANANA);
         when(productRepository.findAll()).thenReturn(Flux.fromIterable(productsList));
 
-        var returned = productService.findAll(2, 2).collect(Collectors.toCollection(ArrayList::new)).block();
+        final var actualProducts = productService.findAll(2, 2).collectList().block();
 
-        assertEquals(new ArrayList<>(Arrays.asList(productsList.get(2), productsList.get(3))), returned);
+        assertNotNull(actualProducts);
+        assertAll(
+                () -> this.assertEqualsAllProductFields(productsList.get(2), actualProducts.get(0)),
+                () -> this.assertEqualsAllProductFields(productsList.get(3), actualProducts.get(1))
+        );
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void findAllPageable_whenTotalElements20PageSize10Page0_thenReturnFirstPageWith10Products() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 20;
-        var productList = createProductList(totalElements, BANANA);
-        var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new Page<>(productDtoList
+    @DisplayName("Find all products pageable, when found twenty products, then return first page with ten products")
+    void findAllPageable_whenFoundTwenty_thenReturnFirstPageWith10Products() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 20;
+        final var productList = createProductList(totalElements, BANANA);
+        final var productDtoList = createProductDtoList(totalElements, BANANA);
+        final var expected = new Page<>(productDtoList
                 .stream()
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
@@ -233,91 +200,98 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
         when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
-        var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
+        final var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
-
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void findAllPageable_whenTotalElements20PageSize10Page1_thenReturnSecondPageWith10Products() {
-        var page = 1;
-        var pageSize = 10;
-        var totalElements = 20;
-        var productList = createProductList(totalElements, BANANA);
-        var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new Page<>(productDtoList
+    @DisplayName("Find all products pageable, when found twenty products and page=1, then return second page with ten products")
+    void findAllPageable_whenFoundTwentyProductsAndPageOne_thenReturnSecondPageWithTenProducts() {
+        final var page = 1;
+        final var pageSize = 10;
+        final var totalElements = 20;
+        final var productList = createProductList(totalElements, BANANA);
+        final var productDtoList = createProductDtoList(totalElements, BANANA);
+        final var expected = new Page<>(productDtoList
                 .stream()
-                .skip(pageSize)
+                .skip(pageSize * page)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
         when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
-        var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
+        final var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
-
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void findAllPageable_whenTotalElements0PageSize10Page0_thenReturnFirstPageWithEmptyList() {
-        var page = 0;
-        var pageSize = 10;
-        var totalElements = 0;
-        var productList = createProductList(totalElements, BANANA);
-        var productDtoList = createProductDtoList(totalElements, BANANA);
-        var expected = new Page<>(productDtoList
-                .stream()
-                .limit(pageSize)
-                .collect(Collectors.toList()), page, pageSize, totalElements);
+    @DisplayName("Find all products pageable, when no products, then return empty page")
+    void findAllPageable_whenNoProducts_thenReturnEmptyPage() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 0;
+        final var productList = createProductList(totalElements, BANANA);
+        final var productDtoList = createProductDtoList(totalElements, BANANA);
+        final var expected = new Page<>(productDtoList, page, pageSize, totalElements);
 
         when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
 
-        var secondPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
+        final var secondPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, secondPage);
-
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void findAllByUserId_whenUserHas5Products_thenReturn5Product() {
-        var productList = createProductList(5, BANANA);
-        var user = UserSample.johnWithId();
+    @DisplayName("Find all products by userId, when user has five products, then return page with 5 products")
+    void findAllByUserId_whenUserHasFiveProducts_thenReturn() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 5;
+        final var productList = createProductList(totalElements, BANANA);
+        final var productDtoList = createProductDtoList(totalElements, BANANA);
+        final var expected = new Page<>(productDtoList, page, pageSize, totalElements);
+        final var user = UserSample.johnWithId();
 
         when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
+        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
 
-        productService.findAllByUserId(user.getId()).toStream().collect(Collectors.toList());
+        final var block = productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize)).block();
 
+        assertNotNull(block);
+        assertEquals(expected, block);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(productRepository);
+        verify(productDtoConverter, times(totalElements)).toDto(bananaWithId());
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
-    void findAllByUserId_whenTotalProducts1AndUserHas0_thenReturn1Product() {
-        var productList = new ArrayList<Product>();
-        var user = UserSample.johnWithId();
+    @DisplayName("Find all products by user id, when user has no products, then return empty page")
+    void findAllByUserId_whenUserHasNoProducts_thenReturnEmptyList() {
+        final var page = 0;
+        final var pageSize = 10;
+        final var totalElements = 0;
+        final var expected = new Page<>(new ArrayList<ProductDto>(), page, pageSize, totalElements);
+        final var user = UserSample.johnWithId();
 
         when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.empty());
 
-        var allByUserId = productService.findAllByUserId(user.getId()).toStream().collect(Collectors.toList());
+        final var actualPage = productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize)).block();
 
-        assertAll(
-                () -> assertEquals(productList, allByUserId),
-                () -> assertEquals(productList.size(), allByUserId.size())
-        );
-
+        assertNotNull(actualPage);
+        assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
@@ -325,13 +299,31 @@ class ProductServiceTest {
         when(productRepository.save(product)).thenReturn(Mono.just(product));
         when(productDtoConverter.toDto(product)).thenReturn(productDto);
 
-        assertEquals(productDto, productService.save(product).block());
+        ProductDto saved = productService.save(product).block();
 
+        this.assertEqualsAllProductFields(productDto, saved);
         verify(productRepository, times(1)).save(product);
         verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository, diabetesCalculator, productDtoConverter);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+    }
+
+    @Test
+    void saveDto() {
+        when(productRepository.save(product)).thenReturn(Mono.just(product));
+        when(productDtoConverter.fromDto(productDto)).thenReturn(product);
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+
+        ProductDto saved = productService.save(productDto).block();
+
+        this.assertEqualsAllProductFields(productDto, saved);
+        verify(productRepository, times(1)).save(product);
+        verify(productDtoConverter, times(1)).fromDto(productDto);
+        verify(productDtoConverter, times(1)).toDto(product);
+        verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
+        verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
@@ -339,9 +331,10 @@ class ProductServiceTest {
         when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
         assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
+        verify(userValidation, times(1)).validateUserWithPrincipal(product.getUserId());
         verify(productRepository, times(1)).deleteById(product.getId());
         verify(productRepository, times(1)).findById(product.getId());
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
     @Test
@@ -349,7 +342,7 @@ class ProductServiceTest {
         assertEquals(Mono.empty().block(), productService.deleteAll());
 
         verify(productRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
 
 
@@ -383,5 +376,43 @@ class ProductServiceTest {
                 break;
         }
         return arrayList;
+    }
+
+    private void assertEqualsAllProductFields(Product expected, Product actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
+    }
+
+    private void assertEqualsAllProductFields(ProductDto expected, ProductDto actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
     }
 }

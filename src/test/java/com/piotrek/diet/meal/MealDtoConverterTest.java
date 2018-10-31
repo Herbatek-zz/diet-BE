@@ -8,6 +8,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.piotrek.diet.helpers.MealSample.*;
 import static com.piotrek.diet.helpers.ProductSample.*;
@@ -26,53 +27,51 @@ class MealDtoConverterTest {
         mealDtoConverter = new MealDtoConverter(new ProductDtoConverter());
 
         meal = dumplingsWithId();
-        meal.setProducts(new ArrayList<>(Arrays.asList(breadWithId(), bananaWithId())));
+        meal.setProducts(new ArrayList<>(List.of(breadWithId(), bananaWithId())));
 
         mealDto = dumplingsWithIdDto();
-        mealDto.setProducts(new ArrayList<>(Arrays.asList(breadWithIdDto(), bananaWithIdDto())));
+        mealDto.setProducts(new ArrayList<>(List.of(breadWithIdDto(), bananaWithIdDto())));
     }
 
     @Test
     @DisplayName("Convert entity meal to dto")
     void toDto() {
         final var convertedMeal = mealDtoConverter.toDto(meal);
-        this.assertEqualMealDtoAllFields(mealDto, convertedMeal);
+        this.assertEqualsMealAllFields(mealDto, convertedMeal);
     }
 
     @Test
     @DisplayName("Convert dto to meal entity")
     void fromDto() {
         final var convertedMeal = mealDtoConverter.fromDto(mealDto);
-        this.assertEqualMealAllFields(meal, convertedMeal);
+        this.assertEqualsMealAllFields(meal, convertedMeal);
     }
 
     @Test
     @DisplayName("Convert meal list to dto list")
     void listToDto() {
-        final var beforeConvert = new ArrayList<>(Arrays.asList(dumplingsWithId(), coffeeWithId()));
-        final var afterConvert = mealDtoConverter.listToDto(beforeConvert);
-        final var expected = new ArrayList<>(Arrays.asList(dumplingsWithIdDto(), coffeeWithIdDto()));
+        final var expected = List.of(dumplingsWithIdDto(), coffeeWithIdDto());
+        final var convertedList = mealDtoConverter.listToDto(List.of(dumplingsWithId(), coffeeWithId()));
 
         assertAll(
-                () -> this.assertEqualMealDtoAllFields(expected.get(0), afterConvert.get(0)),
-                () -> this.assertEqualMealDtoAllFields(expected.get(1), afterConvert.get(1))
+                () -> this.assertEqualsMealAllFields(expected.get(0), convertedList.get(0)),
+                () -> this.assertEqualsMealAllFields(expected.get(1), convertedList.get(1))
         );
     }
 
     @Test
     @DisplayName("Convert entity meal list from dto list")
     void listFromDto() {
-        final var beforeConvert = new ArrayList<>(Arrays.asList(dumplingsWithIdDto(), coffeeWithIdDto()));
-        final var afterConvert = mealDtoConverter.listFromDto(beforeConvert);
         final var expected = new ArrayList<>(Arrays.asList(dumplingsWithId(), coffeeWithId()));
+        final var afterConvert = mealDtoConverter.listFromDto(List.of(dumplingsWithIdDto(), coffeeWithIdDto()));
 
         assertAll(
-                () -> this.assertEqualMealAllFields(expected.get(0), afterConvert.get(0)),
-                () -> this.assertEqualMealAllFields(expected.get(1), afterConvert.get(1))
+                () -> this.assertEqualsMealAllFields(expected.get(0), afterConvert.get(0)),
+                () -> this.assertEqualsMealAllFields(expected.get(1), afterConvert.get(1))
         );
     }
 
-    private void assertEqualMealAllFields(Meal expected, Meal actual) {
+    private void assertEqualsMealAllFields(Meal expected, Meal actual) {
         assertNotNull(actual);
         assertAll(
                 () -> assertEquals(expected.getId(), actual.getId()),
@@ -93,7 +92,7 @@ class MealDtoConverterTest {
         );
     }
 
-    private void assertEqualMealDtoAllFields(MealDto expected, MealDto actual) {
+    private void assertEqualsMealAllFields(MealDto expected, MealDto actual) {
         assertNotNull(actual);
         assertAll(
                 () -> assertEquals(expected.getId(), actual.getId()),

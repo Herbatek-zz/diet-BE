@@ -1,6 +1,7 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.meal.MealDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class UserService {
         return userRepository.save(userDtoConverter.fromDto(userDto));
     }
 
-    public Mono<User> update(String userId, UserDto userDto) {
+    public Mono<UserDto> update(String userId, UserDto userDto) {
         userValidation.validateUserWithPrincipal(userId);
         return findById(userId)
                 .doOnNext(user -> user.setUsername(userDto.getUsername()))
@@ -56,7 +57,8 @@ public class UserService {
                 .doOnNext(user -> user.setAge(userDto.getAge()))
                 .doOnNext(user -> user.setWeight(userDto.getWeight()))
                 .doOnNext(user -> user.setHeight(userDto.getHeight()))
-                .flatMap(userRepository::save);
+                .flatMap(userRepository::save)
+                .map(userDtoConverter::toDto);
     }
 
     Mono<Void> deleteById(String userId) {

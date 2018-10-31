@@ -1,16 +1,15 @@
 package com.piotrek.diet.cart;
 
-import com.piotrek.diet.meal.Meal;
-import com.piotrek.diet.meal.MealDtoConverter;
-import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.helpers.CartEquals;
 import com.piotrek.diet.helpers.CartSample;
 import com.piotrek.diet.helpers.MealSample;
 import com.piotrek.diet.helpers.ProductSample;
+import com.piotrek.diet.meal.Meal;
+import com.piotrek.diet.meal.MealDtoConverter;
+import com.piotrek.diet.product.ProductDtoConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CartDtoConverterTest {
 
@@ -30,7 +29,7 @@ class CartDtoConverterTest {
     @Test
     void toDto() {
         final var converted = cartDtoConverter.toDto(cart);
-        assertTrue(CartEquals.cartDtoEquals(cartDto, converted));
+        this.assertEqualsAllCartFields(cartDto, converted);
     }
 
     @Test
@@ -39,7 +38,7 @@ class CartDtoConverterTest {
         addMeals();
 
         final var converted = cartDtoConverter.toDto(cart);
-        assertTrue(CartEquals.cartDtoEquals(cartDto, converted));
+        this.assertEqualsAllCartFields(cartDto, converted);
     }
 
     @Test
@@ -47,14 +46,14 @@ class CartDtoConverterTest {
         addDuplicated();
 
         final var converted = cartDtoConverter.toDto(cart);
-        assertTrue(CartEquals.cartDtoEquals(cartDto, converted));
+        this.assertEqualsAllCartFields(cartDto, converted);
     }
 
 
     @Test
     void fromDto() {
         final Cart converted = cartDtoConverter.fromDto(cartDto);
-        assertTrue(CartEquals.cartEquals(cart, converted));
+        this.assertEqualsAllCartFields(cart, converted);
     }
 
     @Test
@@ -63,7 +62,7 @@ class CartDtoConverterTest {
         addProducts();
 
         final Cart converted = cartDtoConverter.fromDto(cartDto);
-        assertTrue(CartEquals.cartEquals(cart, converted));
+        this.assertEqualsAllCartFields(cart, converted);
     }
 
     private void addProducts() {
@@ -106,6 +105,30 @@ class CartDtoConverterTest {
         cartDto.getMeals().add(MealSample.coffeeWithIdDto());
         cartDto.getMeals().add(MealSample.dumplingsWithIdDto());
         cartDto.setItemCounter(cartDto.getItemCounter() + 2);
+    }
+
+    private void assertEqualsAllCartFields(Cart expected, Cart actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getDate(), actual.getDate()),
+                () -> assertEquals(expected.getMeals(), actual.getMeals()),
+                () -> assertEquals(expected.getProducts(), actual.getProducts()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
+    }
+
+    private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getDate(), actual.getDate()),
+                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter()),
+                () -> assertEquals(expected.getMeals(), actual.getMeals()),
+                () -> assertEquals(expected.getProducts(), actual.getProducts()),
+                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
     }
 
 }

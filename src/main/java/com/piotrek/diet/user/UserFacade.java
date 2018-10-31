@@ -1,8 +1,6 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
-import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.meal.Meal;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 public class UserFacade {
 
     private final CartService cartService;
-    private final CartDtoConverter cartDtoConverter;
     private final UserService userService;
     private final UserValidation userValidation;
     private final ProductDtoConverter productDtoConverter;
@@ -35,10 +32,9 @@ public class UserFacade {
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
     private final TokenService tokenService;
-    private final UserDtoConverter userDtoConverter;
 
     Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
-        return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
+        return cartService.findByUserIdAndDate(userId, date);
     }
 
     Mono<UserDto> findDtoUser(String userId) {
@@ -46,32 +42,24 @@ public class UserFacade {
     }
 
     Mono<UserDto> updateUser(String userId, UserDto userDto) {
-        User user = userService.update(userId, userDto).block();
+        UserDto user = userService.update(userId, userDto).block();
         String tokenValue = tokenService.generateToken(user);
         tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
-        return Mono.just(userDtoConverter.toDto(user));
+        return Mono.just(user);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
         userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .doOnNext(user -> productDto.setUserId(user.getId()))
-                .map(user -> productDtoConverter.fromDto(productDto))
+                .map(user -> productDto)
                 .flatMap(productService::save);
     }
 
     Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {
         return userService.findById(userId)
                 .then(productService
-                        .findAllByUserId(userId)
-                        .collectList()
-                        .map(list -> new Page<>(list
-                                .stream()
-                                .skip(pageable.getPageNumber() * pageable.getPageSize())
-                                .limit(pageable.getPageSize())
-                                .map(productDtoConverter::toDto)
-                                .collect(Collectors.toList()),
-                                pageable.getPageNumber(), pageable.getPageSize(), list.size())));
+                        .findAllByUserPageable(userId, pageable));
     }
 
     Mono<MealDto> createMeal(String userId, MealDto mealDto) {
@@ -84,15 +72,7 @@ public class UserFacade {
 
     Mono<Page<MealDto>> findAllMealsByUser(String userId, Pageable pageable) {
         return userService.findById(userId).then(mealService
-                .findAllByUserId(userId)
-                .collectList()
-                .map(list -> new Page<>(list
-                        .stream()
-                        .skip(pageable.getPageNumber() * pageable.getPageSize())
-                        .limit(pageable.getPageSize())
-                        .map(mealDtoConverter::toDto)
-                        .collect(Collectors.toList()),
-                        pageable.getPageNumber(), pageable.getPageSize(), list.size())));
+                .findAllByUserId(userId, pageable));
     }
 
 
@@ -135,32 +115,32 @@ public class UserFacade {
     }
 
     Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new Cart(userId, date)).block();
+        CartDto cart = cartService.findByUserIdAndDate(userId, date)
+                .onErrorReturn(new CartDto(userId, date)).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
-        Meal meal = mealService.findById(mealId).block();
-        if (cart.getMeals().contains(meal)) {
-            int indexOfDuplicated = cart.getMeals().indexOf(meal);
-            Meal duplicated = cart.getMeals().remove(indexOfDuplicated);
+        MealDto meaLDto = mealDtoConverter.toDto(mealService.findById(mealId).block());
+        if (cart.getMeals().contains(meaLDto)) {
+            int indexOfDuplicated = cart.getMeals().indexOf(meaLDto);
+            MealDto duplicated = cart.getMeals().remove(indexOfDuplicated);
             amount += duplicated.getAmount();
         }
 
-        double divider = (double) meal.getAmount() / amount;
-        meal.getProducts()
-                .forEach(product -> {
-                    product.setAmount((int) (product.getAmount() / divider));
-                    product.setProtein(product.getProtein() / divider);
-                    product.setCarbohydrate(product.getCarbohydrate() / divider);
-                    product.setFat(product.getFat() / divider);
-                    product.setFibre(product.getFibre() / divider);
-                    product.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() / divider);
-                    product.setCarbohydrateExchange(product.getCarbohydrateExchange() / divider);
-                    product.setKcal(product.getKcal() / divider);
+        double divider = (double) meaLDto.getAmount() / amount;
+        meaLDto.getProducts()
+                .forEach(productDto -> {
+                    productDto.setAmount((int) (productDto.getAmount() / divider));
+                    productDto.setProtein(productDto.getProtein() / divider);
+                    productDto.setCarbohydrate(productDto.getCarbohydrate() / divider);
+                    productDto.setFat(productDto.getFat() / divider);
+                    productDto.setFibre(productDto.getFibre() / divider);
+                    productDto.setProteinAndFatEquivalent(productDto.getProteinAndFatEquivalent() / divider);
+                    productDto.setCarbohydrateExchange(productDto.getCarbohydrateExchange() / divider);
+                    productDto.setKcal(productDto.getKcal() / divider);
                 });
-        mealService.calculateMealInformation(meal);
-        meal.setAmount(amount);
-        cart.getMeals().add(meal);
-        return cartService.save(cart).map(cartDtoConverter::toDto);
+        mealService.calculateMealInformation(meaLDto);
+        meaLDto.setAmount(amount);
+        cart.getMeals().add(meaLDto);
+        return cartService.save(cart);
     }
 
     Mono<CartDto> deleteMealFromCart(String userId, String mealId, LocalDate date) {
@@ -173,33 +153,33 @@ public class UserFacade {
                         return cartService.save(cart);
                     } else
                         return Mono.just(cart);
-                }).map(cartDtoConverter::toDto);
+                });
     }
 
     Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new Cart(userId, date)).block();
-        userValidation.validateUserWithPrincipal(cart.getUserId());
-        Product product = productService.findById(productId).block();
-        product.setAmount(amount);
-        if (cart.getProducts().contains(product)) {
-            int indexOfDuplicated = cart.getProducts().indexOf(product);
-            var duplicated = cart.getProducts().remove(indexOfDuplicated);
-            product.setAmount(product.getAmount() + duplicated.getAmount());
+        CartDto cartDto = cartService.findByUserIdAndDate(userId, date)
+                .onErrorReturn(new CartDto(userId, date)).block();
+        userValidation.validateUserWithPrincipal(cartDto.getUserId());
+        ProductDto productDto = productDtoConverter.toDto(productService.findById(productId).block());
+        productDto.setAmount(amount);
+        if (cartDto.getProducts().contains(productDto)) {
+            int indexOfDuplicated = cartDto.getProducts().indexOf(productDto);
+            var duplicated = cartDto.getProducts().remove(indexOfDuplicated);
+            productDto.setAmount(productDto.getAmount() + duplicated.getAmount());
         }
-        cart.getProducts().add(product);
-        return cartService.save(cart).map(cartDtoConverter::toDto);
+        cartDto.getProducts().add(productDto);
+        return cartService.save(cartDto);
     }
 
     Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date).block();
-        userValidation.validateUserWithPrincipal(cart.getUserId());
+        CartDto cartDto = cartService.findByUserIdAndDate(userId, date).block();
+        userValidation.validateUserWithPrincipal(cartDto.getUserId());
         Product product = productService.findById(productId).block();
-        if (cart.getProducts().contains(product)) {
-            cart.getProducts().remove(product);
-            cart = cartService.save(cart).block();
+        if (cartDto.getProducts().contains(product)) {
+            cartDto.getProducts().remove(product);
+            cartDto = cartService.save(cartDto).block();
         }
-        return Mono.just(cartDtoConverter.toDto(cart));
+        return Mono.just(cartDto);
     }
 
 }

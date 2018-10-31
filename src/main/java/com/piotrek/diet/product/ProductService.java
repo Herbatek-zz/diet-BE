@@ -37,13 +37,12 @@ public class ProductService {
         return productRepository
                 .findAllByNameIgnoreCaseContaining(query)
                 .collectList()
-                .map(list -> new Page<>(
-                        list
-                                .stream()
-                                .skip(pageable.getPageNumber() * pageable.getPageSize())
-                                .limit(pageable.getPageSize())
-                                .map(productDtoConverter::toDto)
-                                .collect(Collectors.toList()),
+                .map(list -> new Page<>(list
+                        .stream()
+                        .skip(pageable.getPageNumber() * pageable.getPageSize())
+                        .limit(pageable.getPageSize())
+                        .map(productDtoConverter::toDto)
+                        .collect(Collectors.toList()),
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
@@ -51,13 +50,12 @@ public class ProductService {
         return productRepository
                 .findAll()
                 .collectList()
-                .map(list -> new Page<>(
-                        list
-                                .stream()
-                                .skip(pageable.getPageNumber() * pageable.getPageSize())
-                                .limit(pageable.getPageSize())
-                                .map(productDtoConverter::toDto)
-                                .collect(Collectors.toList()),
+                .map(list -> new Page<>(list
+                        .stream()
+                        .skip(pageable.getPageNumber() * pageable.getPageSize())
+                        .limit(pageable.getPageSize())
+                        .map(productDtoConverter::toDto)
+                        .collect(Collectors.toList()),
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
@@ -65,8 +63,16 @@ public class ProductService {
         return productRepository.findAll().skip(skipNumber).take(limitNumber);
     }
 
-    public Flux<Product> findAllByUserId(String userId) {
-        return productRepository.findAllByUserId(userId);
+    public Mono<Page<ProductDto>> findAllByUserPageable(String userId, Pageable pageable) {
+        return productRepository.findAllByUserId(userId)
+                .collectList()
+                .map(list -> new Page<>(list
+                        .stream()
+                        .skip(pageable.getPageNumber() * pageable.getPageSize())
+                        .limit(pageable.getPageSize())
+                        .map(productDtoConverter::toDto)
+                        .collect(Collectors.toList()),
+                        pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
     public Mono<ProductDto> save(Product product) {
@@ -77,6 +83,10 @@ public class ProductService {
         product.setProteinAndFatEquivalent(proteinAndFatEquivalent);
 
         return productRepository.save(product).map(productDtoConverter::toDto);
+    }
+
+    public Mono<ProductDto> save(ProductDto productDto) {
+        return save(productDtoConverter.fromDto(productDto));
     }
 
     Mono<Void> deleteById(String id) {

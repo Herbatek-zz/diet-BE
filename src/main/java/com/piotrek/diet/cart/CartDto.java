@@ -5,6 +5,7 @@ import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.product.ProductDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 
 @Data
 @EqualsAndHashCode(of = {"id"})
+@NoArgsConstructor
 public class CartDto {
 
     private String id;
@@ -28,4 +30,9 @@ public class CartDto {
 
     @NotNull
     private String userId;
+
+    public CartDto(String userId, LocalDate date) {
+        this.userId = userId;
+        this.date = date;
+    }
 }

@@ -2,6 +2,7 @@ package com.piotrek.diet.security.token;
 
 import com.auth0.jwt.JWT;
 import com.piotrek.diet.user.User;
+import com.piotrek.diet.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,15 @@ public class TokenService {
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .withClaim("username", user.getUsername())
                 .withClaim("pictureUrl", user.getPictureUrl())
+                .sign(HMAC512(SECRET.getBytes()));
+    }
+
+    public String generateToken(UserDto userDto) {
+        return JWT.create()
+                .withSubject(userDto.getId())
+                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .withClaim("username", userDto.getUsername())
+                .withClaim("pictureUrl", userDto.getPicture_url())
                 .sign(HMAC512(SECRET.getBytes()));
     }
 

@@ -2,7 +2,6 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartDto;
-import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.*;
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
@@ -22,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -38,9 +36,6 @@ class UserFacadeTest {
 
     @Mock
     private CartService cartService;
-
-    @Mock
-    private CartDtoConverter cartDtoConverter;
 
     @Mock
     private UserService userService;
@@ -91,31 +86,26 @@ class UserFacadeTest {
     @Test
     @DisplayName("Find cart, when found cart, then return it")
     void findCart_whenFound_thenReturn() {
-        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cartDto));
 
         final var block = userFacade.findDtoCartByUserAndDate(user.getId(), cart.getDate()).block();
 
         this.assertEqualsAllCartDtoFields(cartDto, block);
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService);
     }
 
 
     @Test
     void createProduct_whenPrincipalEqualUserId_thenSuccess() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        when(productService.save(product)).thenReturn(Mono.just(productDto));
-        when(productDtoConverter.fromDto(productDto)).thenReturn(product);
-        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+        when(productService.save(productDto)).thenReturn(Mono.just(productDto));
 
         var created = userFacade.createProduct(user.getId(), productDto).block();
 
         this.assertEqualsAllProductDtoFields(productDto, created);
         verify(userService, times(1)).findById(user.getId());
-        verify(productService, times(1)).save(product);
-        verify(productDtoConverter, times(1)).fromDto(productDto);
+        verify(productService, times(1)).save(productDto);
         verifyNoMoreInteractions(userService, productService, productDtoConverter);
     }
 
@@ -150,13 +140,13 @@ class UserFacadeTest {
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(productDtoConverter.toDto(product)).thenReturn(productDto);
-        when(productService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
+        when(productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize))).thenReturn(Mono.just(expected));
 
         var firstPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
         verify(userService, times(1)).findById(user.getId());
-        verify(productService, times(1)).findAllByUserId(user.getId());
+        verify(productService, times(1)).findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize));
         verify(productDtoConverter, times(10)).toDto(product);
         verifyNoMoreInteractions(userService, productService, productDtoConverter);
     }
@@ -174,13 +164,13 @@ class UserFacadeTest {
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(productDtoConverter.toDto(product)).thenReturn(productDto);
-        when(productService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
+        when(productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize))).thenReturn(Mono.just(expected));
 
         var firstPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
         verify(userService, times(1)).findById(user.getId());
-        verify(productService, times(1)).findAllByUserId(user.getId());
+        verify(productService, times(1)).findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize));
         verify(productDtoConverter, times(0)).toDto(product);
         verifyNoMoreInteractions(userService, productService, productDtoConverter);
     }
@@ -243,16 +233,14 @@ class UserFacadeTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
-        when(mealService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealsList));
+        when(mealService.findAllByUserId(user.getId(), PageRequest.of(page, pageSize))).thenReturn(Mono.just(expected));
 
         var firstPage = userFacade.findAllMealsByUser(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
 
         verify(userService, times(1)).findById(user.getId());
-        verify(mealService, times(1)).findAllByUserId(user.getId());
-        verify(mealDtoConverter, times(10)).toDto(meal);
+        verify(mealService, times(1)).findAllByUserId(user.getId(), PageRequest.of(page, pageSize));
         verifyNoMoreInteractions(userService);
         verifyNoMoreInteractions(mealService);
         verifyNoMoreInteractions(mealDtoConverter);
@@ -271,14 +259,14 @@ class UserFacadeTest {
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
-        when(mealService.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
+        when(mealService.findAllByUserId(user.getId(), PageRequest.of(page, pageSize))).thenReturn(Mono.just(expected));
 
         var firstPage = userFacade.findAllMealsByUser(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
 
         verify(userService, times(1)).findById(user.getId());
-        verify(mealService, times(1)).findAllByUserId(user.getId());
+        verify(mealService, times(1)).findAllByUserId(user.getId(), PageRequest.of(page, pageSize));
         verify(mealDtoConverter, times(0)).toDto(meal);
         verifyNoMoreInteractions(userService, mealService, mealDtoConverter);
     }
@@ -502,10 +490,9 @@ class UserFacadeTest {
         final var meal = MealSample.coffeeWithId();
         final var mealDto = MealSample.coffeeWithIdDto();
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
@@ -517,9 +504,8 @@ class UserFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(cartDto);
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -530,8 +516,7 @@ class UserFacadeTest {
 
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(any(CartDto.class))).thenReturn(Mono.just(cartDto));
 
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
@@ -543,9 +528,8 @@ class UserFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(any(Cart.class));
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(any(CartDto.class));
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -554,10 +538,9 @@ class UserFacadeTest {
         final var meal = MealSample.coffeeWithId();
         final var mealDto = MealSample.coffeeWithIdDto();
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cart.getMeals().add(meal);
         cartDto.getMeals().add(mealDto);
@@ -572,9 +555,8 @@ class UserFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(cartDto);
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -585,10 +567,9 @@ class UserFacadeTest {
         final var product = ProductSample.bananaWithId();
         final var productDto = ProductSample.bananaWithIdDto();
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cart.getProducts().add(product);
         cartDto.getProducts().add(productDto);
@@ -603,9 +584,8 @@ class UserFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(cartDto);
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -613,9 +593,8 @@ class UserFacadeTest {
     void deleteMealFromCart_whenCartHad1Meal_thenCartShouldBeEmpty() {
         final var meal = MealSample.coffeeWithId();
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cart.getMeals().add(meal);
 
@@ -629,10 +608,9 @@ class UserFacadeTest {
                 () -> assertEquals(0, cart.getMeals().size())
         );
         assertEquals(0, cart.getMeals().size());
-        verify(cartService, times(1)).save(cart);
+        verify(cartService, times(1)).save(cartDto);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, mealService);
     }
 
     @Test
@@ -641,9 +619,8 @@ class UserFacadeTest {
         final var meal = MealSample.coffeeWithId();
 
         cart.getMeals().add(meal);
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         userFacade.deleteMealFromCart(user.getId(), meal.getId(), cart.getDate()).block();
 
@@ -657,9 +634,8 @@ class UserFacadeTest {
 
         assertEquals(0, cart.getMeals().size());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartService, times(1)).save(any(Cart.class));
-        verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter);
+        verify(cartService, times(1)).save(any(CartDto.class));
+        verifyNoMoreInteractions(cartService, mealService);
     }
 
     @Test
@@ -670,8 +646,7 @@ class UserFacadeTest {
 
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(any(CartDto.class))).thenReturn(Mono.just(cartDto));
 
         cartDto.getProducts().add(productDto);
         cartDto.getAllProducts().add(productDto);
@@ -682,9 +657,8 @@ class UserFacadeTest {
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(any(Cart.class));
-        verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(any(CartDto.class));
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -693,10 +667,9 @@ class UserFacadeTest {
         final var product = ProductSample.bananaWithId();
         final var productDto = ProductSample.bananaWithIdDto();
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cartDto.getProducts().add(productDto);
         cartDto.getAllProducts().add(productDto);
@@ -707,9 +680,8 @@ class UserFacadeTest {
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(cartDto);
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -718,10 +690,9 @@ class UserFacadeTest {
         final var product = ProductSample.bananaWithId();
         final var productDto = ProductSample.bananaWithIdDto();
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cart.getProducts().add(product);
         cartDto.getProducts().add(productDto);
@@ -735,9 +706,8 @@ class UserFacadeTest {
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, mealService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(cartDto);
+        verifyNoMoreInteractions(cartService, mealService, userValidation);
     }
 
     @Test
@@ -757,10 +727,9 @@ class UserFacadeTest {
         final var productDto = ProductSample.bananaWithIdDto();
         productDto.setAmount(amount);
 
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
         cart.getMeals().add(meal);
         cartDto.getProducts().add(productDto);
         cartDto.getAllProducts().add(productDto);
@@ -773,9 +742,8 @@ class UserFacadeTest {
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, productService, cartDtoConverter, userValidation);
+        verify(cartService, times(1)).save(cartDto);
+        verifyNoMoreInteractions(cartService, productService, userValidation);
     }
 
     @Test
@@ -784,9 +752,8 @@ class UserFacadeTest {
         final var product = ProductSample.bananaWithId();
 
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         cart.getProducts().add(product);
 
@@ -801,10 +768,9 @@ class UserFacadeTest {
         );
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
+        verify(cartService, times(1)).save(cartDto);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, productService, cartDtoConverter, userValidation);
+        verifyNoMoreInteractions(cartService, productService, userValidation);
     }
 
     @Test
@@ -813,9 +779,8 @@ class UserFacadeTest {
         final var product = ProductSample.bananaWithId();
 
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cartDto));
+        when(cartService.save(cartDto)).thenReturn(Mono.just(cartDto));
 
         userFacade.deleteProductFromCart(user.getId(), product.getId(), cart.getDate()).block();
 
@@ -828,8 +793,7 @@ class UserFacadeTest {
         );
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(any(Cart.class));
-        verifyNoMoreInteractions(cartService, productService, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, productService);
     }
 
     private void initMeals() {

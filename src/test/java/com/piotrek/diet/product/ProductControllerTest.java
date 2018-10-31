@@ -5,23 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.PrincipalProvider;
+import com.piotrek.diet.helpers.ProductSample;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.helpers.ProductSample;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
@@ -34,18 +31,16 @@ class ProductControllerTest {
     private ProductService productService;
 
     @Autowired
-    private ProductDtoConverter productDtoConverter;
-
-    @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
 
     private WebTestClient webTestClient;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private Product product1;
+    private Product product;
     private Product product2;
-    private ProductDto productDto1;
+    private ProductDto productDto;
     private ProductDto productDto2;
 
     @BeforeEach
@@ -64,21 +59,20 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("When findMealDtoById and found a product, then return this product")
-    void findById_whenFound_thenReturnProduct() {
-        final var URI = "/products/" + product1.getId();
+    @DisplayName("Find product by id, when found, then return")
+    void findById_whenFound_thenReturn() throws JsonProcessingException {
+        final var URI = "/products/" + product.getId();
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody(ProductDto.class)
-                .isEqualTo(productDto1);
+                .expectBody().json(objectMapper.writeValueAsString(product));
     }
 
     @Test
-    @DisplayName("When findMealDtoById and not found a product, then throw NotFoundException")
+    @DisplayName("Find product by id, when not found, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
-        final var URI = "/products/badId";
+        final var URI = "/products/" + UUID.randomUUID().toString();
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isNotFound()
@@ -87,9 +81,10 @@ class ProductControllerTest {
     }
 
     @Test
-    void searchByName_when2ProductsAndQueryOneOfThem_thenReturnPageableWithOneProduct() throws JsonProcessingException {
-        final var URI = "/products/search?query=" + product1.getName();
-        final var expected = new Page<>(List.of(productDtoConverter.toDto(product1)), 0, 10, 1);
+    @DisplayName("Search products by name, when two products and query matches for one of them, then return page with one product")
+    void searchByName_whenTwoProductsAndQueryMatchForOne_thenReturnPageWithOne() throws JsonProcessingException {
+        final var URI = "/products/search?query=" + product.getName();
+        final var expected = new Page<>(List.of(productDto), 0, 10, 1);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -99,9 +94,10 @@ class ProductControllerTest {
     }
 
     @Test
-    void searchByName_when2ProductsAndNoQuery_thenReturnPageableWithAllProduct() throws JsonProcessingException {
+    @DisplayName("Search products by name, when two products and query is missing, then return page with all products")
+    void searchByName_whenTwoProductAndNoQuery_thenReturnPageableWithAllProduct() throws JsonProcessingException {
         final var URI = "/products/search";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(product1, product2)), 0, 10, 2);
+        final var expected = new Page<>(List.of(product, product2), 0, 10, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -111,7 +107,8 @@ class ProductControllerTest {
     }
 
     @Test
-    void searchByName_when0ProductsAndNoQuery_thenReturnEmptyPageable() throws JsonProcessingException {
+    @DisplayName("Search products by name, when no products and no query, then return empty page")
+    void searchByName_whenNoProductsAndNoQuery_thenReturnEmptyPage() throws JsonProcessingException {
         final var URI = "/products/search";
         final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
@@ -125,7 +122,8 @@ class ProductControllerTest {
     }
 
     @Test
-    void searchByName_when2ProductsAndWrongQuery_thenReturnEmptyPageable() throws JsonProcessingException {
+    @DisplayName("Search products by name, when two products and query doesn't match them, then return empty page")
+    void searchByName_whenTwoProductsAndWrongQuery_thenReturnEmptyPage() throws JsonProcessingException {
         final var URI = "/products/search?query=lol123";
         final var expected = new Page<>(new ArrayList<>(), 0, 10, 0);
 
@@ -137,9 +135,10 @@ class ProductControllerTest {
     }
 
     @Test
-    void searchByName_when2ProductsAndNoQueryAndPageSize1_thenReturnFirstPageWithOneProduct() throws JsonProcessingException {
+    @DisplayName("Search products by name, when two products, no query and pageSize=1, then return page with one product")
+    void searchByName_whenTwoProductsNoQueryAndPageSizeEqualOne_thenReturnPageWithOneProduct() throws JsonProcessingException {
         final var URI = "/products/search?size=1";
-        final var expected = new Page<>(List.of(product1), 0, 1, 2);
+        final var expected = new Page<>(List.of(product), 0, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -148,9 +147,22 @@ class ProductControllerTest {
                 .expectBody().json(objectMapper.writeValueAsString(expected));
     }
 
+    @Test
+    @DisplayName("Search products by name, when two products, no query, pageSize=1 and page=1, then return page with one product")
+    void searchByName_whenTwoProductsNoQueryPageSizeEqualOneAndPageTwo_thenReturnSecondPageWithOneProduct() throws JsonProcessingException {
+        final var URI = "/products/search?size=1&page=1";
+        final var expected = new Page<>(List.of(product2), 1, 1, 2);
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
 
     @Test
-    void findAll_whenDefaultParamsTotalElements0_thenReturnPageSupportWithoutContent() throws JsonProcessingException {
+    @DisplayName("Find all products, when no products, then return empty page")
+    void findAll_whenNoProducts_thenReturnEmptyPage() throws JsonProcessingException {
         final var URI = "/products";
         final var expected = new Page<ProductDto>(new ArrayList<>(), 0, 10, 0);
 
@@ -164,9 +176,10 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Products() throws JsonProcessingException {
+    @DisplayName("Find all products, when two products, then return page with two products")
+    void findAll_whenTwoProducts_thenReturnPageWithTwoProducts() throws JsonProcessingException {
         final var URI = "/products";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(product1, product2)), 0, 10, 2);
+        final var expected = new Page<>(List.of(product, product2), 0, 10, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -176,13 +189,10 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneProduct() throws JsonProcessingException {
+    @DisplayName("Find all products, when two products, pageSize=1 and page=1, then return second page with one product")
+    void findAll_whenPageNumberOnePageSizeOneTotalElementsTwo_returnSecondPageWithOneProduct() throws JsonProcessingException {
         final var URI = "/products?page=1&size=1";
-        final var expected = new Page<>(new ArrayList<>(Arrays.asList(product1, product2))
-                .stream()
-                .skip(1)
-                .limit(1)
-                .collect(Collectors.toList()), 1, 1, 2);
+        final var expected = new Page<>(List.of(product2), 1, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -193,8 +203,8 @@ class ProductControllerTest {
 
     @Test
     void deleteById() {
-        PrincipalProvider.provide(product1.getUserId());
-        final var URI = "/products/" + product1.getId();
+        PrincipalProvider.provide(product.getUserId());
+        final var URI = "/products/" + product.getId();
         webTestClient.delete().uri(URI)
                 .exchange()
                 .expectStatus().isNoContent();
@@ -207,13 +217,10 @@ class ProductControllerTest {
     }
 
     private void createProducts() {
-        product1 = ProductSample.bananaWithoutId();
-        product2 = ProductSample.breadWithoutId();
+        product = ProductSample.bananaWithId();
+        product2 = ProductSample.breadWithId();
 
-        productDto1 = productService.save(product1).block();
+        productDto = productService.save(product).block();
         productDto2 = productService.save(product2).block();
-
-        product1 = productDtoConverter.fromDto(productDto1);
-        product2 = productDtoConverter.fromDto(productDto2);
     }
 }

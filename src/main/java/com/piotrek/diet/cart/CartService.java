@@ -13,20 +13,21 @@ import java.time.format.DateTimeFormatter;
 public class CartService {
 
     private final CartRepository cartRepository;
+    private final CartDtoConverter cartDtoConverter;
 
-    public Mono<Cart> findById(String id) {
-        return cartRepository.findById(id)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart [id = " + id + "]"))));
-    }
-
-    public Mono<Cart> findByUserIdAndDate(String userId, LocalDate localDate) {
+    public Mono<CartDto> findByUserIdAndDate(String userId, LocalDate localDate) {
+        final var EXCEPTION_MESSAGE = "Not found cart for user [id = " + userId + " and date: " + localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]";
         return cartRepository.findByUserIdAndDate(userId, localDate)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found cart for user [id = " + userId +
-                        " and date: " + localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]"))));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException(EXCEPTION_MESSAGE))))
+                .map(cartDtoConverter::toDto);
     }
 
-    public Mono<Cart> save(Cart cart) {
-        return cartRepository.save(cart);
+    public Mono<CartDto> save(Cart cart) {
+        return cartRepository.save(cart).map(cartDtoConverter::toDto);
+    }
+
+    public Mono<CartDto> save(CartDto cartDto) {
+        return save(cartDtoConverter.fromDto(cartDto));
     }
 
     public Mono<Void> deleteAll() {

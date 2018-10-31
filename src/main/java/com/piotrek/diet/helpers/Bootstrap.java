@@ -1,7 +1,5 @@
 package com.piotrek.diet.helpers;
 
-import com.piotrek.diet.cart.Cart;
-import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
@@ -12,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -23,11 +20,9 @@ public class Bootstrap implements CommandLineRunner {
     private final UserService userService;
     private final ProductService productService;
     private final MealService mealService;
-    private final CartService cartService;
 
     @Override
     public void run(String... args) {
-        cartService.deleteAll().block();
         productService.deleteAll().block();
         mealService.deleteAll().block();
 
@@ -74,14 +69,5 @@ public class Bootstrap implements CommandLineRunner {
             meal.setProducts(products);
             mealService.save(meal).block();
         }
-
-        var cart = new Cart("123123", LocalDate.now());
-        var list = new ArrayList<Meal>();
-        var meal = new Meal();
-        meal.setName("Dobre");
-        list.add(meal);
-        cart.setMeals(list);
-        cartService.save(cart).block();
-
     }
 }

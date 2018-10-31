@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -33,8 +32,16 @@ public class MealService {
         return findById(id).map(mealDtoConverter::toDto);
     }
 
-    public Flux<Meal> findAllByUserId(String userId) {
-        return mealRepository.findAllByUserId(userId);
+    public Mono<Page<MealDto>> findAllByUserId(String userId, Pageable pageable) {
+        return mealRepository.findAllByUserId(userId)
+                .collectList()
+                .map(list -> new Page<>(list
+                        .stream()
+                        .skip(pageable.getPageNumber() * pageable.getPageSize())
+                        .limit(pageable.getPageSize())
+                        .map(mealDtoConverter::toDto)
+                        .collect(Collectors.toList()),
+                        pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
     Mono<Page<MealDto>> findAllPageable(Pageable pageable) {
@@ -56,7 +63,8 @@ public class MealService {
     }
 
     public Mono<Meal> save(MealDto mealDto) {
-        return save(mealDtoConverter.fromDto(mealDto));
+        Meal meal = mealDtoConverter.fromDto(mealDto);
+        return save(meal);
     }
 
     public Mono<Void> deleteAll() {
@@ -113,6 +121,18 @@ public class MealService {
     }
 
     public void calculateMealInformation(Meal meal) {
+        calculateProtein(meal);
+        calculateCarbohydrate(meal);
+        calculateFat(meal);
+        calculateFibre(meal);
+        calculateCarbohydrateExchange(meal);
+        calculateProteinAndFatEquivalent(meal);
+        calculateKcal(meal);
+        calculateAmount(meal);
+    }
+
+    public void calculateMealInformation(MealDto mealDto) {
+        var meal = mealDtoConverter.fromDto(mealDto);
         calculateProtein(meal);
         calculateCarbohydrate(meal);
         calculateFat(meal);
