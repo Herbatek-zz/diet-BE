@@ -5,9 +5,13 @@ import com.piotrek.diet.cart.CartFacade;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.product.ProductDto;
+import com.piotrek.diet.security.token.Token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -16,6 +20,7 @@ import java.time.LocalDate;
 
 import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
+import static com.piotrek.diet.security.helpers.SecurityConstants.COOKIE_MAX_AGE;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
@@ -34,8 +39,15 @@ public class UserController {
 
     @PutMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<UserDto> updateUser(@PathVariable String id, @RequestBody @Valid UserDto userDto) {
-        return userFacade.updateUser(id, userDto);
+    Mono<ResponseEntity<UserDto>> updateUser(@PathVariable String id, @RequestBody @Valid UserDto userDto, ServerHttpResponse response) {
+        UserDto updated = userFacade.updateUser(id, userDto).block();
+        Token token = userFacade.findToken(updated.getId()).block();
+
+        response.addCookie(ResponseCookie.from("Siemanko", "siemanko")
+                .path("/")
+                .maxAge(COOKIE_MAX_AGE)
+                .build());
+        return Mono.just(ResponseEntity.ok().header("set-cookie", "token").body(updated));
     }
 
     @GetMapping("/{id}/products")

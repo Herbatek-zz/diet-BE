@@ -7,6 +7,7 @@ import com.piotrek.diet.meal.MealDtoConverter;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductService;
+import com.piotrek.diet.security.token.Token;
 import com.piotrek.diet.security.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,10 @@ public class UserFacade {
         String tokenValue = tokenService.generateToken(userDto);
         tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
         return Mono.just(userDto);
+    }
+
+    Mono<Token> findToken(String userId) {
+        return tokenService.findByUserId(userId);
     }
 
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {

@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.1.0.BUILD-SNAPSHOT'
+        springBootVersion = '2.1.1.BUILD-SNAPSHOT'
     }
     repositories {
         mavenCentral()
@@ -36,20 +36,20 @@ dependencies {
 
     // security
     compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.0.BUILD-SNAPSHOT')
+    compile('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.1.BUILD-SNAPSHOT')
     compile('org.springframework.security:spring-security-oauth2-client')
-    compile('com.auth0:java-jwt:3.4.0')
+    compile('com.auth0:java-jwt:3.4.1')
 
     // other
     compile('org.springframework.boot:spring-boot-starter-aop')
     runtime('org.springframework.boot:spring-boot-devtools')
-    compileOnly('org.projectlombok:lombok:1.18.2')
-    annotationProcessor('org.projectlombok:lombok:1.18.2')
+    compileOnly('org.projectlombok:lombok:1.18.4')
+    annotationProcessor('org.projectlombok:lombok:1.18.4')
     
     // data
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
 
-    // java 10 missing dependencies needed for oauth2
+    // java 11 missing dependencies needed for oauth2
     compile('javax.xml.bind:jaxb-api:2.3.1')
     compile('com.sun.xml.bind:jaxb-core:2.3.0.1')
     compile('com.sun.xml.bind:jaxb-impl:2.3.1')
