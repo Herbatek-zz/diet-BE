@@ -28,7 +28,7 @@ public class ProductService {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Not found product [id = " + id + "]"))));
     }
 
-    public Mono<ProductDto> findDtoById(String id) {
+    Mono<ProductDto> findDtoById(String id) {
         return findById(id)
                 .map(productDtoConverter::toDto);
     }
@@ -97,5 +97,26 @@ public class ProductService {
 
     public Mono<Void> deleteAll() {
         return productRepository.deleteAll();
+    }
+
+    public Product calculateProductInfoByAmount(Product product) {
+        double divider = (double) product.getAmount() / 100;
+
+        var calculatedProduct = new Product();
+        calculatedProduct.setProtein(product.getProtein() * divider);
+        calculatedProduct.setCarbohydrate(product.getCarbohydrate() * divider);
+        calculatedProduct.setFat(product.getFat() * divider);
+        calculatedProduct.setFibre(product.getFibre() * divider);
+        calculatedProduct.setKcal(product.getKcal() * divider);
+        calculatedProduct.setCarbohydrateExchange(product.getCarbohydrateExchange() * divider);
+        calculatedProduct.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() * divider);
+        calculatedProduct.setAmount(product.getAmount());
+        calculatedProduct.setUserId(product.getUserId());
+        calculatedProduct.setId(product.getId());
+        calculatedProduct.setName(product.getName());
+        calculatedProduct.setImageUrl(product.getImageUrl());
+        calculatedProduct.setDescription(product.getDescription());
+
+        return calculatedProduct;
     }
 }

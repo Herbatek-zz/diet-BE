@@ -131,18 +131,6 @@ public class MealService {
         calculateAmount(meal);
     }
 
-    public void calculateMealInformation(MealDto mealDto) {
-        var meal = mealDtoConverter.fromDto(mealDto);
-        calculateProtein(meal);
-        calculateCarbohydrate(meal);
-        calculateFat(meal);
-        calculateFibre(meal);
-        calculateCarbohydrateExchange(meal);
-        calculateProteinAndFatEquivalent(meal);
-        calculateKcal(meal);
-        calculateAmount(meal);
-    }
-
     private void calculateAmount(Meal meal) {
         int amountValue = meal.getProducts()
                 .stream()

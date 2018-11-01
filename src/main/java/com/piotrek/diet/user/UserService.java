@@ -17,7 +17,7 @@ public class UserService {
     private final UserValidation userValidation;
     private final UserDtoConverter userDtoConverter;
 
-    public Mono<UserDto> findDtoById(String id) {
+    Mono<UserDto> findDtoById(String id) {
         return findById(id).map(userDtoConverter::toDto);
     }
 
@@ -46,7 +46,7 @@ public class UserService {
         return userRepository.save(userDtoConverter.fromDto(userDto));
     }
 
-    public Mono<UserDto> update(String userId, UserDto userDto) {
+    Mono<UserDto> update(String userId, UserDto userDto) {
         userValidation.validateUserWithPrincipal(userId);
         return findById(userId)
                 .doOnNext(user -> user.setUsername(userDto.getUsername()))

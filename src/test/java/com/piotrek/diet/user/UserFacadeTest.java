@@ -1,10 +1,8 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.cart.Cart;
-import com.piotrek.diet.cart.CartDto;
-import com.piotrek.diet.cart.CartDtoConverter;
 import com.piotrek.diet.cart.CartService;
-import com.piotrek.diet.helpers.*;
+import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.BadRequestException;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
@@ -25,7 +23,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.MealSample.*;
@@ -47,9 +48,6 @@ class UserFacadeTest {
 
     @Mock
     private ProductDtoConverter productDtoConverter;
-
-    @Mock
-    private CartDtoConverter cartDtoConverter;
 
     @Mock
     private ProductService productService;
@@ -77,47 +75,13 @@ class UserFacadeTest {
 
     private User user;
 
-    private Cart cart;
-    private CartDto cartDto;
-
     @BeforeEach
     void beforeEach() {
         initProducts();
         initMeals();
         user = UserSample.johnWithId();
-        cart = CartSample.cart1();
-        cartDto = CartSample.cartDto1();
         MockitoAnnotations.initMocks(this);
     }
-
-
-    @Test
-    @DisplayName("Find cart, when found, then return")
-    void findCart_whenFound_thenReturn() {
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        final CartDto block = userFacade.findDtoCartByUserAndDate(cart.getUserId(), cart.getDate()).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Find cart, when not found, then return")
-    void findCart_whenNotFound_thenThrowNotFoundException() {
-        when(cartService.findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate())).thenThrow(new NotFoundException(""));
-
-        assertThrows(NotFoundException.class, () -> userFacade.findDtoCartByUserAndDate(cartDto.getUserId(), cartDto.getDate()).block());
-
-        verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
 
     @Test
     void createProduct_whenPrincipalEqualUserId_thenSuccess() {
@@ -500,347 +464,11 @@ class UserFacadeTest {
                 productService, mealService, mealDtoConverter, tokenService);
     }
 
-    @Test
-    @DisplayName("Add meal to cart, when cart is empty, then cart should has 1 meal")
-    void addMealToCart_whenCartIsEmpty_thenCartShouldHasOneMeal() {
-        final var mealToAdd = MealSample.coffeeWithId();
-        final var mealDtoToAdd = MealSample.coffeeWithIdDto();
-        final var AMOUNT = 100;
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(mealService.findById(mealToAdd.getId())).thenReturn(Mono.just(mealToAdd));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        cartDto.getMeals().add(mealDtoToAdd);
-        cartDto.getAllProducts().addAll(mealDtoToAdd.getProducts());
-
-        final var block = userFacade.addMealToCart(user.getId(), mealToAdd.getId(), cart.getDate(), AMOUNT).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(userValidation, times(1)).validateUserWithPrincipal(cart.getUserId());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(mealService, times(1)).findById(mealToAdd.getId());
-        verify(mealService, times(1)).calculateMealInformation(mealToAdd);
-        verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add meal to cart, when cart is empty, then cart should has 1 meal")
-    void addMealToCart_whenThereIsNoCart_thenCreateCartAndAddMeal() {
-        final var meal = MealSample.coffeeWithId();
-        final var mealDto = MealSample.coffeeWithIdDto();
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
-
-        cartDto.getMeals().add(mealDto);
-        cartDto.getAllProducts().addAll(mealDto.getProducts());
-
-        final var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(any(Cart.class));
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add meal to cart, when cart had one meal, then cart should has 2 meals")
-    void addMealToCart_whenCartHadOneMeal_thenCartShouldHasTwoMeals() {
-        final var meal = MealSample.coffeeWithId();
-        final var mealDto = MealSample.coffeeWithIdDto();
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        cart.getMeals().add(meal);
-        cartDto.getMeals().add(mealDto);
-        cartDto.getMeals().add(MealSample.dumplingsWithIdDto());
-        cartDto.getAllProducts().addAll(mealDto.getProducts());
-        cartDto.getAllProducts().addAll(MealSample.dumplingsWithIdDto().getProducts());
-
-        var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add meal to cart, when cart had one product, then cart should has one product and one meal")
-    void addMealToCart_whenCartHadOneProduct_thenCartShouldHasOneMealAndOneProduct() {
-        final var meal = MealSample.coffeeWithId();
-        final var mealDto = MealSample.coffeeWithIdDto();
-        final var product = ProductSample.bananaWithId();
-        final var productDto = ProductSample.bananaWithIdDto();
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        cart.getProducts().add(product);
-        cartDto.getProducts().add(productDto);
-        cartDto.getAllProducts().add(productDto);
-        cartDto.getMeals().add(mealDto);
-        cartDto.getAllProducts().addAll(mealDto.getProducts());
-
-        var block = userFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(mealService, times(1)).findById(meal.getId());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(mealService, times(1)).calculateMealInformation(meal);
-        verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Delete meal from cart, when cart had one meal, then cart should be empty")
-    void deleteMealFromCart_whenCartHad1Meal_thenCartShouldBeEmpty() {
-        final var expected = CartSample.cartDto1();
-
-        when(cartService.findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate())).thenReturn(Mono.just(cart));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        CartDto block = userFacade.deleteMealFromCart(cart.getUserId(), mealDto.getId(), cart.getDate()).block();
-
-        this.assertEqualsAllCartFields(expected, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
-        verify(cartService, times(1)).findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Delete meal from cart, when cart had no meals, then return empty cart")
-    void deleteMealFromCart_whenCartHadNoMeals_thenCartShouldBeEmpty() {
-        var expected = CartSample.cartDto1();
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        CartDto block = userFacade.deleteMealFromCart(cartDto.getUserId(), meal.getId(), cartDto.getDate()).block();
-
-        this.assertEqualsAllCartFields(expected, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
-        verify(cartService, times(1)).findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add product to cart, when there is no cart, then cart should be created and product should be added")
-    void addProductToCart_whenThereIsNoCart_thenCreateCartAndAddProduct() {
-        final var product = ProductSample.bananaWithId();
-        final var productDto = ProductSample.bananaWithIdDto();
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
-
-        cartDto.getProducts().add(productDto);
-        cartDto.getAllProducts().add(productDto);
-
-        final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(any(Cart.class));
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add product to cart, when cart is empty, then cart should has 1 product")
-    void addProductToCart_whenCartIsEmpty_thenCartShouldHasOneProduct() {
-        final var product = ProductSample.bananaWithId();
-        final var productDto = ProductSample.bananaWithIdDto();
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        cartDto.getProducts().add(productDto);
-        cartDto.getAllProducts().add(productDto);
-
-        final var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(productService, times(1)).findById(product.getId());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add product to cart, when cart had one product, then cart should has 2 products")
-    void addProductToCart_whenCartHadOneProduct_thenCartShouldHasTwoProducts() {
-        final var product = ProductSample.bananaWithId();
-        final var productDto = ProductSample.bananaWithIdDto();
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(productDtoConverter.toDto(product)).thenReturn(productDto);
-        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        cart.getProducts().add(product);
-        cartDto.getProducts().add(productDto);
-        cartDto.getProducts().add(ProductSample.breadWithIdDto());
-        cartDto.getAllProducts().add(productDto);
-        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
-
-        var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Add product to cart, when cart had one meal, then cart should has one product and one meal")
-    void addProductToCart_whenCartHadOneMeal_thenCartShouldHasOneMealAndOneProduct() {
-        final int amount = 100;
-
-        final var meal = MealSample.coffeeWithId();
-        meal.setAmount(amount);
-
-        final var mealDto = MealSample.coffeeWithIdDto();
-        mealDto.setAmount(amount);
-
-        final var product = ProductSample.bananaWithId();
-        product.setAmount(amount);
-
-        final var productDto = ProductSample.bananaWithIdDto();
-        productDto.setAmount(amount);
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        cart.getMeals().add(meal);
-        cartDto.getProducts().add(productDto);
-        cartDto.getAllProducts().add(productDto);
-        cartDto.getMeals().add(mealDto);
-        cartDto.getAllProducts().addAll(mealDto.getProducts());
-
-        var block = userFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
-
-        this.assertEqualsAllCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Delete product from cart, when cart had one product, then cart should be empty")
-    void deleteProductFromCart_whenCartHadOneProduct_thenCartShouldBeEmpty() {
-        cart.getProducts().add(product);
-
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-
-        CartDto block = userFacade.deleteProductFromCart(user.getId(), product.getId(), cart.getDate()).block();
-
-        var expected = CartSample.cartDto1();
-        expected.setProducts(new ArrayList<>());
-
-        this.assertEqualsAllCartFields(expected, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(productService, times(1)).findById(product.getId());
-        verify(cartService, times(1)).save(cart);
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    @DisplayName("Delete product from cart, when cart had no products, then cart should be empty")
-    void deleteProductFromCart_whenCartHadNoProducts_thenCartShouldBeEmpty() {
-        final var product = ProductSample.bananaWithId();
-
-        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
-        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
-        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
-        when(cartService.save(cart)).thenReturn(Mono.just(cart));
-
-        userFacade.deleteProductFromCart(user.getId(), product.getId(), cart.getDate()).block();
-
-        assertAll(
-                () -> assertEquals(cartDto.getId(), cart.getId()),
-                () -> assertEquals(cartDto.getDate(), cart.getDate()),
-                () -> assertEquals(cartDto.getUserId(), cart.getUserId()),
-                () -> assertEquals(0, cart.getProducts().size()),
-                () -> assertEquals(0, cart.getMeals().size())
-        );
-        verify(productService, times(1)).findById(product.getId());
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
-        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, userValidation, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
     private void initMeals() {
         mealDto = dumplingsWithIdDto();
         meal = dumplingsWithId();
         mealDto2 = coffeeWithIdDto();
         meal2 = coffeeWithId();
-    }
-
-    private ArrayList<Meal> createMealsList(int size) {
-        var arrayList = new ArrayList<Meal>();
-
-        for (int i = 0; i < size; i++)
-            arrayList.add(dumplingsWithId());
-
-        return arrayList;
     }
 
     private ArrayList<MealDto> createMealDtoList(int size) {
@@ -857,15 +485,6 @@ class UserFacadeTest {
         product = bananaWithId();
     }
 
-    private ArrayList<Product> createProductList(int size) {
-        var arrayList = new ArrayList<Product>();
-
-        for (int i = 0; i < size; i++)
-            arrayList.add(bananaWithId());
-
-        return arrayList;
-    }
-
     private ArrayList<ProductDto> createProductDtoList(int size) {
         var arrayList = new ArrayList<ProductDto>();
 
@@ -873,17 +492,6 @@ class UserFacadeTest {
             arrayList.add(bananaWithIdDto());
 
         return arrayList;
-    }
-
-    private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getMeals().size(), actual.getMeals().size(), "Cart meal list size"),
-                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size(), "Cart products list size"),
-                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts(), "Cart all products list"),
-                () -> assertEquals(expected.getUserId(), actual.getUserId()),
-                () -> assertEquals(expected.getDate(), actual.getDate())
-        );
     }
 
     private void assertEqualsAllProductDtoFields(ProductDto expected, ProductDto actual) {

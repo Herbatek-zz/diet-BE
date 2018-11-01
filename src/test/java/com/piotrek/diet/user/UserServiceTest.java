@@ -48,18 +48,19 @@ class UserServiceTest {
 
         this.assertEqualAllUserFields(user, block);
         verify(userRepository, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
     @DisplayName("Find by id, when not found, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
         final var WRONG_ID = UUID.randomUUID().toString();
+
         when(userRepository.findById(WRONG_ID)).thenReturn(Mono.empty());
 
         assertThrows(NotFoundException.class, () -> userService.findById(WRONG_ID).block());
         verify(userRepository, times(1)).findById(WRONG_ID);
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -71,7 +72,7 @@ class UserServiceTest {
 
         this.assertEqualAllUserFields(user, block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -83,7 +84,7 @@ class UserServiceTest {
 
         assertNull(block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -95,7 +96,7 @@ class UserServiceTest {
 
         this.assertEqualAllUserFields(user, block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -107,7 +108,7 @@ class UserServiceTest {
 
         assertNull(block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -119,7 +120,7 @@ class UserServiceTest {
         assertNotNull(users);
         assertEquals(0, users.size());
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -135,7 +136,7 @@ class UserServiceTest {
                 () -> this.assertEqualAllUserFields(user, userList.get(0))
         );
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -157,7 +158,7 @@ class UserServiceTest {
                 () -> this.assertEqualAllUserFields(expectedList.get(1), actualUserList.get(1))
         );
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -168,7 +169,7 @@ class UserServiceTest {
 
         this.assertEqualAllUserFields(user, savedUser);
         verify(userRepository, times(1)).save(user);
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
@@ -197,27 +198,27 @@ class UserServiceTest {
         when(userRepository.save(updatedUser)).thenReturn(Mono.just(updatedUser));
         when(userDtoConverter.toDto(updatedUser)).thenReturn(updatedUserDto);
 
-
         UserDto actualUser = userService.update(user.getId(), updatedUserDto).block();
 
         this.assertEqualAllUserDtoFields(updatedUserDto, actualUser);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(updatedUser);
         verify(userDtoConverter, times(1)).toDto(updatedUser);
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
     @Test
     void deleteById() {
         assertEquals(Mono.empty().block(), userService.deleteById(user.getId()));
         verify(userRepository, times(1)).deleteById(user.getId());
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     @Test
     void deleteAll() {
         assertEquals(Mono.empty().block(), userService.deleteAll());
         verify(userRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
 
     private void assertEqualAllUserFields(User expected, User actual) {

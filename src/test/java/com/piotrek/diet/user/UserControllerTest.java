@@ -3,10 +3,7 @@ package com.piotrek.diet.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
-import com.piotrek.diet.cart.Cart;
-import com.piotrek.diet.cart.CartDto;
-import com.piotrek.diet.cart.CartDtoConverter;
-import com.piotrek.diet.cart.CartService;
+import com.piotrek.diet.cart.*;
 import com.piotrek.diet.helpers.*;
 import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
@@ -57,6 +54,9 @@ class UserControllerTest {
     private UserFacade userFacade;
 
     @Autowired
+    private CartFacade cartFacade;
+
+    @Autowired
     private MealService mealService;
 
     @Autowired
@@ -92,7 +92,7 @@ class UserControllerTest {
         createMeal();
         createCart();
         webTestClient = WebTestClient
-                .bindToController(new UserController( userFacade))
+                .bindToController(new UserController(userFacade, cartFacade))
                 .controllerAdvice(globalExceptionHandler)
                 .build();
     }
@@ -104,7 +104,6 @@ class UserControllerTest {
         mealService.deleteAll().block();
         cartService.deleteAll().block();
     }
-
 
     @Test
     @DisplayName("Check if user has meal in favourites, if he has, then return true")
@@ -169,8 +168,8 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Get or create cart, when found cart, then return it")
-    void getOrCreateCart_whenFoundCart_thenReturnIt() {
+    @DisplayName("Find user cart, when found cart, then return it")
+    void findUserCart_whenFoundCart_thenReturnIt() {
         cart.setDate(LocalDate.of(1995, Month.MARCH, 3));
         cart = cartService.save(cart).block();
 
@@ -184,8 +183,8 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Get or create cart, when not found cart, then throw NotFoundException")
-    void getOrCreateCart_whenNotFoundCart_thenCreateAndReturn() {
+    @DisplayName("Find user cart, when not found cart, then throw NotFoundException")
+    void findUserCart_whenNotFoundCart_thenCreateAndReturn() {
         final var URI = "/users/" + user.getId() + "/carts?date=04-03-1995";
 
         cartDto.setDate(LocalDate.of(1995, Month.MARCH, 4));
@@ -428,13 +427,14 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Add meal to cart, when cart is empty, then cart has one meal")
-    void addMealToCart_whenCartIsEmpty_thenCartHasOneMeal() throws JsonProcessingException {
+    void addMealToCart_whenCartIsEmpty_thenCartHasOneMeal() {
         var mealToAdd = MealSample.coffeeWithoutId();
         mealToAdd.getProducts().add(ProductSample.breadWithId());
         mealToAdd = mealService.save(mealToAdd).block();
 
         cartDto.getMeals().add(mealDtoConverter.toDto(mealToAdd));
         cartDto.getAllProducts().addAll(mealDtoConverter.toDto(mealToAdd).getProducts());
+        cartDto.setItemCounter(1);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
@@ -447,16 +447,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), responseBody.getId()),
-                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
-                () -> assertEquals(1, responseBody.getMeals().size()),
-                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
-                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
-                () -> assertEquals(1, responseBody.getAllProducts().size()),
-                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
-        );
+        this.assertEqualsAllCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -488,6 +479,7 @@ class UserControllerTest {
         var duplicatedProduct = ProductSample.bananaWithIdDto();
         duplicatedProduct.setAmount(duplicatedProduct.getAmount() * 2);
         cartDto.getAllProducts().add(duplicatedProduct);
+        cartDto.setItemCounter(2);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
@@ -501,14 +493,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), responseBody.getId()),
-                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(cartDto.getDate(), responseBody.getDate()),
-                () -> assertEquals(2, responseBody.getMeals().size()),
-                () -> assertEquals(0, responseBody.getProducts().size()),
-                () -> assertEquals(2, responseBody.getAllProducts().size())
-        );
+        this.assertEqualsAllCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -531,6 +516,7 @@ class UserControllerTest {
         cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
         cartDto.getAllProducts().add(duplicatedProduct);
         cartDto.getMeals().add(mealDtoInCart);
+        cartDto.setItemCounter(2);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/meals/" + mealToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
@@ -544,17 +530,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), responseBody.getId()),
-                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
-                () -> assertEquals(1, responseBody.getMeals().size()),
-                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
-                () -> assertEquals(1, responseBody.getProducts().size()),
-                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
-                () -> assertEquals(2, responseBody.getAllProducts().size()),
-                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
-        );
+        this.assertEqualsAllCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -564,6 +540,7 @@ class UserControllerTest {
 
         cartDto.getProducts().add(ProductSample.bananaWithIdDto());
         cartDto.getAllProducts().add(ProductSample.bananaWithIdDto());
+        cartDto.setItemCounter(1);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
                 cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
@@ -577,17 +554,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertAll(
-                () -> assertEquals(cartDto.getId(), responseBody.getId()),
-                () -> assertEquals(cartDto.getUserId(), responseBody.getUserId()),
-                () -> assertEquals(cartDto.getMeals(), responseBody.getMeals()),
-                () -> assertEquals(0, responseBody.getMeals().size()),
-                () -> assertEquals(cartDto.getProducts(), responseBody.getProducts()),
-                () -> assertEquals(1, responseBody.getProducts().size()),
-                () -> assertEquals(cartDto.getAllProducts(), responseBody.getAllProducts()),
-                () -> assertEquals(1, responseBody.getAllProducts().size()),
-                () -> assertEquals(cartDto.getDate(), responseBody.getDate())
-        );
+        this.assertEqualsAllCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -623,6 +590,14 @@ class UserControllerTest {
     @DisplayName("Add product to cart, when cart has one meal, then cart has one meal and one product")
     void addProductToCart_whenCartHasOneMeal_thenCartHasOneMealAndOneProduct() {
         var productToAdd = productService.save(ProductSample.bananaWithId()).block();
+        productToAdd.setAmount(70);
+        productToAdd.setProtein(productToAdd.getProtein() * 0.7);
+        productToAdd.setCarbohydrate(productToAdd.getCarbohydrate() * 0.7);
+        productToAdd.setFat(productToAdd.getFat() * 0.7);
+        productToAdd.setFibre(productToAdd.getFibre() * 0.7);
+        productToAdd.setKcal(productToAdd.getKcal() * 0.7);
+        productToAdd.setCarbohydrateExchange(productToAdd.getCarbohydrateExchange() * 0.7);
+        productToAdd.setProteinAndFatEquivalent(productToAdd.getProteinAndFatEquivalent() * 0.7);
 
         var mealInCart = MealSample.coffeeWithId();
         mealInCart.getProducts().add(ProductSample.bananaWithId());
@@ -638,7 +613,7 @@ class UserControllerTest {
         cartDto.setItemCounter(2);
 
         final var URI = "/users/" + cart.getUserId() + "/carts/products/" + productToAdd.getId() + "?date=" +
-                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=100";
+                cart.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "&amount=70";
 
 
         CartDto responseBody = webTestClient.post().uri(URI)
@@ -650,6 +625,7 @@ class UserControllerTest {
                 .getResponseBody();
 
         this.assertEqualsAllCartFields(cartDto, responseBody);
+        this.assertEqualsAllProductFields(cartDto.getProducts().get(0), responseBody.getProducts().get(0));
     }
 
     @Test
@@ -885,6 +861,46 @@ class UserControllerTest {
                 () -> assertEquals(expected.getProducts(), actual.getProducts(), "products"),
                 () -> assertEquals(expected.getAllProducts(), actual.getAllProducts(), "all products"),
                 () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId")
+        );
+    }
+
+    private void assertEqualMealAllFields(MealDto expected, MealDto actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getRecipe(), actual.getRecipe()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
+        );
+    }
+
+    private void assertEqualsAllProductFields(ProductDto expected, ProductDto actual) {
+        assertNotNull(actual);
+        assertAll(
+                () -> assertEquals(expected.getId(), actual.getId()),
+                () -> assertEquals(expected.getName(), actual.getName()),
+                () -> assertEquals(expected.getDescription(), actual.getDescription()),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein()),
+                () -> assertEquals(expected.getFat(), actual.getFat()),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+                () -> assertEquals(expected.getFibre(), actual.getFibre()),
+                () -> assertEquals(expected.getKcal(), actual.getKcal()),
+                () -> assertEquals(expected.getAmount(), actual.getAmount()),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
+                () -> assertEquals(expected.getUserId(), actual.getUserId())
         );
     }
 

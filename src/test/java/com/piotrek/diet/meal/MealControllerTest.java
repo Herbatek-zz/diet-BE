@@ -42,10 +42,10 @@ class MealControllerTest {
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
 
-    private WebTestClient webTestClient;
-
     @Autowired
     private ObjectMapper objectMapper;
+
+    private WebTestClient webTestClient;
 
     private Meal meal1;
     private Meal meal2;
@@ -68,8 +68,8 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Find all meals, when there are no meals, then return empty page")
-    void findAll_whenDefaultParamsTotalElements0_thenReturnPageWithEmptyList() throws JsonProcessingException {
+    @DisplayName("Find all meals, when no meals, then return empty page")
+    void findAll_whenNoMeals_thenReturnEmptyPage() throws JsonProcessingException {
         final var URI = "/meals";
         final var expected = new Page<MealDto>(new ArrayList<>(), 0, 10, 0);
 
@@ -83,8 +83,8 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("Find all without parameters, when two meals, then return page with two meals")
-    void findAll_whenDefaultParamsTotalElements2_thenReturnPageSupportWith2Meals() throws JsonProcessingException {
+    @DisplayName("Find all meals, when found two meals, then return page with two meals")
+    void findAll_whenFoundTwoMeals_thenReturnPageWithTwoMeals() throws JsonProcessingException {
         final var URI = "/meals";
         final var expected = new Page<>(List.of(mealDto1, mealDto2), 0, 10, 2);
 
@@ -96,8 +96,21 @@ class MealControllerTest {
     }
 
     @Test
+    @DisplayName("Find all meals, when found two meals, page=1, then return empty page")
+    void findAll_whenFoundTwoMealsPageOne_thenReturnEmptyPage() throws JsonProcessingException {
+        final var URI = "/meals?page=1";
+        final var expected = new Page<>(List.of(), 1, 10, 2);
+
+        webTestClient.get().uri(URI)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(expected));
+    }
+
+    @Test
     @DisplayName("Find all, page=1, pageSize=1, when two meals, then return second page with one meal")
-    void findAll_whenPageNumber1PageSize1TotalElements2_returnSecondPageWithOneMeal() throws JsonProcessingException {
+    void findAll_whenTwoMealsPageOnePageSizeOne_returnSecondPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals?page=1&size=1";
         final var expected = new Page<>(List.of(mealDto2), 1, 1, 2);
 
@@ -216,6 +229,9 @@ class MealControllerTest {
     @DisplayName("Update meal, then meal should be updated")
     void updateMeal_whenUpdateMeal_thenMealShouldBeUpdated() {
         final var URI = "/meals/" + meal1.getId();
+        PrincipalProvider.provide(meal1.getUserId());
+
+        // prepare update
         final var productDtos = new ArrayList<ProductDto>(2);
 
         final var firstProductInUpdate = bananaWithIdDto();
@@ -228,8 +244,6 @@ class MealControllerTest {
         secondProductInUpdate.setUserId("id");
         productDtos.add(secondProductInUpdate);
 
-        PrincipalProvider.provide(meal1.getUserId());
-
         final MealDto update = dumplingsWithIdDto();
         update.setName("updated name");
         update.setRecipe("updated recipe");
@@ -237,6 +251,8 @@ class MealControllerTest {
         update.setImageUrl("new image");
         update.setProducts(productDtos);
 
+
+        //exchange
         MealDto responseBody = webTestClient.put().uri(URI)
                 .body(BodyInserters.fromObject(update))
                 .exchange()
@@ -247,6 +263,7 @@ class MealControllerTest {
                 .getResponseBody();
 
 
+        // prepare expected
         final MealDto expected = dumplingsWithIdDto();
         expected.setName("updated name");
         expected.setRecipe("updated recipe");

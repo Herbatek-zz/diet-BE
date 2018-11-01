@@ -84,7 +84,7 @@ class MealServiceTest {
 
         final var mealDtoById = mealService.findDtoById(meal.getId()).block();
 
-        this.assertEqualMealDtoAllFields(mealDto, mealDtoById);
+        this.assertEqualMealAllFields(mealDto, mealDtoById);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealDtoConverter, times(1)).toDto(meal);
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
@@ -394,7 +394,7 @@ class MealServiceTest {
 
         final var afterUpdate = mealService.updateMeal(meal.getId(), expectedMeal).block();
 
-        this.assertEqualMealDtoAllFields(expectedMeal, afterUpdate);
+        this.assertEqualMealAllFields(expectedMeal, afterUpdate);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
@@ -427,7 +427,7 @@ class MealServiceTest {
 
         final var actualMeal = mealService.updateMeal(meal.getId(), expectedDto).block();
 
-        this.assertEqualMealDtoAllFields(expectedDto, actualMeal);
+        this.assertEqualMealAllFields(expectedDto, actualMeal);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
@@ -470,7 +470,7 @@ class MealServiceTest {
 
         MealDto actual = mealService.updateMeal(meal.getId(), expectedDto).block();
 
-        this.assertEqualMealDtoAllFields(expectedDto, actual);
+        this.assertEqualMealAllFields(expectedDto, actual);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
@@ -532,7 +532,7 @@ class MealServiceTest {
         );
     }
 
-    private void assertEqualMealDtoAllFields(MealDto expected, MealDto actual) {
+    private void assertEqualMealAllFields(MealDto expected, MealDto actual) {
         assertNotNull(actual);
         assertAll(
                 () -> assertEquals(expected.getId(), actual.getId()),

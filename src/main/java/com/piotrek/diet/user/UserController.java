@@ -1,6 +1,7 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.cart.CartDto;
+import com.piotrek.diet.cart.CartFacade;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.product.ProductDto;
@@ -23,6 +24,7 @@ import static org.springframework.http.HttpStatus.*;
 public class UserController {
 
     private final UserFacade userFacade;
+    private final CartFacade cartFacade;
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
@@ -57,7 +59,7 @@ public class UserController {
     @GetMapping("/{id}/carts")
     @ResponseStatus(OK)
     Mono<CartDto> findUserCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.findDtoCartByUserAndDate(id, date);
+        return cartFacade.findDtoCartByUserAndDate(id, date);
     }
 
     @PostMapping("/{id}/products")
@@ -104,7 +106,7 @@ public class UserController {
     Mono<CartDto> addMealToCart(@PathVariable String userId, @PathVariable String mealId,
                                 @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
                                 @RequestParam int amount) {
-        return userFacade.addMealToCart(userId, mealId, date, amount);
+        return cartFacade.addMealToCart(userId, mealId, date, amount);
     }
 
     @PostMapping("/{userId}/carts/products/{productId}")
@@ -112,20 +114,20 @@ public class UserController {
     Mono<CartDto> addProductToCart(@PathVariable String userId, @PathVariable String productId,
                                    @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
                                    @RequestParam int amount) {
-        return userFacade.addProductToCart(userId, productId, date, amount);
+        return cartFacade.addProductToCart(userId, productId, date, amount);
     }
 
     @DeleteMapping("/{userId}/carts/meals/{mealId}")
     @ResponseStatus(OK)
     Mono<CartDto> deleteMealFromCart(@PathVariable String userId, @PathVariable String mealId,
                                      @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.deleteMealFromCart(userId, mealId, date);
+        return cartFacade.deleteMealFromCart(userId, mealId, date);
     }
 
     @DeleteMapping("/{userId}/carts/products/{productId}")
     @ResponseStatus(OK)
     Mono<CartDto> deleteProductFromCart(@PathVariable String userId, @PathVariable String productId,
                                         @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        return userFacade.deleteProductFromCart(userId, productId, date);
+        return cartFacade.deleteProductFromCart(userId, productId, date);
     }
 }
