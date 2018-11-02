@@ -9,13 +9,11 @@ import com.piotrek.diet.security.token.Token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import reactor.core.publisher.Mono;
-
 import javax.validation.Valid;
 import java.time.LocalDate;
 
