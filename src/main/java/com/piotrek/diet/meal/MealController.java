@@ -22,7 +22,7 @@ public class MealController {
 
     @GetMapping
     @ResponseStatus(OK)
-    Mono<Page<MealDto>> getAll(
+    Mono<Page<MealDto>> findAll(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
         return mealService.findAllPageable(PageRequest.of(page, size));
@@ -30,7 +30,7 @@ public class MealController {
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<MealDto> getById(@PathVariable String id) {
+    Mono<MealDto> findById(@PathVariable String id) {
         return mealService.findDtoById(id);
     }
 
