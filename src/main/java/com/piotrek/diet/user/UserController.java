@@ -9,10 +9,11 @@ import com.piotrek.diet.security.token.Token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -39,15 +40,15 @@ public class UserController {
 
     @PutMapping("/{id}")
     @ResponseStatus(OK)
-    Mono<ResponseEntity<UserDto>> updateUser(@PathVariable String id, @RequestBody @Valid UserDto userDto, ServerHttpResponse response) {
+    Mono<UserDto> updateUser(@PathVariable String id, @RequestBody @Valid UserDto userDto, HttpServletResponse response) {
         UserDto updated = userFacade.updateUser(id, userDto).block();
         Token token = userFacade.findToken(updated.getId()).block();
 
-        response.addCookie(ResponseCookie.from("Siemanko", "siemanko")
-                .path("/")
-                .maxAge(COOKIE_MAX_AGE)
-                .build());
-        return Mono.just(ResponseEntity.ok().header("set-cookie", "token").body(updated));
+        Cookie cookie = new Cookie("Token", token.getToken());
+        cookie.setMaxAge(COOKIE_MAX_AGE);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return Mono.just(updated);
     }
 
     @GetMapping("/{id}/products")
