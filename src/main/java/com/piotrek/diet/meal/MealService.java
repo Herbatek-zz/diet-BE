@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,12 +93,16 @@ public class MealService {
         Meal meal = findById(mealId).block();
         userValidation.validateUserWithPrincipal(meal.getUserId());
 
-        Objects.requireNonNull(meal).setName(mealDto.getName());
-        meal.setRecipe(mealDto.getRecipe());
-        meal.setImageUrl(mealDto.getImageUrl());
-        meal.setDescription(mealDto.getDescription());
-
-        addProductsToMeal(meal, mealDto);
+        if (mealDto.getName() != null)
+            meal.setName(mealDto.getName());
+        if (mealDto.getRecipe() != null)
+            meal.setRecipe(mealDto.getRecipe());
+        if (mealDto.getImageUrl() != null)
+            meal.setImageUrl(mealDto.getImageUrl());
+        if (mealDto.getDescription() != null)
+            meal.setDescription(mealDto.getDescription());
+        if (mealDto.getProducts().size() != 0)
+            addProductsToMeal(meal, mealDto);
 
         return save(meal).map(mealDtoConverter::toDto);
     }
