@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 
 @Data
@@ -16,23 +18,39 @@ public class MealDto {
     private String id;
 
     @NotNull
+    @Size(min = 2, max = 60)
     private String name;
 
     @NotNull
+    @Size(min = 10, max = 3000)
     private String description;
 
     @NotNull
+    @Size(min = 10, max = 3000)
     private String recipe;
 
+    @Min(0)
     private double protein;
+
+    @Min(0)
     private double carbohydrate;
+
+    @Min(0)
     private double fat;
+
+    @Min(0)
     private double fibre;
+
+    @Min(0)
     private double kcal;
+
+    @Min(0)
     private int amount;
 
+    @Min(0)
     private double carbohydrateExchange;    // <-- 1.0 == 10g carbohydrate
 
+    @Min(0)
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
     @NotNull

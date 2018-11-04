@@ -41,7 +41,6 @@ class ProductControllerTest {
     private Product product;
     private Product product2;
     private ProductDto productDto;
-    private ProductDto productDto2;
 
     @BeforeEach
     void beforeEach() {
@@ -221,6 +220,5 @@ class ProductControllerTest {
         product2 = ProductSample.breadWithId();
 
         productDto = productService.save(product).block();
-        productDto2 = productService.save(product2).block();
     }
 }

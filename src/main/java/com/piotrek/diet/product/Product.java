@@ -25,6 +25,7 @@ public class Product {
     @NotNull
     private String imageUrl;
 
+    @NotNull
     private double protein;
 
     @NotNull

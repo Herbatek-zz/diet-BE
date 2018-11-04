@@ -3,6 +3,7 @@ package com.piotrek.diet.product;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -26,21 +27,27 @@ public class ProductDto {
 
     @NotNull
     @Min(0)
+    @Max(100)
     private double protein;
 
     @NotNull
     @Min(0)
+    @Max(100)
     private double carbohydrate;
 
     @NotNull
+    @Min(0)
+    @Max(100)
     private double fat;
 
     @NotNull
     @Min(0)
+    @Max(100)
     private double fibre;
 
     @NotNull
     @Min(0)
+    @Max(1000)
     private double kcal;
 
     @Min(0)
