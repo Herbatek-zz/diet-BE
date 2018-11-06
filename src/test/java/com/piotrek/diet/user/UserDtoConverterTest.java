@@ -1,6 +1,7 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.UserSample;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertUserFields;
@@ -9,8 +10,14 @@ class UserDtoConverterTest {
 
     private UserDtoConverter userDtoConverter = new UserDtoConverter();
 
-    private User user = UserSample.johnWithId();
-    private UserDto userDto = UserSample.johnWithIdDto();
+    private User user;
+    private UserDto userDto;
+
+    @BeforeEach
+    void beforeEach() {
+        user = UserSample.johnWithId();
+        userDto = UserSample.johnWithIdDto();
+    }
 
     @Test
     void toDto() {
@@ -20,6 +27,10 @@ class UserDtoConverterTest {
 
     @Test
     void fromDto() {
+        user.setFacebookId(0);
+        user.setCreatedAt(null);
+        user.setLastVisit(null);
+        user.setRole(null);
         var convertedUser = userDtoConverter.fromDto(userDto);
         assertUserFields(user, convertedUser);
     }

@@ -92,17 +92,11 @@ public class MealService {
     Mono<MealDto> updateMeal(String mealId, MealDto mealDto) {
         Meal meal = findById(mealId).block();
         userValidation.validateUserWithPrincipal(meal.getUserId());
-
-        if (mealDto.getName() != null)
-            meal.setName(mealDto.getName());
-        if (mealDto.getRecipe() != null)
-            meal.setRecipe(mealDto.getRecipe());
-        if (mealDto.getImageUrl() != null)
-            meal.setImageUrl(mealDto.getImageUrl());
-        if (mealDto.getDescription() != null)
-            meal.setDescription(mealDto.getDescription());
-        if (mealDto.getProducts().size() != 0)
-            addProductsToMeal(meal, mealDto);
+        meal.setName(mealDto.getName());
+        meal.setRecipe(mealDto.getRecipe());
+        meal.setImageUrl(mealDto.getImageUrl());
+        meal.setDescription(mealDto.getDescription());
+        addProductsToMeal(meal, mealDto);
 
         return save(meal).map(mealDtoConverter::toDto);
     }

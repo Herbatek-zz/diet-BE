@@ -399,7 +399,6 @@ class MealServiceTest {
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verify(productDtoConverter, times(1)).listFromDto(new ArrayList<>());
         verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
@@ -432,7 +431,6 @@ class MealServiceTest {
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verify(productDtoConverter, times(1)).listFromDto(new ArrayList<>());
         verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
