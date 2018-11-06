@@ -1,6 +1,7 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.product.Product;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,8 +13,9 @@ import java.util.ArrayList;
 
 @Data
 @Document
-@EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class Meal {
 
     @Id

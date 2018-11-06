@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Data
-@Builder
 @Document
 @NoArgsConstructor
 @AllArgsConstructor

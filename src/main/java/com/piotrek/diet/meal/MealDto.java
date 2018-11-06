@@ -1,6 +1,7 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.product.ProductDto;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -11,8 +12,9 @@ import javax.validation.constraints.Size;
 import java.util.ArrayList;
 
 @Data
-@EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class MealDto {
 
     private String id;

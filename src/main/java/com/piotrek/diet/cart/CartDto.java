@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})

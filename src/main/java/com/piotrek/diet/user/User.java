@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 
 @Data
-@Builder
 @Document
 @NoArgsConstructor
 @AllArgsConstructor
