@@ -1,8 +1,10 @@
 package com.piotrek.diet.helpers;
 
+import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserDto;
+import com.piotrek.diet.user.enums.Sex;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,6 +20,9 @@ public class UserSample {
         user.setLastVisit(LocalDateTime.now());
         user.setCreatedAt(LocalDateTime.now());
         user.setUsername("Brulty");
+        user.setCaloriesPerDay(2500);
+        user.setSex(Sex.MAN);
+        user.setActivity(Activity.AVERAGE);
         return user;
     }
 
@@ -34,6 +39,9 @@ public class UserSample {
         userDto.setLastName("Sanders");
         userDto.setUsername("Brulty");
         userDto.setId(JOHN_ID);
+        userDto.setCaloriesPerDay(2500);
+        userDto.setSex(Sex.MAN);
+        userDto.setActivity(Activity.AVERAGE);
         return userDto;
     }
 
@@ -43,6 +51,9 @@ public class UserSample {
         user.setUsername("Cougge1940");
         user.setLastVisit(LocalDateTime.now());
         user.setCreatedAt(LocalDateTime.now());
+        user.setCaloriesPerDay(2200);
+        user.setSex(Sex.MAN);
+        user.setActivity(Activity.LOW);
         return user;
     }
 
@@ -59,6 +70,9 @@ public class UserSample {
         userDto.setFirstName("Bailey");
         userDto.setLastName("Hancock");
         userDto.setId(BAILEY_ID);
+        userDto.setCaloriesPerDay(2200);
+        userDto.setSex(Sex.MAN);
+        userDto.setActivity(Activity.LOW);
         return userDto;
     }
 }

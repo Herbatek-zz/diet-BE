@@ -3,9 +3,7 @@ package com.piotrek.diet.cart;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.product.Product;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,8 +12,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Data
+@Builder
 @Document
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class Cart {
 
@@ -23,17 +23,17 @@ public class Cart {
     private String id;
 
     @NotNull
+    private String userId;
+
+    @NotNull
+    private int targetUserCalories;
+
+    @NotNull
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     private ArrayList<Meal> meals = new ArrayList<>();
     private ArrayList<Product> products = new ArrayList<>();
-
-    @NotNull
-    private String userId;
-
-    @NotNull
-    private int targetUserCalories;
 
     public Cart(String userId, LocalDate date, int targetUserCalories) {
         this.userId = userId;

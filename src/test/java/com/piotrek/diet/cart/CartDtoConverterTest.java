@@ -110,24 +110,28 @@ class CartDtoConverterTest {
     private void assertEqualsAllCartFields(Cart expected, Cart actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getDate(), actual.getDate()),
-                () -> assertEquals(expected.getMeals(), actual.getMeals()),
-                () -> assertEquals(expected.getProducts(), actual.getProducts()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
+                () -> assertEquals(expected.getId(), actual.getId(), "id is not equal"),
+                () -> assertEquals(expected.getDate(), actual.getDate(), "date is not equal"),
+                () -> assertEquals(expected.getMeals(), actual.getMeals(), "mealList is not equal"),
+                () -> assertEquals(expected.getProducts(), actual.getProducts(), "productList is not equal"),
+                () -> assertEquals(expected.getTargetUserCalories(), actual.getTargetUserCalories(),
+                        "targetUserCalories are not equal"),
+                () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId is not equal")
         );
     }
 
     private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getDate(), actual.getDate()),
-                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter()),
-                () -> assertEquals(expected.getMeals(), actual.getMeals()),
-                () -> assertEquals(expected.getProducts(), actual.getProducts()),
-                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
+                () -> assertEquals(expected.getId(), actual.getId(), "id is not equal"),
+                () -> assertEquals(expected.getDate(), actual.getDate(), "date is not equal"),
+                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter(), "itemCounter is not equal"),
+                () -> assertEquals(expected.getMeals(), actual.getMeals(), "mealList is not equal"),
+                () -> assertEquals(expected.getProducts(), actual.getProducts(), "productList is not equal"),
+                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts(), "allProductList is not equal"),
+                () -> assertEquals(expected.getTargetUserCalories(), actual.getTargetUserCalories(),
+                        "targetUserCalories is not equal"),
+                () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId is not equal")
         );
     }
 

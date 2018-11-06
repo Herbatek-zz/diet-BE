@@ -2,8 +2,7 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Sex;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
@@ -11,6 +10,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class UserDto {
 

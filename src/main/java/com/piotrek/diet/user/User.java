@@ -4,9 +4,7 @@ import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.user.enums.Sex;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,8 +15,10 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 
 @Data
+@Builder
 @Document
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class User {
 
