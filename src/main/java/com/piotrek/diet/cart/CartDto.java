@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class CartDto {
 
@@ -37,5 +36,12 @@ public class CartDto {
         this.userId = userId;
         this.date = date;
         this.targetUserCalories = targetUserCalories;
+    }
+
+    public CartDto(String id, String userId, int targetUserCalories, LocalDate date) {
+        this.id = id;
+        this.userId = userId;
+        this.targetUserCalories = targetUserCalories;
+        this.date = date;
     }
 }

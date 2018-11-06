@@ -17,11 +17,11 @@ import java.time.LocalDate;
 public class CartFacade {
 
     private final CartService cartService;
-    private final UserValidation userValidation;
+    private final UserService userService;
     private final MealService mealService;
     private final ProductService productService;
+    private final UserValidation userValidation;
     private final CartDtoConverter cartDtoConverter;
-    private final UserService userService;
 
     public Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
         return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);

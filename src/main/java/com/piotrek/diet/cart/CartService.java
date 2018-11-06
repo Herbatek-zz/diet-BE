@@ -16,7 +16,9 @@ public class CartService {
     private final CartDtoConverter cartDtoConverter;
 
     public Mono<Cart> findByUserIdAndDate(String userId, LocalDate localDate) {
-        final var EXCEPTION_MESSAGE = "Not found cart for user [id = " + userId + " and date: " + localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]";
+        final var EXCEPTION_MESSAGE = "Not found cart for user [id = " + userId + " and date: " +
+                localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]";
+
         return cartRepository.findByUserIdAndDate(userId, localDate)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException(EXCEPTION_MESSAGE))));
     }

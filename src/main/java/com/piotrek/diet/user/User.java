@@ -1,10 +1,12 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Role;
-import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.user.enums.Sex;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,7 +19,6 @@ import java.util.HashSet;
 @Data
 @Document
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class User {
 
@@ -66,7 +67,7 @@ public class User {
     private LocalDateTime lastVisit;
 
     @NotNull
-    private String role;
+    private Role role;
 
     private HashSet<Meal> favouriteMeals = new HashSet<>();
 
@@ -76,7 +77,28 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = firstName + " " + lastName;
-        this.role = Role.ROLE_USER.name();
+        this.role = Role.ROLE_USER;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public User(String id, Long facebookId, String username, String email, String firstName, String lastName,
+                String pictureUrl, Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay,
+                LocalDateTime createdAt, LocalDateTime lastVisit, Role role) {
+        this.id = id;
+        this.facebookId = facebookId;
+        this.username = username;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.pictureUrl = pictureUrl;
+        this.sex = sex;
+        this.activity = activity;
+        this.age = age;
+        this.height = height;
+        this.weight = weight;
+        this.caloriesPerDay = caloriesPerDay;
+        this.createdAt = createdAt;
+        this.lastVisit = lastVisit;
+        this.role = role;
     }
 }

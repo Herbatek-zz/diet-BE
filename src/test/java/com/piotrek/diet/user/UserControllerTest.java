@@ -832,7 +832,7 @@ class UserControllerTest {
     }
 
     private void createUser() {
-        user = UserSample.johnWithoutId();
+        user = UserSample.johnWithId();
         user = userService.save(user).block();
         userDto = userDtoConverter.toDto(user);
     }

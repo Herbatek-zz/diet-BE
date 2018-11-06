@@ -2,7 +2,9 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Sex;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
@@ -11,7 +13,6 @@ import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class UserDto {
 
@@ -50,4 +51,20 @@ public class UserDto {
     private int weight;
 
     private int caloriesPerDay;
+
+    public UserDto(String id, String username, String email, String firstName, String lastName, String picture_url,
+                   Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.picture_url = picture_url;
+        this.sex = sex;
+        this.activity = activity;
+        this.age = age;
+        this.height = height;
+        this.weight = weight;
+        this.caloriesPerDay = caloriesPerDay;
+    }
 }

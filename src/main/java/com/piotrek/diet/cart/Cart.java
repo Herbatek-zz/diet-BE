@@ -14,7 +14,6 @@ import java.util.ArrayList;
 @Data
 @Document
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class Cart {
 
@@ -40,5 +39,11 @@ public class Cart {
         this.targetUserCalories = targetUserCalories;
     }
 
+    public Cart(String id, String userId, int targetUserCalories, LocalDate date) {
+        this.id = id;
+        this.userId = userId;
+        this.targetUserCalories = targetUserCalories;
+        this.date = date;
+    }
 
 }
