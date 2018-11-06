@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
 import static com.piotrek.diet.helpers.ProductSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -56,7 +57,7 @@ class ProductServiceTest {
 
         final var actualProduct = productService.findById(this.product.getId()).block();
 
-        this.assertEqualsAllProductFields(product, actualProduct);
+        assertProductFields(product, actualProduct);
         verify(productRepository, times(1)).findById(this.product.getId());
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
     }
@@ -80,7 +81,7 @@ class ProductServiceTest {
 
         final var actualProductDto = productService.findDtoById(product.getId()).block();
 
-        this.assertEqualsAllProductFields(productDto, actualProductDto);
+        assertProductFields(productDto, actualProductDto);
         verify(productRepository, times(1)).findById(product.getId());
         verify(productDtoConverter, times(1)).toDto(product);
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
@@ -176,8 +177,8 @@ class ProductServiceTest {
 
         assertNotNull(actualProducts);
         assertAll(
-                () -> this.assertEqualsAllProductFields(productsList.get(2), actualProducts.get(0)),
-                () -> this.assertEqualsAllProductFields(productsList.get(3), actualProducts.get(1))
+                () -> assertProductFields(productsList.get(2), actualProducts.get(0)),
+                () -> assertProductFields(productsList.get(3), actualProducts.get(1))
         );
         verify(productRepository, times(1)).findAll();
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
@@ -300,7 +301,7 @@ class ProductServiceTest {
 
         ProductDto saved = productService.save(product).block();
 
-        this.assertEqualsAllProductFields(productDto, saved);
+        assertProductFields(productDto, saved);
         verify(productRepository, times(1)).save(product);
         verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
@@ -316,7 +317,7 @@ class ProductServiceTest {
 
         ProductDto saved = productService.save(productDto).block();
 
-        this.assertEqualsAllProductFields(productDto, saved);
+        assertProductFields(productDto, saved);
         verify(productRepository, times(1)).save(product);
         verify(productDtoConverter, times(1)).fromDto(productDto);
         verify(productDtoConverter, times(1)).toDto(product);
@@ -375,43 +376,5 @@ class ProductServiceTest {
                 break;
         }
         return arrayList;
-    }
-
-    private void assertEqualsAllProductFields(Product expected, Product actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
-    }
-
-    private void assertEqualsAllProductFields(ProductDto expected, ProductDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
     }
 }

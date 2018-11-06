@@ -3,8 +3,7 @@ package com.piotrek.diet.user;
 import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertUserFields;
 
 class UserDtoConverterTest {
 
@@ -16,34 +15,12 @@ class UserDtoConverterTest {
     @Test
     void toDto() {
         var convertedUser = userDtoConverter.toDto(user);
-
-        assertAll(
-                () -> assertEquals(user.getFirstName(), convertedUser.getFirstName()),
-                () -> assertEquals(user.getLastName(), convertedUser.getLastName()),
-                () -> assertEquals(user.getId(), convertedUser.getId()),
-                () -> assertEquals(user.getEmail(), convertedUser.getEmail()),
-                () -> assertEquals(user.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(user.getPictureUrl(), convertedUser.getPicture_url()),
-                () -> assertEquals(user.getAge(), convertedUser.getAge()),
-                () -> assertEquals(user.getHeight(), convertedUser.getHeight()),
-                () -> assertEquals(user.getWeight(), convertedUser.getWeight())
-        );
+        assertUserFields(userDto, convertedUser);
     }
 
     @Test
     void fromDto() {
         var convertedUser = userDtoConverter.fromDto(userDto);
-
-        assertAll(
-                () -> assertEquals(userDto.getFirstName(), convertedUser.getFirstName()),
-                () -> assertEquals(userDto.getLastName(), convertedUser.getLastName()),
-                () -> assertEquals(userDto.getId(), convertedUser.getId()),
-                () -> assertEquals(userDto.getEmail(), convertedUser.getEmail()),
-                () -> assertEquals(userDto.getUsername(), convertedUser.getUsername()),
-                () -> assertEquals(userDto.getPicture_url(), convertedUser.getPictureUrl()),
-                () -> assertEquals(userDto.getAge(), convertedUser.getAge()),
-                () -> assertEquals(userDto.getHeight(), convertedUser.getHeight()),
-                () -> assertEquals(userDto.getWeight(), convertedUser.getWeight())
-        );
+        assertUserFields(user, convertedUser);
     }
 }

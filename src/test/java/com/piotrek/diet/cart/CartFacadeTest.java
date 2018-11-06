@@ -267,10 +267,9 @@ class CartFacadeTest {
     }
 
     @Test
-    @DisplayName("Add product to cart, when cart is empty, then cart should has 1 product")
+    @DisplayName("Add product to cart, when cart is empty, then create cart and add product")
     void addProductToCart_whenCartIsEmpty_thenCartShouldHasOneProduct() {
-        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
-        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(cartService.findByUserIdAndDate(user.getId(), cart.getDate())).thenReturn(Mono.just(cart));
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
         when(productService.calculateProductInfoByAmount(product)).thenReturn(product);
         when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
@@ -283,7 +282,6 @@ class CartFacadeTest {
 
         assertCartFields(cartDto, block);
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verify(userService, times(1)).findById(user.getId());
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(productService, times(1)).findById(product.getId());
         verify(productService, times(1)).calculateProductInfoByAmount(product);
@@ -321,11 +319,11 @@ class CartFacadeTest {
     @Test
     @DisplayName("Add product to cart, when cart had one meal, then cart should has one product and one meal")
     void addProductToCart_whenCartHadOneMeal_thenCartShouldHasOneMealAndOneProduct() {
-        final int amount = 100;
-        meal.setAmount(amount);
-        mealDto.setAmount(amount);
-        product.setAmount(amount);
-        productDto.setAmount(amount);
+        final int AMOUNT = 100;
+        meal.setAmount(AMOUNT);
+        mealDto.setAmount(AMOUNT);
+        product.setAmount(AMOUNT);
+        productDto.setAmount(AMOUNT);
 
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));

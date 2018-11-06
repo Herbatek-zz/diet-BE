@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertUserFields;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -46,7 +47,7 @@ class UserServiceTest {
 
         final var block = userService.findById(user.getId()).block();
 
-        this.assertEqualAllUserFields(user, block);
+        assertUserFields(user, block);
         verify(userRepository, times(1)).findById(user.getId());
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
@@ -70,7 +71,7 @@ class UserServiceTest {
 
         final var block = userService.findByFacebookId(user.getFacebookId()).block();
 
-        this.assertEqualAllUserFields(user, block);
+        assertUserFields(user, block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
@@ -94,7 +95,7 @@ class UserServiceTest {
 
         final var block = userService.findByEmail(user.getEmail()).block();
 
-        this.assertEqualAllUserFields(user, block);
+        assertUserFields(user, block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
@@ -133,7 +134,7 @@ class UserServiceTest {
         assertAll(
                 () -> assertNotNull(userList.get(0)),
                 () -> assertEquals(1, userList.size()),
-                () -> this.assertEqualAllUserFields(user, userList.get(0))
+                () -> assertUserFields(user, userList.get(0))
         );
         verify(userRepository, times(1)).findAll();
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
@@ -154,8 +155,8 @@ class UserServiceTest {
                 () -> assertEquals(2, actualUserList.size()),
                 () -> assertNotNull(actualUserList.get(0)),
                 () -> assertNotNull(actualUserList.get(1)),
-                () -> this.assertEqualAllUserFields(expectedList.get(0), actualUserList.get(0)),
-                () -> this.assertEqualAllUserFields(expectedList.get(1), actualUserList.get(1))
+                () -> assertUserFields(expectedList.get(0), actualUserList.get(0)),
+                () -> assertUserFields(expectedList.get(1), actualUserList.get(1))
         );
         verify(userRepository, times(1)).findAll();
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
@@ -167,7 +168,7 @@ class UserServiceTest {
 
         final var savedUser = userService.save(user).block();
 
-        this.assertEqualAllUserFields(user, savedUser);
+        assertUserFields(user, savedUser);
         verify(userRepository, times(1)).save(user);
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
@@ -200,7 +201,7 @@ class UserServiceTest {
 
         UserDto actualUser = userService.update(user.getId(), updatedUserDto).block();
 
-        this.assertEqualAllUserDtoFields(updatedUserDto, actualUser);
+        assertUserFields(updatedUserDto, actualUser);
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(updatedUser);
@@ -219,39 +220,5 @@ class UserServiceTest {
         assertEquals(Mono.empty().block(), userService.deleteAll());
         verify(userRepository, times(1)).deleteAll();
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
-    }
-
-    private void assertEqualAllUserFields(User expected, User actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getFacebookId(), actual.getFacebookId()),
-                () -> assertEquals(expected.getUsername(), actual.getUsername()),
-                () -> assertEquals(expected.getEmail(), actual.getEmail()),
-                () -> assertEquals(expected.getFirstName(), actual.getFirstName()),
-                () -> assertEquals(expected.getLastName(), actual.getLastName()),
-                () -> assertEquals(expected.getPictureUrl(), actual.getPictureUrl()),
-                () -> assertEquals(expected.getAge(), actual.getAge()),
-                () -> assertEquals(expected.getHeight(), actual.getHeight()),
-                () -> assertEquals(expected.getWeight(), actual.getWeight()),
-                () -> assertEquals(expected.getCreatedAt(), actual.getCreatedAt()),
-                () -> assertEquals(expected.getLastVisit(), actual.getLastVisit()),
-                () -> assertEquals(expected.getRole(), actual.getRole()),
-                () -> assertEquals(expected.getFavouriteMeals().size(), actual.getFavouriteMeals().size())
-        );
-    }
-
-    private void assertEqualAllUserDtoFields(UserDto expected, UserDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getUsername(), actual.getUsername()),
-                () -> assertEquals(expected.getEmail(), actual.getEmail()),
-                () -> assertEquals(expected.getFirstName(), actual.getFirstName()),
-                () -> assertEquals(expected.getLastName(), actual.getLastName()),
-                () -> assertEquals(expected.getAge(), actual.getAge()),
-                () -> assertEquals(expected.getHeight(), actual.getHeight()),
-                () -> assertEquals(expected.getWeight(), actual.getWeight())
-        );
     }
 }

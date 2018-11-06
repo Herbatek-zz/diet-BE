@@ -86,14 +86,14 @@ public class UserControllerLogger {
             argNames = "userId, mealId, date, amount")
     public void logBeforeAddMealToCart(String userId, String mealId, LocalDate date, int amount) {
         log.info(LOGGER_PREFIX + "Attempt to add a meal to cart [userId = " + userId + ", mealId = " + mealId + ", date: " +
-                date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "amount: " + amount + "]");
+                date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " amount: " + amount + "]");
     }
 
     @Before(value = "execution(* com.piotrek.diet.user.UserController.addProductToCart(..)) && args(userId, productId, date, amount)",
             argNames = "userId, productId, date, amount")
     public void logBeforeAddProductToCart(String userId, String productId, LocalDate date, int amount) {
         log.info(LOGGER_PREFIX + "Attempt to add a product to cart [userId = " + userId + ", productId = " + productId + ", date: " +
-                date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "amount: " + amount + "]");
+                date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " amount: " + amount + "]");
     }
 
     @Before(value = "execution(* com.piotrek.diet.user.UserController.deleteMealFromCart(..)) && args(userId, mealId, date)",

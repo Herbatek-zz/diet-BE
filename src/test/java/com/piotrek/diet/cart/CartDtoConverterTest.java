@@ -9,7 +9,7 @@ import com.piotrek.diet.product.ProductDtoConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertCartFields;
 
 class CartDtoConverterTest {
 
@@ -29,7 +29,7 @@ class CartDtoConverterTest {
     @Test
     void toDto() {
         final var converted = cartDtoConverter.toDto(cart);
-        this.assertEqualsAllCartFields(cartDto, converted);
+        assertCartFields(cartDto, converted);
     }
 
     @Test
@@ -38,7 +38,7 @@ class CartDtoConverterTest {
         addMeals();
 
         final var converted = cartDtoConverter.toDto(cart);
-        this.assertEqualsAllCartFields(cartDto, converted);
+        assertCartFields(cartDto, converted);
     }
 
     @Test
@@ -46,14 +46,14 @@ class CartDtoConverterTest {
         addDuplicated();
 
         final var converted = cartDtoConverter.toDto(cart);
-        this.assertEqualsAllCartFields(cartDto, converted);
+        assertCartFields(cartDto, converted);
     }
 
 
     @Test
     void fromDto() {
         final Cart converted = cartDtoConverter.fromDto(cartDto);
-        this.assertEqualsAllCartFields(cart, converted);
+        assertCartFields(cart, converted);
     }
 
     @Test
@@ -62,7 +62,7 @@ class CartDtoConverterTest {
         addProducts();
 
         final Cart converted = cartDtoConverter.fromDto(cartDto);
-        this.assertEqualsAllCartFields(cart, converted);
+        assertCartFields(cart, converted);
     }
 
     private void addProducts() {
@@ -105,34 +105,6 @@ class CartDtoConverterTest {
         cartDto.getMeals().add(MealSample.coffeeWithIdDto());
         cartDto.getMeals().add(MealSample.dumplingsWithIdDto());
         cartDto.setItemCounter(cartDto.getItemCounter() + 2);
-    }
-
-    private void assertEqualsAllCartFields(Cart expected, Cart actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId(), "id is not equal"),
-                () -> assertEquals(expected.getDate(), actual.getDate(), "date is not equal"),
-                () -> assertEquals(expected.getMeals(), actual.getMeals(), "mealList is not equal"),
-                () -> assertEquals(expected.getProducts(), actual.getProducts(), "productList is not equal"),
-                () -> assertEquals(expected.getTargetUserCalories(), actual.getTargetUserCalories(),
-                        "targetUserCalories are not equal"),
-                () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId is not equal")
-        );
-    }
-
-    private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId(), "id is not equal"),
-                () -> assertEquals(expected.getDate(), actual.getDate(), "date is not equal"),
-                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter(), "itemCounter is not equal"),
-                () -> assertEquals(expected.getMeals(), actual.getMeals(), "mealList is not equal"),
-                () -> assertEquals(expected.getProducts(), actual.getProducts(), "productList is not equal"),
-                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts(), "allProductList is not equal"),
-                () -> assertEquals(expected.getTargetUserCalories(), actual.getTargetUserCalories(),
-                        "targetUserCalories is not equal"),
-                () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId is not equal")
-        );
     }
 
 }

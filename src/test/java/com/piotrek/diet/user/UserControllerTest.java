@@ -26,6 +26,8 @@ import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertCartFields;
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithoutIdDto;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -447,7 +449,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -493,7 +495,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -530,7 +532,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -554,7 +556,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -583,7 +585,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -624,8 +626,8 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
-        this.assertEqualsAllProductFields(cartDto.getProducts().get(0), responseBody.getProducts().get(0));
+        assertCartFields(cartDto, responseBody);
+        assertProductFields(cartDto.getProducts().get(0), responseBody.getProducts().get(0));
     }
 
     @Test
@@ -648,7 +650,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -680,7 +682,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -708,7 +710,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -729,7 +731,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -750,7 +752,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -778,7 +780,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -810,7 +812,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     @Test
@@ -828,7 +830,7 @@ class UserControllerTest {
                 .returnResult()
                 .getResponseBody();
 
-        this.assertEqualsAllCartFields(cartDto, responseBody);
+        assertCartFields(cartDto, responseBody);
     }
 
     private void createUser() {
@@ -849,59 +851,6 @@ class UserControllerTest {
         cart.setUserId(user.getId());
         cart = cartService.save(cart).block();
         cartDto = cartDtoConverter.toDto(cart);
-    }
-
-    private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId(), "id"),
-                () -> assertEquals(expected.getDate(), actual.getDate(), "date"),
-                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter(), "item coutner"),
-                () -> assertEquals(expected.getMeals(), actual.getMeals(), "meals"),
-                () -> assertEquals(expected.getProducts(), actual.getProducts(), "products"),
-                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts(), "all products"),
-                () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId")
-        );
-    }
-
-    private void assertEqualMealAllFields(MealDto expected, MealDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getRecipe(), actual.getRecipe()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
-    }
-
-    private void assertEqualsAllProductFields(ProductDto expected, ProductDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
     }
 
 }

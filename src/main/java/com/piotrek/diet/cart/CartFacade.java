@@ -1,5 +1,6 @@
 package com.piotrek.diet.cart;
 
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
@@ -28,8 +29,13 @@ public class CartFacade {
     }
 
     public Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay())).block();
+        Cart cart;
+        try {
+            cart = cartService.findByUserIdAndDate(userId, date).block();
+        }
+        catch (NotFoundException e) {
+            cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
+        }
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
         if (cart.getMeals().contains(meal)) {
@@ -70,8 +76,13 @@ public class CartFacade {
     }
 
     public Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
-        Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay())).block();
+        Cart cart;
+        try {
+            cart = cartService.findByUserIdAndDate(userId, date).block();
+        }
+        catch (NotFoundException e) {
+            cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
+        }
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
         product.setAmount(amount);

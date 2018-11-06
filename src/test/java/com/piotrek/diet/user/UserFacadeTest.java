@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertMealFields;
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
 import static com.piotrek.diet.helpers.MealSample.*;
 import static com.piotrek.diet.helpers.ProductSample.bananaWithId;
 import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
@@ -90,7 +92,7 @@ class UserFacadeTest {
 
         var created = userFacade.createProduct(user.getId(), productDto).block();
 
-        this.assertEqualsAllProductDtoFields(productDto, created);
+        assertProductFields(productDto, created);
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).save(productDto);
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
@@ -181,7 +183,7 @@ class UserFacadeTest {
 
         var created = userFacade.createMeal(user.getId(), mealDto).block();
 
-        this.assertEqualsAllMealDtoFields(mealDto, created);
+        assertMealFields(mealDto, created);
         verify(userService, times(1)).findById(user.getId());
         verify(mealService, times(1)).save(mealDto);
         verify(mealDtoConverter, times(1)).toDto(meal);
@@ -493,43 +495,4 @@ class UserFacadeTest {
 
         return arrayList;
     }
-
-    private void assertEqualsAllProductDtoFields(ProductDto expected, ProductDto actual) {
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
-    }
-
-    private void assertEqualsAllMealDtoFields(MealDto expected, MealDto actual) {
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId()),
-                () -> assertEquals(expected.getProducts().size(), actual.getProducts().size())
-        );
-    }
-
-
 }

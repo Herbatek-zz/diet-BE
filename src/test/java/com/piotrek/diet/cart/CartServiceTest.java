@@ -12,7 +12,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertCartFields;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class CartServiceTest {
@@ -46,7 +47,7 @@ class CartServiceTest {
 
         final Cart block = cartService.findByUserIdAndDate(user.getId(), cart.getDate()).block();
 
-        this.assertEqualsAllCartFields(cart, block);
+        assertCartFields(cart, block);
         verify(cartRepository, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
     }
@@ -69,7 +70,7 @@ class CartServiceTest {
 
         final Cart block = cartService.save(cartDto).block();
 
-        this.assertEqualsAllCartFields(cart, block);
+        assertCartFields(cart, block);
         verify(cartRepository, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).fromDto(cartDto);
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
@@ -81,7 +82,7 @@ class CartServiceTest {
 
         final Cart block = cartService.save(cart).block();
 
-        this.assertEqualsAllCartFields(cart, block);
+        assertCartFields(cart, block);
         verify(cartRepository, times(1)).save(cart);
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
     }
@@ -94,29 +95,5 @@ class CartServiceTest {
 
         verify(cartRepository, times(1)).deleteAll();
         verifyNoMoreInteractions(cartRepository, cartDtoConverter);
-    }
-
-    private void assertEqualsAllCartFields(CartDto expected, CartDto actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getDate(), actual.getDate()),
-                () -> assertEquals(expected.getItemCounter(), actual.getItemCounter()),
-                () -> assertEquals(expected.getMeals(), actual.getMeals()),
-                () -> assertEquals(expected.getProducts(), actual.getProducts()),
-                () -> assertEquals(expected.getAllProducts(), actual.getAllProducts()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
-    }
-
-    private void assertEqualsAllCartFields(Cart expected, Cart actual) {
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getDate(), actual.getDate()),
-                () -> assertEquals(expected.getMeals(), actual.getMeals()),
-                () -> assertEquals(expected.getProducts(), actual.getProducts()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
-        );
     }
 }
