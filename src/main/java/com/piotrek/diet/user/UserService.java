@@ -16,6 +16,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserValidation userValidation;
     private final UserDtoConverter userDtoConverter;
+    private final CaloriesCalculator caloriesCalculator;
 
     Mono<UserDto> findDtoById(String id) {
         return findById(id).map(userDtoConverter::toDto);
@@ -54,9 +55,12 @@ public class UserService {
                 .doOnNext(user -> user.setLastName(userDto.getLastName()))
                 .doOnNext(user -> user.setEmail(userDto.getEmail()))
                 .doOnNext(user -> user.setPictureUrl(userDto.getPicture_url()))
+                .doOnNext(user -> user.setSex(userDto.getSex()))
+                .doOnNext(user -> user.setActivity(userDto.getActivity()))
                 .doOnNext(user -> user.setAge(userDto.getAge()))
                 .doOnNext(user -> user.setWeight(userDto.getWeight()))
                 .doOnNext(user -> user.setHeight(userDto.getHeight()))
+                .doOnNext(user -> user.setCaloriesPerDay(caloriesCalculator.calculateCaloriesPerDay(userDto)))
                 .flatMap(userRepository::save)
                 .map(userDtoConverter::toDto);
     }

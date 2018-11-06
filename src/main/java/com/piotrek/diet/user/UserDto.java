@@ -1,5 +1,7 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.user.enums.Activity;
+import com.piotrek.diet.user.enums.Sex;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -33,6 +35,10 @@ public class UserDto {
     @NotNull
     private String picture_url;
 
+    private Sex sex;
+
+    private Activity activity;
+
     @Max(140)
     private int age;
 
@@ -40,5 +46,7 @@ public class UserDto {
     private int height;
 
     @Max(450)
-    private double weight;
+    private int weight;
+
+    private int caloriesPerDay;
 }

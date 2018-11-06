@@ -1,5 +1,6 @@
 package com.piotrek.diet.helpers;
 
+import com.piotrek.diet.product.DiabetesCalculator;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDto;
 

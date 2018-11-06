@@ -32,9 +32,13 @@ public class Cart {
     @NotNull
     private String userId;
 
-    public Cart(String userId, LocalDate date) {
+    @NotNull
+    private int targetUserCalories;
+
+    public Cart(String userId, LocalDate date, int targetUserCalories) {
         this.userId = userId;
         this.date = date;
+        this.targetUserCalories = targetUserCalories;
     }
 
 

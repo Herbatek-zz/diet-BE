@@ -1,7 +1,9 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.helpers.enums.Role;
+import com.piotrek.diet.user.enums.Activity;
+import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.meal.Meal;
+import com.piotrek.diet.user.enums.Sex;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -46,11 +48,17 @@ public class User {
     @NotNull
     private String pictureUrl;
 
+    private Sex sex;
+
+    private Activity activity;
+
     private int age;
 
     private int height;
 
-    private double weight;
+    private int weight;
+
+    private int caloriesPerDay;
 
     @NotNull
     private LocalDateTime createdAt;

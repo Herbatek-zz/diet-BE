@@ -1,9 +1,9 @@
-package com.piotrek.diet.helpers;
+package com.piotrek.diet.product;
 
 import org.springframework.stereotype.Component;
 
-import static com.piotrek.diet.helpers.enums.Macronutrient.Fat;
-import static com.piotrek.diet.helpers.enums.Macronutrient.Protein;
+import static com.piotrek.diet.product.enums.Macronutrient.Fat;
+import static com.piotrek.diet.product.enums.Macronutrient.Protein;
 
 @Component
 public class DiabetesCalculator {

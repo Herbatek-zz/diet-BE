@@ -81,7 +81,7 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
         String lastName = userDetails.get("last_name").toString();
         long facebookId = Long.valueOf(userDetails.get("id").toString());
         User user = new User(facebookId, email, firstName, lastName);
-        user.setPictureUrl("https://api.adorable.io/avatars/75/" + email + ".png");
+        user.setPictureUrl("https://api.adorable.io/avatars/200/" + email + ".png");
         return user;
     }
 }

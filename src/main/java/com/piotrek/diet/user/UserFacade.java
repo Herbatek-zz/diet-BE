@@ -1,6 +1,9 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.cart.Cart;
+import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
@@ -14,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Component
@@ -26,6 +30,7 @@ public class UserFacade {
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
     private final TokenService tokenService;
+    private final CartService cartService;
 
     Mono<UserDto> findDtoUser(String userId) {
         return userService.findDtoById(userId);
@@ -33,8 +38,19 @@ public class UserFacade {
 
     Mono<UserDto> updateUser(String userId, UserDto update) {
         UserDto userDto = userService.update(userId, update).block();
+
         String tokenValue = tokenService.generateToken(userDto);
         tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
+
+        Cart cart = null;
+        try {
+            cart = cartService.findByUserIdAndDate(userDto.getId(), LocalDate.now()).block();
+        } catch (NotFoundException e) { }
+        if (cart != null) {
+            cart.setTargetUserCalories(userDto.getCaloriesPerDay());
+            cartService.save(cart).block();
+        }
+
         return Mono.just(userDto);
     }
 

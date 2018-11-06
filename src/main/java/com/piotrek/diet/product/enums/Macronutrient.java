@@ -1,4 +1,4 @@
-package com.piotrek.diet.helpers.enums;
+package com.piotrek.diet.product.enums;
 
 @SuppressWarnings("SpellCheckingInspection")
 public enum Macronutrient {

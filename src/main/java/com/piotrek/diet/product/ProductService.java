@@ -1,6 +1,5 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.helpers.DiabetesCalculator;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.user.UserValidation;

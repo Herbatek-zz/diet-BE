@@ -31,8 +31,12 @@ public class CartDto {
     @NotNull
     private String userId;
 
-    public CartDto(String userId, LocalDate date) {
+    @NotNull
+    private int targetUserCalories;
+
+    public CartDto(String userId, LocalDate date, int targetUserCalories) {
         this.userId = userId;
         this.date = date;
+        this.targetUserCalories = targetUserCalories;
     }
 }

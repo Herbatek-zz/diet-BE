@@ -1,6 +1,6 @@
 package com.piotrek.diet.helpers;
 
-import com.piotrek.diet.helpers.enums.Role;
+import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserDto;
 

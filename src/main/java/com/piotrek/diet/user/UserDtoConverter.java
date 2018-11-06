@@ -15,9 +15,12 @@ public class UserDtoConverter implements DtoConverter<User, UserDto> {
         userDto.setId(user.getId());
         userDto.setEmail(user.getEmail());
         userDto.setPicture_url(user.getPictureUrl());
+        userDto.setSex(user.getSex());
+        userDto.setActivity(user.getActivity());
         userDto.setAge(user.getAge());
         userDto.setHeight(user.getHeight());
         userDto.setWeight(user.getWeight());
+        userDto.setCaloriesPerDay(user.getCaloriesPerDay());
         return userDto;
     }
 
@@ -30,9 +33,12 @@ public class UserDtoConverter implements DtoConverter<User, UserDto> {
         user.setId(dto.getId());
         user.setEmail(dto.getEmail());
         user.setPictureUrl(dto.getPicture_url());
+        user.setSex(dto.getSex());
+        user.setActivity(dto.getActivity());
         user.setAge(dto.getAge());
         user.setHeight(dto.getHeight());
         user.setWeight(dto.getWeight());
+        user.setCaloriesPerDay(dto.getCaloriesPerDay());
         return user;
     }
 }

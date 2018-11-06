@@ -10,7 +10,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({NotFoundException.class})
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(NOT_FOUND)
     public ErrorResponse notFoundHandler(NotFoundException notFoundException) {
         return new ErrorResponse(404, notFoundException.getMessage());

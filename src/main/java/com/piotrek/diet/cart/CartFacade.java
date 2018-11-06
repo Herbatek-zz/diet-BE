@@ -4,6 +4,7 @@ import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductService;
+import com.piotrek.diet.user.UserService;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ public class CartFacade {
     private final MealService mealService;
     private final ProductService productService;
     private final CartDtoConverter cartDtoConverter;
+    private final UserService userService;
 
     public Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
         return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
@@ -27,7 +29,7 @@ public class CartFacade {
 
     public Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
         Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new Cart(userId, date)).block();
+                .onErrorReturn(new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay())).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
         if (cart.getMeals().contains(meal)) {
@@ -69,7 +71,7 @@ public class CartFacade {
 
     public Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
         Cart cart = cartService.findByUserIdAndDate(userId, date)
-                .onErrorReturn(new Cart(userId, date)).block();
+                .onErrorReturn(new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay())).block();
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
         product.setAmount(amount);
