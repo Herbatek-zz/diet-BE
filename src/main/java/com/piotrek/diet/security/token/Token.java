@@ -1,18 +1,19 @@
 package com.piotrek.diet.security.token;
 
-import lombok.Data;
-import org.springframework.data.annotation.Id;
+import com.piotrek.diet.helpers.BaseEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Document
-public class Token {
-
-    @Id
-    private String id;
+public class Token extends BaseEntity {
 
     @NotNull
     @Indexed(unique = true)

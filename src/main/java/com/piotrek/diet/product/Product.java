@@ -1,21 +1,20 @@
 package com.piotrek.diet.product;
 
-import lombok.*;
-import org.springframework.data.annotation.Id;
+import com.piotrek.diet.helpers.BaseEntity;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Document
 @NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class Product {
-
-    @Id
-    @NotNull
-    private String id;
+public class Product extends BaseEntity {
 
     @NotNull
     private String name;

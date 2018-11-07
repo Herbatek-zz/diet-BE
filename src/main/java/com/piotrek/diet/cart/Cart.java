@@ -1,24 +1,25 @@
 package com.piotrek.diet.cart;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.piotrek.diet.helpers.BaseEntity;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.product.Product;
-import lombok.*;
-import org.springframework.data.annotation.Id;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Document
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class Cart {
-
-    @Id
-    private String id;
+public class Cart extends BaseEntity {
 
     @NotNull
     private String userId;
@@ -40,7 +41,7 @@ public class Cart {
     }
 
     public Cart(String id, String userId, int targetUserCalories, LocalDate date) {
-        this.id = id;
+        super(id);
         this.userId = userId;
         this.targetUserCalories = targetUserCalories;
         this.date = date;

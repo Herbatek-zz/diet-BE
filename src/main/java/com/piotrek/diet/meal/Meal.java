@@ -1,26 +1,20 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.helpers.BaseEntity;
 import com.piotrek.diet.product.Product;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Document
 @NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class Meal {
-
-    @Id
-    @NotNull
-    private String id;
+public class Meal extends BaseEntity {
 
     @NotNull
     private String name;
@@ -56,6 +50,6 @@ public class Meal {
     private String userId;
 
     public Meal(String id) {
-        this.id = id;
+        super(id);
     }
 }

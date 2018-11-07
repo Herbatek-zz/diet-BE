@@ -1,13 +1,14 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.helpers.BaseEntity;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.user.enums.Sex;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,15 +17,12 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Document
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class User {
-
-    @Id
-    @NotNull
-    private String id;
+public class User extends BaseEntity {
 
     @NotNull
     @Indexed(unique = true)
@@ -84,7 +82,7 @@ public class User {
     public User(String id, Long facebookId, String username, String email, String firstName, String lastName,
                 String pictureUrl, Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay,
                 LocalDateTime createdAt, LocalDateTime lastVisit, Role role) {
-        this.id = id;
+        super(id);
         this.facebookId = facebookId;
         this.username = username;
         this.email = email;
