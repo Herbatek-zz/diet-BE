@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,6 +29,9 @@ class UserServiceTest {
 
     @Mock
     private UserDtoConverter userDtoConverter;
+
+    @Mock
+    private CaloriesCalculator caloriesCalculator;
 
     @InjectMocks
     private UserService userService;
@@ -175,37 +179,39 @@ class UserServiceTest {
 
     @Test
     void update_whenUpdate_thenUserHasUpdatedFields() {
-        final var updatedUserDto = UserSample.johnWithIdDto();
-        updatedUserDto.setUsername("Mr Kawek");
-        updatedUserDto.setFirstName("Janusz");
-        updatedUserDto.setLastName("Cisowki");
-        updatedUserDto.setEmail("janusz123@mail.com");
-        updatedUserDto.setPicture_url("www.images.com/so-good-image-for-tests.jpg");
-        updatedUserDto.setAge(23);
-        updatedUserDto.setHeight(175);
-        updatedUserDto.setWeight(80);
+        final var userDto = UserSample.johnWithIdDto();
+        userDto.setUsername("Mr Kawek");
+        userDto.setFirstName("Janusz");
+        userDto.setLastName("Cisowki");
+        userDto.setEmail("janusz123@mail.com");
+        userDto.setPicture_url("www.images.com/so-good-image-for-tests.jpg");
+        userDto.setAge(23);
+        userDto.setHeight(175);
+        userDto.setWeight(80);
 
-        final var updatedUser = UserSample.johnWithId();
-        updatedUser.setUsername("Mr Kawek");
-        updatedUser.setFirstName("Janusz");
-        updatedUser.setLastName("Cisowki");
-        updatedUser.setEmail("janusz123@mail.com");
-        updatedUser.setPictureUrl("www.images.com/so-good-image-for-tests.jpg");
-        updatedUser.setAge(23);
-        updatedUser.setHeight(175);
-        updatedUser.setWeight(80);
+        final var user = UserSample.johnWithId();
+        user.setUsername("Mr Kawek");
+        user.setFirstName("Janusz");
+        user.setLastName("Cisowki");
+        user.setEmail("janusz123@mail.com");
+        user.setPictureUrl("www.images.com/so-good-image-for-tests.jpg");
+        user.setAge(23);
+        user.setHeight(175);
+        user.setWeight(80);
+
 
         when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
-        when(userRepository.save(updatedUser)).thenReturn(Mono.just(updatedUser));
-        when(userDtoConverter.toDto(updatedUser)).thenReturn(updatedUserDto);
+        when(userRepository.save(user)).thenReturn(Mono.just(user));
+        when(userDtoConverter.toDto(user)).thenReturn(userDto);
+        when(caloriesCalculator.calculateCaloriesPerDay(userDto)).thenCallRealMethod();
 
-        UserDto actualUser = userService.update(user.getId(), updatedUserDto).block();
+        UserDto actualUser = userService.update(user.getId(), userDto).block();
 
-        assertUserFields(updatedUserDto, actualUser);
+        assertUserFields(userDto, actualUser);
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userRepository, times(1)).findById(user.getId());
-        verify(userRepository, times(1)).save(updatedUser);
-        verify(userDtoConverter, times(1)).toDto(updatedUser);
+        verify(userRepository, times(1)).save(user);
+        verify(userDtoConverter, times(1)).toDto(user);
         verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
     }
     @Test

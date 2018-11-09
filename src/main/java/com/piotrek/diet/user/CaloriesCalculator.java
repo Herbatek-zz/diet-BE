@@ -18,7 +18,7 @@ public class CaloriesCalculator {
 
     // BMR - basal metabolic rate
     private int calculateBMR(int weight, int height, int age, Sex sex) {
-        return (int) Math.round((9.99 * weight) + (6.25 * height) + (4.92 * age) + sex.getValue());
+        return (int) Math.round((10 * weight) + (6.25 * height) - (5 * age) + sex.getValue());
     }
 
     // TRM - total metabolic rate

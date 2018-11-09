@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertCartFields;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertMealFields;
+import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithId;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.helpers.ProductSample.bananaWithId;
@@ -138,6 +139,7 @@ class CartFacadeTest {
     @DisplayName("Add meal to cart, when cart is empty, then cart should has 1 meal")
     void addMealToCart_whenThereIsNoCart_thenCreateCartAndAddMeal() {
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
+        when(userService.findById(cart.getUserId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
@@ -149,6 +151,7 @@ class CartFacadeTest {
 
         assertCartFields(cartDto, block);
         verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
+        verify(userService, times(1)).findById(cart.getUserId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(mealService, times(1)).findById(meal.getId());
@@ -247,6 +250,7 @@ class CartFacadeTest {
     @DisplayName("Add product to cart, when there is no cart, then cart should be created and product should be added")
     void addProductToCart_whenThereIsNoCart_thenCreateCartAndAddProduct() {
         when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.error(new NotFoundException("")));
+        when(userService.findById(cart.getUserId())).thenReturn(Mono.just(user));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(productService.findById(product.getId())).thenReturn(Mono.just(product));
         when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
@@ -257,8 +261,9 @@ class CartFacadeTest {
         final var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
+        verify(userService, times(1)).findById(cart.getUserId());
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(any(Cart.class));
@@ -301,6 +306,33 @@ class CartFacadeTest {
         cart.getProducts().add(product);
         cartDto.getProducts().add(productDto);
         cartDto.getProducts().add(ProductSample.breadWithIdDto());
+        cartDto.getAllProducts().add(productDto);
+        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
+
+        var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
+
+        assertCartFields(cartDto, block);
+        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
+        verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
+        verify(cartDtoConverter, times(1)).toDto(cart);
+        verify(productService, times(1)).findById(product.getId());
+        verify(cartService, times(1)).save(cart);
+        verify(productService, times(1)).calculateProductInfoByAmount(product);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+    }
+
+    @Test
+    @DisplayName("Add product to cart, when cart had one product, then cart should has 2 products")
+    void addProductToCart_whenCartHadTheSameOneProduct_thenCartShouldHasOneProductWithSum() {
+        when(cartService.findByUserIdAndDate(cart.getUserId(), cart.getDate())).thenReturn(Mono.just(cart));
+        when(productService.findById(product.getId())).thenReturn(Mono.just(product));
+        when(cartService.save(cart)).thenReturn(Mono.just(cart));
+        when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
+
+        product.setAmount(100);
+        productDto.setAmount(200);
+        cart.getProducts().add(product);
+        cartDto.getProducts().add(productDto);
         cartDto.getAllProducts().add(productDto);
         cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
 

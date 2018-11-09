@@ -391,7 +391,7 @@ class MealServiceTest {
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(mealRepository.save(meal)).thenReturn(Mono.just(meal));
         when(mealDtoConverter.toDto(meal)).thenReturn(expectedMeal);
-        when(productDtoConverter.listFromDto(new ArrayList<>())).thenReturn(new ArrayList<>());
+//        when(productDtoConverter.listFromDto(new ArrayList<>())).thenReturn(new ArrayList<>());
 
         final var afterUpdate = mealService.updateMeal(meal.getId(), expectedMeal).block();
 

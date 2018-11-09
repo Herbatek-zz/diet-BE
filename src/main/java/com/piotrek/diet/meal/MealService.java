@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,18 +103,22 @@ public class MealService {
     }
 
     private void addProductsToMeal(Meal meal, MealDto update) {
-        meal.setProducts(productDtoConverter.listFromDto(update.getProducts()));
-        meal.getProducts()
-                .forEach(product -> {
-                    var divider = product.getAmount() / 100.0;
-                    product.setProtein(product.getProtein() * divider);
-                    product.setCarbohydrate(product.getCarbohydrate() * divider);
-                    product.setFat(product.getFat() * divider);
-                    product.setFibre(product.getFibre() * divider);
-                    product.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() * divider);
-                    product.setCarbohydrateExchange(product.getCarbohydrateExchange() * divider);
-                    product.setKcal(product.getKcal() * divider);
-                });
+        if (update.getProducts().size() == 0)
+            meal.setProducts(new ArrayList<>());
+        else {
+            meal.setProducts(productDtoConverter.listFromDto(update.getProducts()));
+            meal.getProducts()
+                    .forEach(product -> {
+                        var divider = product.getAmount() / 100.0;
+                        product.setProtein(product.getProtein() * divider);
+                        product.setCarbohydrate(product.getCarbohydrate() * divider);
+                        product.setFat(product.getFat() * divider);
+                        product.setFibre(product.getFibre() * divider);
+                        product.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() * divider);
+                        product.setCarbohydrateExchange(product.getCarbohydrateExchange() * divider);
+                        product.setKcal(product.getKcal() * divider);
+                    });
+        }
         calculateMealInformation(meal);
     }
 

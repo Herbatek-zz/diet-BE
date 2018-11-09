@@ -86,12 +86,12 @@ public class CartFacade {
         userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
         product.setAmount(amount);
-        product = productService.calculateProductInfoByAmount(product);
         if (cart.getProducts().contains(product)) {
             int indexOfDuplicated = cart.getProducts().indexOf(product);
             var duplicated = cart.getProducts().remove(indexOfDuplicated);
             product.setAmount(product.getAmount() + duplicated.getAmount());
         }
+        product = productService.calculateProductInfoByAmount(product);
         cart.getProducts().add(product);
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }
