@@ -29,6 +29,7 @@ public class CartFacade {
     }
 
     public Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
+        userValidation.validateUserWithPrincipal(userId);
         Cart cart;
         try {
             cart = cartService.findByUserIdAndDate(userId, date).block();
@@ -36,7 +37,6 @@ public class CartFacade {
         catch (NotFoundException e) {
             cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
         }
-        userValidation.validateUserWithPrincipal(cart.getUserId());
         Meal meal = mealService.findById(mealId).block();
         if (cart.getMeals().contains(meal)) {
             int indexOfDuplicated = cart.getMeals().indexOf(meal);

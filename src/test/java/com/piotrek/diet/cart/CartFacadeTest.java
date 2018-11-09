@@ -119,6 +119,11 @@ class CartFacadeTest {
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartService.save(cart)).thenReturn(Mono.just(cart));
 
+        productDto.setAmount(50);
+        product.setAmount(50);
+        mealDto.getProducts().add(productDto);
+        meal.getProducts().add(product);
+
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
 
@@ -143,6 +148,11 @@ class CartFacadeTest {
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
         when(cartService.save(any(Cart.class))).thenReturn(Mono.just(cart));
+
+        productDto.setAmount(50);
+        product.setAmount(50);
+        mealDto.getProducts().add(productDto);
+        meal.getProducts().add(product);
 
         cartDto.getMeals().add(mealDto);
         cartDto.getAllProducts().addAll(mealDto.getProducts());
@@ -221,11 +231,14 @@ class CartFacadeTest {
         when(cartService.save(cart)).thenReturn(Mono.just(cart));
         when(cartDtoConverter.toDto(cart)).thenReturn(cartDto);
 
-        CartDto block = cartFacade.deleteMealFromCart(cart.getUserId(), mealDto.getId(), cart.getDate()).block();
+        cart.getMeals().add(meal);
+
+        CartDto block = cartFacade.deleteMealFromCart(cart.getUserId(), meal.getId(), cart.getDate()).block();
 
         assertCartFields(expected, block);
         verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
         verify(cartService, times(1)).findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate());
+        verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
     }
