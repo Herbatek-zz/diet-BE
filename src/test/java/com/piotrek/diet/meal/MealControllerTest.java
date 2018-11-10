@@ -10,6 +10,7 @@ import com.piotrek.diet.helpers.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.helpers.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDto;
+import org.assertj.core.util.Lists;
 import org.decimal4j.util.DoubleRounder;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -277,22 +278,7 @@ class MealControllerTest {
 
 
         // prepare expected
-        final MealDto expected = dumplingsWithIdDto();
-        expected.setName("updated name");
-        expected.setRecipe("updated recipe");
-        expected.setDescription("updated description");
-        expected.setImageUrl("new image");
-        expected.setProducts(productDtos);
-        expected.setAmount(MEAL_AMOUNT);
-        expected.setProtein(doubleRounder.round(firstProduct.getProtein() * FIRST_DIVIDER + secondProduct.getProtein() * SECOND_DIVIDER));
-        expected.setProteinAndFatEquivalent(doubleRounder.round(firstProduct.getProteinAndFatEquivalent() * FIRST_DIVIDER + secondProduct.getProteinAndFatEquivalent() * SECOND_DIVIDER));
-        expected.setFat(doubleRounder.round(firstProduct.getFat() * FIRST_DIVIDER + secondProduct.getFat() * SECOND_DIVIDER));
-        expected.setFibre(doubleRounder.round(firstProduct.getFibre() * FIRST_DIVIDER + secondProduct.getFibre() * SECOND_DIVIDER));
-        expected.setCarbohydrate(doubleRounder.round(firstProduct.getCarbohydrate() * FIRST_DIVIDER + secondProduct.getCarbohydrate() * SECOND_DIVIDER));
-        expected.setCarbohydrateExchange(doubleRounder.round(firstProduct.getCarbohydrateExchange() * FIRST_DIVIDER + secondProduct.getCarbohydrateExchange() * SECOND_DIVIDER));
-        expected.setKcal(doubleRounder.round(firstProduct.getKcal() * FIRST_DIVIDER) + doubleRounder.round(secondProduct.getKcal() * SECOND_DIVIDER));
-
-        final var expectedFirstProduct = expected.getProducts().get(0);
+        final var expectedFirstProduct = productDtos.get(0);
         expectedFirstProduct.setKcal(doubleRounder.round(expectedFirstProduct.getKcal() * FIRST_DIVIDER));
         expectedFirstProduct.setProteinAndFatEquivalent(doubleRounder.round(expectedFirstProduct.getProteinAndFatEquivalent() * FIRST_DIVIDER));
         expectedFirstProduct.setProtein(doubleRounder.round(expectedFirstProduct.getProtein() * FIRST_DIVIDER));
@@ -301,7 +287,7 @@ class MealControllerTest {
         expectedFirstProduct.setCarbohydrate(doubleRounder.round(expectedFirstProduct.getCarbohydrate() * FIRST_DIVIDER));
         expectedFirstProduct.setCarbohydrateExchange(doubleRounder.round(expectedFirstProduct.getCarbohydrateExchange() * FIRST_DIVIDER));
 
-        final var expectedSecondProduct = expected.getProducts().get(1);
+        final var expectedSecondProduct = productDtos.get(1);
         expectedSecondProduct.setKcal(doubleRounder.round(expectedSecondProduct.getKcal() * SECOND_DIVIDER));
         expectedSecondProduct.setProteinAndFatEquivalent(doubleRounder.round(expectedSecondProduct.getProteinAndFatEquivalent() * SECOND_DIVIDER));
         expectedSecondProduct.setProtein(doubleRounder.round(expectedSecondProduct.getProtein() * SECOND_DIVIDER));
@@ -310,6 +296,20 @@ class MealControllerTest {
         expectedSecondProduct.setCarbohydrate(doubleRounder.round(expectedSecondProduct.getCarbohydrate() * SECOND_DIVIDER));
         expectedSecondProduct.setCarbohydrateExchange(doubleRounder.round(expectedSecondProduct.getCarbohydrateExchange() * SECOND_DIVIDER));
 
+        final MealDto expected = dumplingsWithIdDto();
+        expected.setName("updated name");
+        expected.setRecipe("updated recipe");
+        expected.setDescription("updated description");
+        expected.setImageUrl("new image");
+        expected.setProducts(Lists.list(expectedFirstProduct, expectedSecondProduct));
+        expected.setAmount(MEAL_AMOUNT);
+        expected.setProtein(doubleRounder.round(firstProduct.getProtein() + secondProduct.getProtein()));
+        expected.setProteinAndFatEquivalent(doubleRounder.round(firstProduct.getProteinAndFatEquivalent() + secondProduct.getProteinAndFatEquivalent()));
+        expected.setFat(doubleRounder.round(firstProduct.getFat() + secondProduct.getFat()));
+        expected.setFibre(doubleRounder.round(firstProduct.getFibre() + secondProduct.getFibre()));
+        expected.setCarbohydrate(doubleRounder.round(firstProduct.getCarbohydrate() + secondProduct.getCarbohydrate()));
+        expected.setCarbohydrateExchange(doubleRounder.round(firstProduct.getCarbohydrateExchange() + secondProduct.getCarbohydrateExchange()));
+        expected.setKcal(doubleRounder.round(firstProduct.getKcal()) + secondProduct.getKcal());
 
         assertNotNull(responseBody);
         assertAll(
