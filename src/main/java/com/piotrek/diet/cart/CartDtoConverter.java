@@ -28,6 +28,7 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         var productsFromMeals = retrieveProductsFromMeals(cartDto.getMeals());
         var allProducts = sumProductsAndProductsFromMeals(cartDto.getProducts(), productsFromMeals);
         cartDto.setAllProducts(allProducts);
+        calculateCartInfo(allProducts, cartDto);
 
         return cartDto;
     }
@@ -39,6 +40,19 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         cart.setMeals(mealDtoConverter.listFromDto(dto.getMeals()));
         cart.setProducts(productDtoConverter.listFromDto(dto.getProducts()));
         return cart;
+    }
+
+    private void calculateCartInfo(ArrayList<ProductDto> list, CartDto cartDto) {
+        list
+                .forEach(productDto -> {
+                    cartDto.setProtein(cartDto.getProtein() + productDto.getProtein());
+                    cartDto.setCarbohydrate(cartDto.getCarbohydrate() + productDto.getCarbohydrate());
+                    cartDto.setFat(cartDto.getFat() + productDto.getFat());
+                    cartDto.setFibre(cartDto.getFibre() + productDto.getFibre());
+                    cartDto.setCarbohydrateExchange(cartDto.getCarbohydrateExchange() + productDto.getCarbohydrateExchange());
+                    cartDto.setProteinAndFatEquivalent(cartDto.getProteinAndFatEquivalent() + productDto.getProteinAndFatEquivalent());
+                    cartDto.setKcal(cartDto.getKcal() + productDto.getKcal());
+                });
     }
 
     private ArrayList<ProductDto> retrieveProductsFromMeals(ArrayList<MealDto> mealDtos) {

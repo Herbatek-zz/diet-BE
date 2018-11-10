@@ -28,6 +28,14 @@ public class CartDto {
 
     private int itemCounter;
 
+    private double protein;
+    private double carbohydrate;
+    private double fat;
+    private double fibre;
+    private double carbohydrateExchange;
+    private double proteinAndFatEquivalent;
+    private double kcal;
+
     private ArrayList<MealDto> meals = new ArrayList<>();
     private ArrayList<ProductDto> products = new ArrayList<>();
     private ArrayList<ProductDto> allProducts = new ArrayList<>();

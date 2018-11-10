@@ -6,11 +6,14 @@ import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
+import org.decimal4j.util.DoubleRounder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ public class MealService {
     private final MealDtoConverter mealDtoConverter;
     private final ProductDtoConverter productDtoConverter;
     private final UserValidation userValidation;
+    private final DoubleRounder doubleRounder;
 
     public Mono<Meal> findById(String id) {
         return mealRepository.findById(id)
@@ -107,16 +111,22 @@ public class MealService {
             meal.setProducts(new ArrayList<>());
         else {
             meal.setProducts(productDtoConverter.listFromDto(update.getProducts()));
+
+            double allProductsAmount = meal.getProducts()
+                    .stream()
+                    .mapToDouble(Product::getAmount)
+                    .sum();
+
             meal.getProducts()
                     .forEach(product -> {
-                        var divider = product.getAmount() / 100.0;
-                        product.setProtein(product.getProtein() * divider);
-                        product.setCarbohydrate(product.getCarbohydrate() * divider);
-                        product.setFat(product.getFat() * divider);
-                        product.setFibre(product.getFibre() * divider);
-                        product.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() * divider);
-                        product.setCarbohydrateExchange(product.getCarbohydrateExchange() * divider);
-                        product.setKcal(product.getKcal() * divider);
+                        var divider = product.getAmount() / (allProductsAmount / 100) / 100;
+                        product.setProtein(doubleRounder.round((product.getProtein() * divider)));
+                        product.setCarbohydrate(doubleRounder.round((product.getCarbohydrate() * divider)));
+                        product.setFat(doubleRounder.round((product.getFat() * divider)));
+                        product.setFibre(doubleRounder.round((product.getFibre() * divider)));
+                        product.setProteinAndFatEquivalent(doubleRounder.round((product.getProteinAndFatEquivalent() * divider)));
+                        product.setCarbohydrateExchange(doubleRounder.round((product.getCarbohydrateExchange() * divider)));
+                        product.setKcal(doubleRounder.round((product.getKcal() * divider)));
                     });
         }
         calculateMealInformation(meal);
@@ -148,7 +158,7 @@ public class MealService {
                 .mapToDouble(Product::getProtein)
                 .sum();
 
-        meal.setProtein(proteinValue);
+        meal.setProtein(doubleRounder.round(proteinValue));
     }
 
     private void calculateFibre(Meal meal) {
@@ -157,7 +167,7 @@ public class MealService {
                 .mapToDouble(Product::getFibre)
                 .sum();
 
-        meal.setFibre(fibreValue);
+        meal.setFibre(doubleRounder.round(fibreValue));
     }
 
     private void calculateFat(Meal meal) {
@@ -166,7 +176,7 @@ public class MealService {
                 .mapToDouble(Product::getFat)
                 .sum();
 
-        meal.setFat(fatValue);
+        meal.setFat(doubleRounder.round(fatValue));
     }
 
     private void calculateCarbohydrate(Meal meal) {
@@ -175,7 +185,7 @@ public class MealService {
                 .mapToDouble(Product::getCarbohydrate)
                 .sum();
 
-        meal.setCarbohydrate(carbohydrateValue);
+        meal.setCarbohydrate(doubleRounder.round(carbohydrateValue));
     }
 
     private void calculateProteinAndFatEquivalent(Meal meal) {
@@ -184,7 +194,7 @@ public class MealService {
                 .mapToDouble(Product::getProteinAndFatEquivalent)
                 .sum();
 
-        meal.setProteinAndFatEquivalent(proteinAndFatEquivalentValue);
+        meal.setProteinAndFatEquivalent(doubleRounder.round(proteinAndFatEquivalentValue));
     }
 
     private void calculateCarbohydrateExchange(Meal meal) {
@@ -193,7 +203,7 @@ public class MealService {
                 .mapToDouble(Product::getCarbohydrateExchange)
                 .sum();
 
-        meal.setCarbohydrateExchange(carbohydrateExchangeValue);
+        meal.setCarbohydrateExchange(doubleRounder.round(carbohydrateExchangeValue));
     }
 
     private void calculateKcal(Meal meal) {
@@ -202,6 +212,6 @@ public class MealService {
                 .mapToDouble(Product::getKcal)
                 .sum();
 
-        meal.setKcal(kcalValue);
+        meal.setKcal(doubleRounder.round(kcalValue));
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -33,8 +34,7 @@ public class CartFacade {
         Cart cart;
         try {
             cart = cartService.findByUserIdAndDate(userId, date).block();
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
         }
         Meal meal = mealService.findById(mealId).block();
@@ -44,8 +44,8 @@ public class CartFacade {
             amount += duplicated.getAmount();
         }
 
-        double divider = (double) meal.getAmount() / amount;
-        meal.getProducts()
+        double divider = (double) 100 / amount;
+        Objects.requireNonNull(meal).getProducts()
                 .forEach(productDto -> {
                     productDto.setAmount((int) (productDto.getAmount() / divider));
                     productDto.setProtein(productDto.getProtein() / divider);
@@ -79,8 +79,7 @@ public class CartFacade {
         Cart cart;
         try {
             cart = cartService.findByUserIdAndDate(userId, date).block();
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
         }
         userValidation.validateUserWithPrincipal(cart.getUserId());

@@ -6,12 +6,14 @@ import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDtoConverter;
 import com.piotrek.diet.user.UserValidation;
+import org.decimal4j.util.DoubleRounder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -41,7 +43,8 @@ class MealServiceTest {
     @Mock
     private UserValidation userValidation;
 
-    @InjectMocks
+    private DoubleRounder doubleRounder = new DoubleRounder(2);
+
     private MealService mealService;
 
     private Meal meal;
@@ -50,6 +53,7 @@ class MealServiceTest {
     @BeforeEach
     void beforeEach() {
         MockitoAnnotations.initMocks(this);
+        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, userValidation, doubleRounder);
         meal = dumplingsWithId();
         mealDto = dumplingsWithIdDto();
     }

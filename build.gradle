@@ -45,7 +45,8 @@ dependencies {
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok:1.18.4')
     annotationProcessor('org.projectlombok:lombok:1.18.4')
-    
+    compile group: 'org.decimal4j', name: 'decimal4j', version: '1.0.3'
+
     // data
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
 
