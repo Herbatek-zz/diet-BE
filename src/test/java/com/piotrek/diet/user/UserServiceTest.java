@@ -25,9 +25,6 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserValidation userValidation;
-
-    @Mock
     private UserDtoConverter userDtoConverter;
 
     @Mock
@@ -53,7 +50,7 @@ class UserServiceTest {
 
         assertUserFields(user, block);
         verify(userRepository, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -65,7 +62,7 @@ class UserServiceTest {
 
         assertThrows(NotFoundException.class, () -> userService.findById(WRONG_ID).block());
         verify(userRepository, times(1)).findById(WRONG_ID);
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -77,7 +74,7 @@ class UserServiceTest {
 
         assertUserFields(user, block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -89,7 +86,7 @@ class UserServiceTest {
 
         assertNull(block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -101,7 +98,7 @@ class UserServiceTest {
 
         assertUserFields(user, block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -113,7 +110,7 @@ class UserServiceTest {
 
         assertNull(block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -125,7 +122,7 @@ class UserServiceTest {
         assertNotNull(users);
         assertEquals(0, users.size());
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -141,7 +138,7 @@ class UserServiceTest {
                 () -> assertUserFields(user, userList.get(0))
         );
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -163,7 +160,7 @@ class UserServiceTest {
                 () -> assertUserFields(expectedList.get(1), actualUserList.get(1))
         );
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -174,7 +171,7 @@ class UserServiceTest {
 
         assertUserFields(user, savedUser);
         verify(userRepository, times(1)).save(user);
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
@@ -208,23 +205,22 @@ class UserServiceTest {
         UserDto actualUser = userService.update(user.getId(), userDto).block();
 
         assertUserFields(userDto, actualUser);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(user);
         verify(userDtoConverter, times(1)).toDto(user);
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
     @Test
     void deleteById() {
         assertEquals(Mono.empty().block(), userService.deleteById(user.getId()));
         verify(userRepository, times(1)).deleteById(user.getId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 
     @Test
     void deleteAll() {
         assertEquals(Mono.empty().block(), userService.deleteAll());
         verify(userRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter, userValidation);
+        verifyNoMoreInteractions(userRepository, userDtoConverter);
     }
 }

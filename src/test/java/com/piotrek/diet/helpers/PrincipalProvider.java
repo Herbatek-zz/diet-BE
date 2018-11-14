@@ -6,7 +6,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class PrincipalProvider {
 
     public static void provide(String userId) {
-        var testingAuthentication = new TestingAuthenticationToken(userId, null);
-        SecurityContextHolder.getContext().setAuthentication(testingAuthentication);
+        TestingAuthenticationToken authentication = new TestingAuthenticationToken(userId, null);
+        authentication.setAuthenticated(true);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

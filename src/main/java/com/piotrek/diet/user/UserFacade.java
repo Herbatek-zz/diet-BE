@@ -14,6 +14,7 @@ import com.piotrek.diet.security.token.Token;
 import com.piotrek.diet.security.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 public class UserFacade {
 
     private final UserService userService;
-    private final UserValidation userValidation;
     private final ProductService productService;
     private final MealService mealService;
     private final MealDtoConverter mealDtoConverter;
@@ -36,6 +36,7 @@ public class UserFacade {
         return userService.findDtoById(userId);
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<UserDto> updateUser(String userId, UserDto update) {
         UserDto userDto = userService.update(userId, update).block();
 
@@ -58,8 +59,8 @@ public class UserFacade {
         return tokenService.findByUserId(userId);
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
-        userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .doOnNext(user -> productDto.setUserId(user.getId()))
                 .map(user -> productDto)
@@ -72,8 +73,8 @@ public class UserFacade {
                         .findAllByUserPageable(userId, pageable));
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<MealDto> createMeal(String userId, MealDto mealDto) {
-        userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .doOnNext(user -> mealDto.setUserId(user.getId()))
                 .flatMap(user -> mealService.save(mealDto))
@@ -97,8 +98,8 @@ public class UserFacade {
                         .collect(Collectors.toList()), pageable.getPageNumber(), pageable.getPageSize(), meals.size())));
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<Void> addToFavourite(String userId, String mealId) {
-        userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .flatMap(user -> mealService.findById(mealId)
                         .doOnNext(meal -> user.getFavouriteMeals().add(meal))
@@ -106,8 +107,8 @@ public class UserFacade {
                 .then();
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<Void> deleteFromFavourite(String userId, String mealId) {
-        userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .doOnNext(user -> user.getFavouriteMeals().remove(new Meal(mealId)))
                 .flatMap(userService::save)
@@ -118,8 +119,8 @@ public class UserFacade {
         return mealService.findById(id).map(mealDtoConverter::toDto);
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<Boolean> isFavourite(String userId, String mealId) {
-        userValidation.validateUserWithPrincipal(userId);
         return userService.findById(userId)
                 .map(user -> user.getFavouriteMeals().contains(new Meal(mealId)));
     }

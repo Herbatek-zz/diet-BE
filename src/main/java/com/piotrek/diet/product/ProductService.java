@@ -2,10 +2,10 @@ package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,7 +20,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductDtoConverter productDtoConverter;
     private final DiabetesCalculator diabetesCalculator;
-    private final UserValidation userValidation;
 
     public Mono<Product> findById(String id) {
         return productRepository.findById(id)
@@ -88,9 +87,8 @@ public class ProductService {
         return save(productDtoConverter.fromDto(productDto));
     }
 
+    @PreAuthorize("@productService.findById(#id).block().getUserId().equals(principal)")
     Mono<Void> deleteById(String id) {
-        Product block = findById(id).block();
-        userValidation.validateUserWithPrincipal(block.getUserId());
         return productRepository.deleteById(id);
     }
 

@@ -13,14 +13,12 @@ import com.piotrek.diet.product.ProductDto;
 import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
-import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -48,9 +46,6 @@ class CartFacadeTest {
 
     @Mock
     private ProductService productService;
-
-    @Mock
-    private UserValidation userValidation;
 
     @Mock
     private CartDtoConverter cartDtoConverter;
@@ -95,7 +90,7 @@ class CartFacadeTest {
         assertCartFields(cartDto, block);
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -106,7 +101,7 @@ class CartFacadeTest {
         assertThrows(NotFoundException.class, () -> cartFacade.findDtoCartByUserAndDate(cartDto.getUserId(), cartDto.getDate()).block());
 
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -132,12 +127,11 @@ class CartFacadeTest {
         assertCartFields(cartDto, block);
         assertMealFields(cartDto.getMeals().get(0), block.getMeals().get(0));
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verify(userValidation, times(1)).validateUserWithPrincipal(cart.getUserId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -160,14 +154,13 @@ class CartFacadeTest {
         final var block = cartFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(userService, times(1)).findById(cart.getUserId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(any(Cart.class));
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -187,13 +180,12 @@ class CartFacadeTest {
         var block = cartFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -213,13 +205,12 @@ class CartFacadeTest {
         var block = cartFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -236,11 +227,10 @@ class CartFacadeTest {
         CartDto block = cartFacade.deleteMealFromCart(cart.getUserId(), meal.getId(), cart.getDate()).block();
 
         assertCartFields(expected, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
         verify(cartService, times(1)).findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate());
         verify(cartService, times(1)).save(cart);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -253,10 +243,9 @@ class CartFacadeTest {
         CartDto block = cartFacade.deleteMealFromCart(cartDto.getUserId(), meal.getId(), cartDto.getDate()).block();
 
         assertCartFields(expected, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
         verify(cartService, times(1)).findByUserIdAndDate(cartDto.getUserId(), cartDto.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -276,12 +265,11 @@ class CartFacadeTest {
         assertCartFields(cartDto, block);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(userService, times(1)).findById(cart.getUserId());
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(any(Cart.class));
         verify(productService, times(1)).calculateProductInfoByAmount(product);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -300,12 +288,11 @@ class CartFacadeTest {
 
         assertCartFields(cartDto, block);
         verify(cartService, times(1)).findByUserIdAndDate(user.getId(), cart.getDate());
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(productService, times(1)).findById(product.getId());
         verify(productService, times(1)).calculateProductInfoByAmount(product);
         verify(cartService, times(1)).save(any(Cart.class));
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -325,13 +312,12 @@ class CartFacadeTest {
         var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(productService, times(1)).calculateProductInfoByAmount(product);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -352,13 +338,12 @@ class CartFacadeTest {
         var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(productService, times(1)).calculateProductInfoByAmount(product);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -384,13 +369,12 @@ class CartFacadeTest {
         var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
         assertCartFields(cartDto, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(productService, times(1)).calculateProductInfoByAmount(product);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -409,12 +393,11 @@ class CartFacadeTest {
         expected.setProducts(new ArrayList<>());
 
         assertCartFields(expected, block);
-        verify(userValidation, times(1)).validateUserWithPrincipal(cartDto.getUserId());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 
     @Test
@@ -429,9 +412,8 @@ class CartFacadeTest {
 
         assertCartFields(cartDto, actual);
         verify(productService, times(1)).findById(product.getId());
-        verify(userValidation, times(1)).validateUserWithPrincipal(user.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verifyNoMoreInteractions(cartService, userService, mealService, productService, userValidation, cartDtoConverter);
+        verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
 }

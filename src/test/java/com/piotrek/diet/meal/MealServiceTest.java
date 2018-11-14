@@ -5,15 +5,12 @@ import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.user.UserValidation;
 import org.decimal4j.util.DoubleRounder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -40,9 +37,6 @@ class MealServiceTest {
     @Mock
     private ProductDtoConverter productDtoConverter;
 
-    @Mock
-    private UserValidation userValidation;
-
     private DoubleRounder doubleRounder = new DoubleRounder(2);
 
     private MealService mealService;
@@ -53,7 +47,7 @@ class MealServiceTest {
     @BeforeEach
     void beforeEach() {
         MockitoAnnotations.initMocks(this);
-        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, userValidation, doubleRounder);
+        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, doubleRounder);
         meal = dumplingsWithId();
         mealDto = dumplingsWithIdDto();
     }
@@ -67,7 +61,7 @@ class MealServiceTest {
 
         assertMealFields(meal, mealById);
         verify(mealRepository, times(1)).findById(meal.getId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -78,7 +72,7 @@ class MealServiceTest {
 
         assertThrows(NotFoundException.class, mealService.findById(WRONG_ID)::block);
         verify(mealRepository, times(1)).findById(WRONG_ID);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -92,7 +86,7 @@ class MealServiceTest {
         assertMealFields(mealDto, mealDtoById);
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -103,7 +97,7 @@ class MealServiceTest {
 
         assertThrows(NotFoundException.class, mealService.findDtoById(INCORRECT_ID)::block);
         verify(mealRepository, times(1)).findById(INCORRECT_ID);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -126,7 +120,7 @@ class MealServiceTest {
 
         assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -151,7 +145,7 @@ class MealServiceTest {
         assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -182,7 +176,7 @@ class MealServiceTest {
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(mealDtoConverter, times(pageSize)).toDto(coffeeWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -213,7 +207,7 @@ class MealServiceTest {
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -240,7 +234,7 @@ class MealServiceTest {
         assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
         verify(mealDtoConverter, times(totalElements)).toDto(MealSample.dumplingsWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -263,7 +257,7 @@ class MealServiceTest {
         assertNotNull(actualPage);
         assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -288,7 +282,7 @@ class MealServiceTest {
         assertEquals(expected, actualFirstPage);
         verify(mealRepository, times(1)).findAll();
         verify(mealDtoConverter, times(10)).toDto(dumplingsWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -313,7 +307,7 @@ class MealServiceTest {
         assertEquals(expected, actualSecondPage);
         verify(mealRepository, times(1)).findAll();
         verify(mealDtoConverter, times(10)).toDto(dumplingsWithId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -336,7 +330,7 @@ class MealServiceTest {
 
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAll();
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -348,7 +342,7 @@ class MealServiceTest {
 
         assertMealFields(meal, savedMeal);
         verify(mealRepository, times(1)).save(meal);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -362,7 +356,7 @@ class MealServiceTest {
         assertMealFields(meal, savedMeal);
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).fromDto(mealDto);
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -371,7 +365,7 @@ class MealServiceTest {
         assertEquals(Mono.empty().block(), mealService.deleteAll());
 
         verify(mealRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -380,10 +374,7 @@ class MealServiceTest {
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
 
         assertEquals(Mono.empty().block(), mealService.deleteById(meal.getId()));
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
         verify(mealRepository, times(1)).deleteById(meal.getId());
-        verify(mealRepository, times(1)).findById(meal.getId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
     }
 
     @Test
@@ -403,8 +394,7 @@ class MealServiceTest {
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -435,8 +425,7 @@ class MealServiceTest {
         verify(mealRepository, times(1)).findById(meal.getId());
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     @Test
@@ -478,8 +467,7 @@ class MealServiceTest {
         verify(mealRepository, times(1)).save(meal);
         verify(mealDtoConverter, times(1)).toDto(meal);
         verify(productDtoConverter, times(1)).listFromDto(productDtos);
-        verify(userValidation, times(1)).validateUserWithPrincipal(meal.getUserId());
-        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter, userValidation);
+        verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
     private ArrayList<Meal> createMealList(int size, String meal) {

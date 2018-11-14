@@ -4,6 +4,7 @@ import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.MealDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,7 +15,6 @@ import reactor.core.publisher.Mono;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserValidation userValidation;
     private final UserDtoConverter userDtoConverter;
     private final CaloriesCalculator caloriesCalculator;
 
@@ -47,8 +47,8 @@ public class UserService {
         return userRepository.save(userDtoConverter.fromDto(userDto));
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     Mono<UserDto> update(String userId, UserDto userDto) {
-        userValidation.validateUserWithPrincipal(userId);
         return findById(userId)
                 .doOnNext(user -> user.setUsername(userDto.getUsername()))
                 .doOnNext(user -> user.setFirstName(userDto.getFirstName()))

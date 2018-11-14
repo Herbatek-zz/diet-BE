@@ -17,6 +17,8 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -30,10 +32,8 @@ import static com.piotrek.diet.helpers.AssertEqualAllFields.assertCartFields;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithIdDto;
 import static com.piotrek.diet.helpers.MealSample.dumplingsWithoutIdDto;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
+import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {DietApplication.class, DataBaseForIntegrationTestsConfiguration.class})
@@ -91,6 +91,7 @@ class UserControllerTest {
         mealService.deleteAll().block();
         cartService.deleteAll().block();
         createUser();
+        PrincipalProvider.provide(user.getId());
         createMeal();
         createCart();
         webTestClient = WebTestClient
@@ -127,7 +128,8 @@ class UserControllerTest {
     @DisplayName("Check if user has meal in favourites, if he has no favourites, then return false")
     void isMealFavourite_whenUserHasNoTheMealInFavourites_thenReturnTrue() {
         final var URI = "/users/" + user.getId() + "/meals/" + meal.getId() + "/favourites";
-        webTestClient.get().uri(URI)
+        webTestClient.mutate().filter(basicAuthentication()).build()
+                .get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
@@ -419,6 +421,7 @@ class UserControllerTest {
         final var URI = "/users/" + user.getId() + "/meals";
         final var mealDto = dumplingsWithoutIdDto();
         mealDto.setRecipe(null);
+
 
         webTestClient.post().uri(URI)
                 .contentType(APPLICATION_JSON_UTF8)
@@ -840,7 +843,6 @@ class UserControllerTest {
     }
 
     private void createMeal() {
-        PrincipalProvider.provide(user.getId());
         meal = MealSample.dumplingsWithoutId();
         mealDto = userFacade.createMeal(user.getId(), MealSample.dumplingsWithoutIdDto()).block();
         meal.setId(mealDto.getId());

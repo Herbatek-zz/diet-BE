@@ -4,11 +4,11 @@ import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDtoConverter;
-import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
 import org.decimal4j.util.DoubleRounder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +22,6 @@ public class MealService {
     private final MealRepository mealRepository;
     private final MealDtoConverter mealDtoConverter;
     private final ProductDtoConverter productDtoConverter;
-    private final UserValidation userValidation;
     private final DoubleRounder doubleRounder;
 
     public Mono<Meal> findById(String id) {
@@ -73,9 +72,8 @@ public class MealService {
         return mealRepository.deleteAll();
     }
 
+    @PreAuthorize("@mealService.findById(#id).block().getUserId().equals(principal)")
     Mono<Void> deleteById(String id) {
-        Meal block = findById(id).block();
-        userValidation.validateUserWithPrincipal(block.getUserId());
         return mealRepository.deleteById(id);
     }
 
@@ -92,9 +90,9 @@ public class MealService {
                         pageRequest.getPageNumber(), pageRequest.getPageSize(), list.size()));
     }
 
+    @PreAuthorize("@mealService.findById(#mealId).block().getUserId().equals(principal)")
     Mono<MealDto> updateMeal(String mealId, MealDto mealDto) {
         Meal meal = findById(mealId).block();
-        userValidation.validateUserWithPrincipal(meal.getUserId());
         meal.setName(mealDto.getName());
         meal.setRecipe(mealDto.getRecipe());
         meal.setImageUrl(mealDto.getImageUrl());

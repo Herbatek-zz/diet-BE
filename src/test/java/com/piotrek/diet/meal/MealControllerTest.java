@@ -403,6 +403,7 @@ class MealControllerTest {
     @DisplayName("When delete a meal, then the meal shouldn't be available in database")
     void deleteById() {
         final var URI = "/meals/" + meal1.getId();
+        PrincipalProvider.provide(meal1.getUserId());
         webTestClient.delete().uri(URI)
                 .exchange()
                 .expectStatus().isNoContent();

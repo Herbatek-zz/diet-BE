@@ -6,8 +6,8 @@ import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductService;
 import com.piotrek.diet.user.UserService;
-import com.piotrek.diet.user.UserValidation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -22,15 +22,15 @@ public class CartFacade {
     private final UserService userService;
     private final MealService mealService;
     private final ProductService productService;
-    private final UserValidation userValidation;
     private final CartDtoConverter cartDtoConverter;
 
+    @PreAuthorize("#userId.equals(principal)")
     public Mono<CartDto> findDtoCartByUserAndDate(String userId, LocalDate date) {
         return cartService.findByUserIdAndDate(userId, date).map(cartDtoConverter::toDto);
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     public Mono<CartDto> addMealToCart(String userId, String mealId, LocalDate date, int amount) {
-        userValidation.validateUserWithPrincipal(userId);
         Cart cart;
         try {
             cart = cartService.findByUserIdAndDate(userId, date).block();
@@ -62,8 +62,8 @@ public class CartFacade {
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     public Mono<CartDto> deleteMealFromCart(String userId, String mealId, LocalDate date) {
-        userValidation.validateUserWithPrincipal(userId);
         return cartService.findByUserIdAndDate(userId, date)
                 .flatMap(cart -> {
                     Meal meal = new Meal(mealId);
@@ -75,6 +75,7 @@ public class CartFacade {
                 });
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     public Mono<CartDto> addProductToCart(String userId, String productId, LocalDate date, int amount) {
         Cart cart;
         try {
@@ -82,7 +83,7 @@ public class CartFacade {
         } catch (NotFoundException e) {
             cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
         }
-        userValidation.validateUserWithPrincipal(cart.getUserId());
+
         Product product = productService.findById(productId).block();
         product.setAmount(amount);
         if (cart.getProducts().contains(product)) {
@@ -95,9 +96,9 @@ public class CartFacade {
         return cartService.save(cart).map(cartDtoConverter::toDto);
     }
 
+    @PreAuthorize("#userId.equals(principal)")
     public Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
         Cart cart = cartService.findByUserIdAndDate(userId, date).block();
-        userValidation.validateUserWithPrincipal(cart.getUserId());
         Product product = productService.findById(productId).block();
         if (cart.getProducts().contains(product)) {
             cart.getProducts().remove(product);

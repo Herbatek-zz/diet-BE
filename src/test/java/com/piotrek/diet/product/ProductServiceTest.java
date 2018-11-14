@@ -3,7 +3,6 @@ package com.piotrek.diet.product;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.user.UserValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,9 +33,6 @@ class ProductServiceTest {
     @Mock
     private DiabetesCalculator diabetesCalculator;
 
-    @Mock
-    private UserValidation userValidation;
-
     @InjectMocks
     private ProductService productService;
 
@@ -59,7 +55,7 @@ class ProductServiceTest {
 
         assertProductFields(product, actualProduct);
         verify(productRepository, times(1)).findById(this.product.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -70,7 +66,7 @@ class ProductServiceTest {
 
         assertThrows(NotFoundException.class, () -> productService.findById(INVALID_ID).block());
         verify(productRepository, times(1)).findById(INVALID_ID);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -84,7 +80,7 @@ class ProductServiceTest {
         assertProductFields(productDto, actualProductDto);
         verify(productRepository, times(1)).findById(product.getId());
         verify(productDtoConverter, times(1)).toDto(product);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -95,7 +91,7 @@ class ProductServiceTest {
 
         assertThrows(NotFoundException.class, () -> productService.findDtoById(INVALID_ID).block());
         verify(productRepository, times(1)).findById(INVALID_ID);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -118,7 +114,7 @@ class ProductServiceTest {
 
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -139,7 +135,7 @@ class ProductServiceTest {
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(totalElements)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -164,7 +160,7 @@ class ProductServiceTest {
         assertEquals(expected, actualFirstPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(pageSize)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -181,7 +177,7 @@ class ProductServiceTest {
                 () -> assertProductFields(productsList.get(3), actualProducts.get(1))
         );
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -205,7 +201,7 @@ class ProductServiceTest {
         assertEquals(expected, firstPage);
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -230,7 +226,7 @@ class ProductServiceTest {
         assertEquals(expected, firstPage);
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -249,7 +245,7 @@ class ProductServiceTest {
 
         assertEquals(expected, secondPage);
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -272,7 +268,7 @@ class ProductServiceTest {
         assertEquals(expected, block);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
         verify(productDtoConverter, times(totalElements)).toDto(bananaWithId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -291,7 +287,7 @@ class ProductServiceTest {
         assertNotNull(actualPage);
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -306,7 +302,7 @@ class ProductServiceTest {
         verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -323,7 +319,7 @@ class ProductServiceTest {
         verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -331,10 +327,8 @@ class ProductServiceTest {
         when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
 
         assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
-        verify(userValidation, times(1)).validateUserWithPrincipal(product.getUserId());
         verify(productRepository, times(1)).deleteById(product.getId());
-        verify(productRepository, times(1)).findById(product.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
     @Test
@@ -342,7 +336,7 @@ class ProductServiceTest {
         assertEquals(Mono.empty().block(), productService.deleteAll());
 
         verify(productRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, userValidation);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
 
