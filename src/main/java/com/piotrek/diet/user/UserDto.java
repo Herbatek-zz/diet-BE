@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {})
 public class UserDto extends BaseDto {
 
     @NotNull

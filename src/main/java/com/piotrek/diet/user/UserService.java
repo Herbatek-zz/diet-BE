@@ -18,7 +18,7 @@ public class UserService {
     private final CaloriesCalculator caloriesCalculator;
     private final MacronutrientCalculator macroCalculator;
 
-    Mono<UserDto> findDtoById(String id) {
+    public Mono<UserDto> findDtoById(String id) {
         return findById(id).map(userDtoConverter::toDto);
     }
 

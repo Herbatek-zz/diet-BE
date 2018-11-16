@@ -1,7 +1,7 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.exceptions.NotFoundException;
+import com.piotrek.diet.helpers.UserSample;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,14 +29,19 @@ class UserServiceTest {
     @Mock
     private CaloriesCalculator caloriesCalculator;
 
+    @Mock
+    private MacronutrientCalculator macronutrientCalculator;
+
     @InjectMocks
     private UserService userService;
 
     private User user;
+    private UserDto userDto;
 
     @BeforeEach
     void beforeEach() {
         user = UserSample.johnWithId();
+        userDto = UserSample.johnWithIdDto();
         MockitoAnnotations.initMocks(this);
     }
 
@@ -49,7 +54,7 @@ class UserServiceTest {
 
         assertUserFields(user, block);
         verify(userRepository, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -61,7 +66,33 @@ class UserServiceTest {
 
         assertThrows(NotFoundException.class, () -> userService.findById(WRONG_ID).block());
         verify(userRepository, times(1)).findById(WRONG_ID);
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
+    }
+
+    @Test
+    @DisplayName("Find userDto by id dto, when found, then return dto")
+    void findDtoById_whenFound_thenReturn() {
+        when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userDtoConverter.toDto(user)).thenReturn(userDto);
+
+        final var block = userService.findDtoById(user.getId()).block();
+
+        assertUserFields(userDto, block);
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(userDtoConverter, times(1)).toDto(user);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
+    }
+
+    @Test
+    @DisplayName("Find userDto by id, when not found, then throw NotFoundException")
+    void findDtoById_whenNotFound_thenThrowNotFoundException() {
+        final var WRONG_ID = UUID.randomUUID().toString();
+
+        when(userRepository.findById(WRONG_ID)).thenReturn(Mono.empty());
+
+        assertThrows(NotFoundException.class, () -> userService.findDtoById(WRONG_ID).block());
+        verify(userRepository, times(1)).findById(WRONG_ID);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -73,7 +104,7 @@ class UserServiceTest {
 
         assertUserFields(user, block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -85,7 +116,7 @@ class UserServiceTest {
 
         assertNull(block);
         verify(userRepository, times(1)).findByFacebookId(user.getFacebookId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -97,7 +128,7 @@ class UserServiceTest {
 
         assertUserFields(user, block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -109,7 +140,7 @@ class UserServiceTest {
 
         assertNull(block);
         verify(userRepository, times(1)).findByEmail(user.getEmail());
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -121,7 +152,7 @@ class UserServiceTest {
         assertNotNull(users);
         assertEquals(0, users.size());
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -137,7 +168,7 @@ class UserServiceTest {
                 () -> assertUserFields(user, userList.get(0))
         );
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -159,7 +190,7 @@ class UserServiceTest {
                 () -> assertUserFields(expectedList.get(1), actualUserList.get(1))
         );
         verify(userRepository, times(1)).findAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -170,7 +201,20 @@ class UserServiceTest {
 
         assertUserFields(user, savedUser);
         verify(userRepository, times(1)).save(user);
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
+    }
+
+    @Test
+    void saveDto_whenSuccess_thenReturnSavedUser() {
+        when(userDtoConverter.fromDto(userDto)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(Mono.just(user));
+
+        final var savedUser = userService.save(userDto).block();
+
+        assertUserFields(user, savedUser);
+        verify(userRepository, times(1)).save(user);
+        verify(userDtoConverter, times(1)).fromDto(userDto);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
@@ -184,6 +228,7 @@ class UserServiceTest {
         userDto.setAge(23);
         userDto.setHeight(175);
         userDto.setWeight(80);
+        userDto.setCaloriesPerDay(2765);
 
         final var user = UserSample.johnWithId();
         user.setUsername("Mr Kawek");
@@ -200,26 +245,34 @@ class UserServiceTest {
         when(userRepository.save(user)).thenReturn(Mono.just(user));
         when(userDtoConverter.toDto(user)).thenReturn(userDto);
         when(caloriesCalculator.calculateCaloriesPerDay(userDto)).thenCallRealMethod();
+        when(macronutrientCalculator.calculateDailyCarbohydrate(userDto.getCaloriesPerDay())).thenCallRealMethod();
+        when(macronutrientCalculator.calculateDailyFat(userDto.getCaloriesPerDay())).thenCallRealMethod();
+        when(macronutrientCalculator.calculateDailyProtein(userDto.getCaloriesPerDay())).thenCallRealMethod();
 
         UserDto actualUser = userService.update(user.getId(), userDto).block();
 
         assertUserFields(userDto, actualUser);
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(user);
+        verify(caloriesCalculator, times(1)).calculateCaloriesPerDay(userDto);
+        verify(macronutrientCalculator, times(1)).calculateDailyFat(userDto.getCaloriesPerDay());
+        verify(macronutrientCalculator, times(1)).calculateDailyCarbohydrate(userDto.getCaloriesPerDay());
+        verify(macronutrientCalculator, times(1)).calculateDailyProtein(userDto.getCaloriesPerDay());
         verify(userDtoConverter, times(1)).toDto(user);
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
+
     @Test
     void deleteById() {
         assertEquals(Mono.empty().block(), userService.deleteById(user.getId()));
         verify(userRepository, times(1)).deleteById(user.getId());
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 
     @Test
     void deleteAll() {
         assertEquals(Mono.empty().block(), userService.deleteAll());
         verify(userRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(userRepository, userDtoConverter);
+        verifyNoMoreInteractions(userRepository, userDtoConverter, caloriesCalculator, macronutrientCalculator);
     }
 }

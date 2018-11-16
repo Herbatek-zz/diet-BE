@@ -17,7 +17,7 @@ import java.util.HashSet;
 @Data
 @Document
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {})
 public class User extends BaseEntity {
 
     @NotNull

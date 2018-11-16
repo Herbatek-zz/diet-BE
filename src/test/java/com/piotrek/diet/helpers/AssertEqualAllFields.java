@@ -20,11 +20,18 @@ public class AssertEqualAllFields {
                 () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId is not equal"),
                 () -> assertEquals(expected.getTargetUserCalories(), actual.getTargetUserCalories(),
                         "targetUserCalories are not equal"),
+                () -> assertEquals(expected.getTargetUserProtein(), actual.getTargetUserProtein(),
+                        "targetUserProtein is not equal"),
+                () -> assertEquals(expected.getTargetUserCarbohydrate(), actual.getTargetUserCarbohydrate(),
+                        "targetUserCarbohydrate is not equal"),
+                () -> assertEquals(expected.getTargetUserFat(), actual.getTargetUserFat(),
+                        "targetUserFat is not equal"),
                 () -> assertEquals(expected.getDate(), actual.getDate(), "date is not equal"),
                 () -> assertEquals(expected.getMeals(), actual.getMeals(), "mealList is not equal"),
                 () -> assertEquals(expected.getProducts(), actual.getProducts(), "productList is not equal")
         );
     }
+
 
     public static void assertCartFields(CartDto expected, CartDto actual) {
         assertAll(
@@ -32,7 +39,17 @@ public class AssertEqualAllFields {
                 () -> assertEquals(expected.getUserId(), actual.getUserId(), "userId is not equal"),
                 () -> assertEquals(expected.getTargetUserCalories(), actual.getTargetUserCalories(),
                         "targetUserCalories are not equal"),
+                () -> assertEquals(expected.getTargetUserProtein(), actual.getTargetUserProtein(),
+                        "targetUserProtein is not equal"),
+                () -> assertEquals(expected.getTargetUserCarbohydrate(), actual.getTargetUserCarbohydrate(),
+                        "targetUserCarbohydrate is not equal"),
+                () -> assertEquals(expected.getTargetUserFat(), actual.getTargetUserFat(),
+                        "targetUserFat is not equal"),
                 () -> assertEquals(expected.getDate(), actual.getDate()),
+                () -> assertEquals(expected.getProtein(), actual.getProtein(), "protein is not eaual"),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate(), "carbohydate is not equal"),
+                () -> assertEquals(expected.getFat(), actual.getFat(), "fat is not equal"),
+                () -> assertEquals(expected.getKcal(), actual.getKcal(), "kcal is not equal"),
                 () -> assertEquals(expected.getItemCounter(), actual.getItemCounter(), "itemCounter is not equal"),
                 () -> assertEquals(expected.getMeals().size(), actual.getMeals().size(), "Cart meal list size"),
                 () -> assertEquals(expected.getProducts().size(), actual.getProducts().size(), "Cart products list size"),
@@ -123,41 +140,47 @@ public class AssertEqualAllFields {
     public static void assertUserFields(User expected, User actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getFacebookId(), actual.getFacebookId()),
-                () -> assertEquals(expected.getUsername(), actual.getUsername()),
-                () -> assertEquals(expected.getEmail(), actual.getEmail()),
-                () -> assertEquals(expected.getFirstName(), actual.getFirstName()),
-                () -> assertEquals(expected.getLastName(), actual.getLastName()),
-                () -> assertEquals(expected.getPictureUrl(), actual.getPictureUrl()),
-                () -> assertEquals(expected.getSex(), actual.getSex()),
-                () -> assertEquals(expected.getActivity(), actual.getActivity()),
-                () -> assertEquals(expected.getAge(), actual.getAge()),
-                () -> assertEquals(expected.getHeight(), actual.getHeight()),
-                () -> assertEquals(expected.getWeight(), actual.getWeight()),
-                () -> assertEquals(expected.getCaloriesPerDay(), actual.getCaloriesPerDay()),
-                () -> assertEquals(expected.getCreatedAt(), actual.getCreatedAt()),
-                () -> assertEquals(expected.getLastVisit(), actual.getLastVisit()),
-                () -> assertEquals(expected.getRole(), actual.getRole()),
-                () -> assertEquals(expected.getFavouriteMeals().size(), actual.getFavouriteMeals().size())
+                () -> assertEquals(expected.getId(), actual.getId(), "id is not equal"),
+                () -> assertEquals(expected.getFacebookId(), actual.getFacebookId(), "facebook id is not equal"),
+                () -> assertEquals(expected.getUsername(), actual.getUsername(), "username is not equal"),
+                () -> assertEquals(expected.getEmail(), actual.getEmail(), "email is not equal"),
+                () -> assertEquals(expected.getFirstName(), actual.getFirstName(), "first name is not equal"),
+                () -> assertEquals(expected.getLastName(), actual.getLastName(), "last name is not equal"),
+                () -> assertEquals(expected.getPictureUrl(), actual.getPictureUrl(), "picture url is not equal"),
+                () -> assertEquals(expected.getSex(), actual.getSex(), "sex is not equal"),
+                () -> assertEquals(expected.getActivity(), actual.getActivity(), "activity is not equal"),
+                () -> assertEquals(expected.getAge(), actual.getAge(), "age is not equal"),
+                () -> assertEquals(expected.getHeight(), actual.getHeight(), "height is not equal"),
+                () -> assertEquals(expected.getWeight(), actual.getWeight(), "weight is not equal"),
+                () -> assertEquals(expected.getCaloriesPerDay(), actual.getCaloriesPerDay(), "calories per day is not equal"),
+                () -> assertEquals(expected.getProteinPerDay(), actual.getProteinPerDay(), "protein per day is not equal"),
+                () -> assertEquals(expected.getCarbohydratePerDay(), actual.getCarbohydratePerDay(), "carbohydrate per day is not equal"),
+                () -> assertEquals(expected.getFatPerDay(), actual.getFatPerDay(), "fat per day is not equal"),
+                () -> assertEquals(expected.getCreatedAt(), actual.getCreatedAt(), "created at is not equal"),
+                () -> assertEquals(expected.getLastVisit(), actual.getLastVisit(), "last visit is not equal"),
+                () -> assertEquals(expected.getRole(), actual.getRole(), "role is not equal"),
+                () -> assertEquals(expected.getFavouriteMeals().size(), actual.getFavouriteMeals().size(), "favourites list is not equal")
         );
     }
 
     public static void assertUserFields(UserDto expected, UserDto actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getUsername(), actual.getUsername()),
-                () -> assertEquals(expected.getEmail(), actual.getEmail()),
-                () -> assertEquals(expected.getFirstName(), actual.getFirstName()),
-                () -> assertEquals(expected.getLastName(), actual.getLastName()),
-                () -> assertEquals(expected.getPicture_url(), actual.getPicture_url()),
-                () -> assertEquals(expected.getSex(), actual.getSex()),
-                () -> assertEquals(expected.getActivity(), actual.getActivity()),
-                () -> assertEquals(expected.getAge(), actual.getAge()),
-                () -> assertEquals(expected.getHeight(), actual.getHeight()),
-                () -> assertEquals(expected.getWeight(), actual.getWeight()),
-                () -> assertEquals(expected.getCaloriesPerDay(), actual.getCaloriesPerDay())
+                () -> assertEquals(expected.getId(), actual.getId(), "id is not equal"),
+                () -> assertEquals(expected.getUsername(), actual.getUsername(), "username is not equal"),
+                () -> assertEquals(expected.getEmail(), actual.getEmail(), "email is not equal"),
+                () -> assertEquals(expected.getFirstName(), actual.getFirstName(), "first name is not equal"),
+                () -> assertEquals(expected.getLastName(), actual.getLastName(), "last name is not equal"),
+                () -> assertEquals(expected.getPicture_url(), actual.getPicture_url(), "picture url is not equal"),
+                () -> assertEquals(expected.getSex(), actual.getSex(), "sex is not equal"),
+                () -> assertEquals(expected.getActivity(), actual.getActivity(), "activity is not equal"),
+                () -> assertEquals(expected.getAge(), actual.getAge(), "age is not equal"),
+                () -> assertEquals(expected.getHeight(), actual.getHeight(), "height is not equal"),
+                () -> assertEquals(expected.getWeight(), actual.getWeight(), "weight is not equal"),
+                () -> assertEquals(expected.getCaloriesPerDay(), actual.getCaloriesPerDay(), "calories per day is not equal"),
+                () -> assertEquals(expected.getProteinPerDay(), actual.getProteinPerDay(), "protein per day is not equal"),
+                () -> assertEquals(expected.getCarbohydratePerDay(), actual.getCarbohydratePerDay(), "carbohydrate per day is not equal"),
+                () -> assertEquals(expected.getFatPerDay(), actual.getFatPerDay(), "fat per day is not equal")
         );
     }
 }

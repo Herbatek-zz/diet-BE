@@ -16,7 +16,7 @@ import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {})
 public class CartDto extends BaseDto {
 
     @NotNull
@@ -43,9 +43,6 @@ public class CartDto extends BaseDto {
     private double protein;
     private double carbohydrate;
     private double fat;
-    private double fibre;
-    private double carbohydrateExchange;
-    private double proteinAndFatEquivalent;
     private double kcal;
 
     private ArrayList<MealDto> meals = new ArrayList<>();

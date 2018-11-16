@@ -16,7 +16,7 @@ import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
 @Data
 @Document
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {})
 public class Cart extends BaseEntity {
 
     @NotNull

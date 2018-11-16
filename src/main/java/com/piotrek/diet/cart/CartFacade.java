@@ -48,9 +48,10 @@ public class CartFacade {
         }
 
         double divider = (double) 100 / amount;
+        double amountDivider = (double) amount / meal.getAmount();
         Objects.requireNonNull(meal).getProducts()
                 .forEach(productDto -> {
-                    productDto.setAmount((int) (productDto.getAmount() / divider));
+                    productDto.setAmount((int) (productDto.getAmount() * amountDivider));
                     productDto.setProtein(productDto.getProtein() / divider);
                     productDto.setCarbohydrate(productDto.getCarbohydrate() / divider);
                     productDto.setFat(productDto.getFat() / divider);
@@ -88,7 +89,6 @@ public class CartFacade {
             cart = new Cart(userId, date, user.getCaloriesPerDay(), user.getCarbohydratePerDay(),
                     user.getProteinPerDay(), user.getFatPerDay());
         }
-
         Product product = productService.findById(productId).block();
         product.setAmount(amount);
         if (cart.getProducts().contains(product)) {

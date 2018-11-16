@@ -12,7 +12,7 @@ import java.util.ArrayList;
 @Data
 @Document
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {})
 public class Meal extends BaseEntity {
 
     @NotNull

@@ -38,6 +38,11 @@ public class ProductController {
         return productService.searchByName(PageRequest.of(page, size), query);
     }
 
+    @PutMapping("/{id}")
+    Mono<ProductDto> updateProduct(@PathVariable String id, @RequestBody ProductDto productUpdate) {
+        return productService.updateProduct(id, productUpdate);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(NO_CONTENT)
     Mono<Void> deleteById(@PathVariable String id) {

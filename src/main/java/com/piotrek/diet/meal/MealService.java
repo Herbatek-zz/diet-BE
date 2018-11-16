@@ -91,7 +91,7 @@ public class MealService {
     }
 
     @PreAuthorize("@mealService.findById(#mealId).block().getUserId().equals(principal)")
-    Mono<MealDto> updateMeal(String mealId, MealDto mealDto) {
+    public Mono<MealDto> updateMeal(String mealId, MealDto mealDto) {
         Meal meal = findById(mealId).block();
         meal.setName(mealDto.getName());
         meal.setRecipe(mealDto.getRecipe());

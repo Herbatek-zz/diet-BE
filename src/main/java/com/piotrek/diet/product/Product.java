@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Document
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {})
 public class Product extends BaseEntity {
 
     @NotNull

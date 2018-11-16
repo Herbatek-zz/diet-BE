@@ -44,6 +44,10 @@ public class ProductService {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
+    Mono<ProductDto> updateProduct(String id, ProductDto productUpdate) {
+        return null;
+    }
+
     Mono<Page<ProductDto>> findAllPageable(Pageable pageable) {
         return productRepository
                 .findAll()
