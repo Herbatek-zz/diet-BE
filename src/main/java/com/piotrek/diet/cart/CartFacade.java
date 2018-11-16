@@ -5,6 +5,7 @@ import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductService;
+import com.piotrek.diet.user.User;
 import com.piotrek.diet.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,7 +36,9 @@ public class CartFacade {
         try {
             cart = cartService.findByUserIdAndDate(userId, date).block();
         } catch (NotFoundException e) {
-            cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
+            User user = userService.findById(userId).block();
+            cart = new Cart(userId, date, user.getCaloriesPerDay(), user.getCarbohydratePerDay(),
+                    user.getProteinPerDay(), user.getFatPerDay());
         }
         Meal meal = mealService.findById(mealId).block();
         if (cart.getMeals().contains(meal)) {
@@ -81,7 +84,9 @@ public class CartFacade {
         try {
             cart = cartService.findByUserIdAndDate(userId, date).block();
         } catch (NotFoundException e) {
-            cart = new Cart(userId, date, userService.findById(userId).block().getCaloriesPerDay());
+            User user = userService.findById(userId).block();
+            cart = new Cart(userId, date, user.getCaloriesPerDay(), user.getCarbohydratePerDay(),
+                    user.getProteinPerDay(), user.getFatPerDay());
         }
 
         Product product = productService.findById(productId).block();

@@ -19,7 +19,6 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    @ResponseStatus(OK)
     Mono<Page<ProductDto>> findAll(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
@@ -27,13 +26,11 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(OK)
     Mono<ProductDto> findById(@PathVariable String id) {
         return productService.findDtoById(id);
     }
 
     @GetMapping("/search")
-    @ResponseStatus(OK)
     Mono<Page<ProductDto>> searchByName(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,

@@ -21,6 +21,9 @@ public class UserDtoConverter implements DtoConverter<User, UserDto> {
         userDto.setHeight(user.getHeight());
         userDto.setWeight(user.getWeight());
         userDto.setCaloriesPerDay(user.getCaloriesPerDay());
+        userDto.setProteinPerDay(user.getProteinPerDay());
+        userDto.setCarbohydratePerDay(user.getCarbohydratePerDay());
+        userDto.setFatPerDay(user.getFatPerDay());
         return userDto;
     }
 
@@ -39,6 +42,9 @@ public class UserDtoConverter implements DtoConverter<User, UserDto> {
         user.setHeight(dto.getHeight());
         user.setWeight(dto.getWeight());
         user.setCaloriesPerDay(dto.getCaloriesPerDay());
+        user.setProteinPerDay(dto.getProteinPerDay());
+        user.setCarbohydratePerDay(dto.getCarbohydratePerDay());
+        user.setFatPerDay(dto.getFatPerDay());
         return user;
     }
 }

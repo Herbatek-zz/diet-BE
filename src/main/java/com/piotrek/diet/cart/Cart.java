@@ -28,16 +28,29 @@ public class Cart extends BaseEntity {
     private int targetUserCalories;
 
     @NotNull
+    private int targetUserProtein;
+
+    @NotNull
+    private int targetUserCarbohydrate;
+
+    @NotNull
+    private int targetUserFat;
+
+    @NotNull
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     private ArrayList<Meal> meals = new ArrayList<>();
     private ArrayList<Product> products = new ArrayList<>();
 
-    public Cart(String userId, LocalDate date, int targetUserCalories) {
+    public Cart(String userId, LocalDate date, int targetUserCalories, int targetUserCarbohydrate, int targetUserProtein,
+                int targetUserFat) {
         this.userId = userId;
         this.date = date;
         this.targetUserCalories = targetUserCalories;
+        this.targetUserCarbohydrate = targetUserCarbohydrate;
+        this.targetUserProtein = targetUserProtein;
+        this.targetUserFat = targetUserFat;
     }
 
     public Cart(String id, String userId, int targetUserCalories, LocalDate date) {

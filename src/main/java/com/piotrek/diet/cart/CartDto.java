@@ -3,7 +3,9 @@ package com.piotrek.diet.cart;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.product.ProductDto;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -23,6 +25,15 @@ public class CartDto {
     private int targetUserCalories;
 
     @NotNull
+    private int targetUserProtein;
+
+    @NotNull
+    private int targetUserCarbohydrate;
+
+    @NotNull
+    private int targetUserFat;
+
+    @NotNull
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
@@ -40,10 +51,14 @@ public class CartDto {
     private ArrayList<ProductDto> products = new ArrayList<>();
     private ArrayList<ProductDto> allProducts = new ArrayList<>();
 
-    public CartDto(String userId, LocalDate date, int targetUserCalories) {
+    public CartDto(String userId, LocalDate date, int targetUserCalories, int targetUserCarbohydrate, int targetUserProtein,
+                   int targetUserFat) {
         this.userId = userId;
         this.date = date;
         this.targetUserCalories = targetUserCalories;
+        this.targetUserCarbohydrate = targetUserCarbohydrate;
+        this.targetUserProtein = targetUserProtein;
+        this.targetUserFat = targetUserFat;
     }
 
     public CartDto(String id, String userId, int targetUserCalories, LocalDate date) {

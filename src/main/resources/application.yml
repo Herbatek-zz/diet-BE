@@ -5,7 +5,7 @@ spring:
       password: admin1
       authentication-database: admin
       port: 27017
-      host: backend_mongodb_1
+#      host: backend_mongodb_1
 
 
 facebook:

@@ -2,6 +2,7 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.exceptions.NotFoundException;
 import com.piotrek.diet.meal.MealDto;
+import com.piotrek.diet.product.enums.Macronutrient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +18,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserDtoConverter userDtoConverter;
     private final CaloriesCalculator caloriesCalculator;
+    private final MacronutrientCalculator macroCalculator;
 
     Mono<UserDto> findDtoById(String id) {
         return findById(id).map(userDtoConverter::toDto);
@@ -61,6 +63,9 @@ public class UserService {
                 .doOnNext(user -> user.setWeight(userDto.getWeight()))
                 .doOnNext(user -> user.setHeight(userDto.getHeight()))
                 .doOnNext(user -> user.setCaloriesPerDay(caloriesCalculator.calculateCaloriesPerDay(userDto)))
+                .doOnNext(user -> user.setCarbohydratePerDay(macroCalculator.calculateDailyCarbohydrate(user.getCaloriesPerDay())))
+                .doOnNext(user -> user.setProteinPerDay(macroCalculator.calculateDailyProtein(user.getCaloriesPerDay())))
+                .doOnNext(user -> user.setFatPerDay(macroCalculator.calculateDailyFat(user.getCaloriesPerDay())))
                 .flatMap(userRepository::save)
                 .map(userDtoConverter::toDto);
     }

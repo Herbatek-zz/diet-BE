@@ -58,6 +58,12 @@ public class User extends BaseEntity {
 
     private int caloriesPerDay;
 
+    private int proteinPerDay;
+
+    private int carbohydratePerDay;
+
+    private int fatPerDay;
+
     @NotNull
     private LocalDateTime createdAt;
 

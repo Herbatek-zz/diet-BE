@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.time.LocalDate;
 
+import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
 import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
 import static com.piotrek.diet.security.helpers.SecurityConstants.COOKIE_MAX_AGE;
@@ -31,13 +32,11 @@ public class UserController {
     private final CartFacade cartFacade;
 
     @GetMapping("/{id}")
-    @ResponseStatus(OK)
     Mono<UserDto> findUserById(@PathVariable String id) {
         return userFacade.findDtoUser(id);
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(OK)
     Mono<UserDto> updateUser(@PathVariable String id, @RequestBody @Valid UserDto userDto, HttpServletResponse response) {
         UserDto updated = userFacade.updateUser(id, userDto).block();
         Token token = userFacade.findToken(updated.getId()).block();
@@ -50,7 +49,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/products")
-    @ResponseStatus(OK)
     Mono<Page<ProductDto>> findUserProducts(
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
@@ -59,7 +57,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/meals")
-    @ResponseStatus(OK)
     Mono<Page<MealDto>> findUserMeals(
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
@@ -68,8 +65,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/carts")
-    @ResponseStatus(OK)
-    Mono<CartDto> findUserCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+    Mono<CartDto> findUserCart(@PathVariable String id, @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate date) {
         return cartFacade.findDtoCartByUserAndDate(id, date);
     }
 
@@ -86,7 +82,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/meals/favourites")
-    @ResponseStatus(OK)
     Mono<Page<MealDto>> getFavouriteMeals(
             @PathVariable String id,
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
@@ -107,38 +102,33 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/meals/{mealId}/favourites")
-    @ResponseStatus(OK)
     Mono<Boolean> isFavouriteMeal(@PathVariable String userId, @PathVariable String mealId) {
         return userFacade.isFavourite(userId, mealId);
     }
 
     @PostMapping("/{userId}/carts/meals/{mealId}")
-    @ResponseStatus(OK)
     Mono<CartDto> addMealToCart(@PathVariable String userId, @PathVariable String mealId,
-                                @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
+                                @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate date,
                                 @RequestParam int amount) {
         return cartFacade.addMealToCart(userId, mealId, date, amount);
     }
 
     @PostMapping("/{userId}/carts/products/{productId}")
-    @ResponseStatus(OK)
     Mono<CartDto> addProductToCart(@PathVariable String userId, @PathVariable String productId,
-                                   @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
+                                   @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate date,
                                    @RequestParam int amount) {
         return cartFacade.addProductToCart(userId, productId, date, amount);
     }
 
     @DeleteMapping("/{userId}/carts/meals/{mealId}")
-    @ResponseStatus(OK)
     Mono<CartDto> deleteMealFromCart(@PathVariable String userId, @PathVariable String mealId,
-                                     @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+                                     @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate date) {
         return cartFacade.deleteMealFromCart(userId, mealId, date);
     }
 
     @DeleteMapping("/{userId}/carts/products/{productId}")
-    @ResponseStatus(OK)
     Mono<CartDto> deleteProductFromCart(@PathVariable String userId, @PathVariable String productId,
-                                        @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+                                        @RequestParam @DateTimeFormat(pattern = DATE_FORMAT) LocalDate date) {
         return cartFacade.deleteProductFromCart(userId, productId, date);
     }
 }

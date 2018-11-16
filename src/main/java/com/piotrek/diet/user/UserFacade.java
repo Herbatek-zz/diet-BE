@@ -43,16 +43,17 @@ public class UserFacade {
         String tokenValue = tokenService.generateToken(userDto);
         tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
 
-        Cart cart = null;
         try {
-            cart = cartService.findByUserIdAndDate(userDto.getId(), LocalDate.now()).block();
-        } catch (NotFoundException e) { }
-        if (cart != null) {
+            Cart cart = cartService.findByUserIdAndDate(userDto.getId(), LocalDate.now()).block();
             cart.setTargetUserCalories(userDto.getCaloriesPerDay());
+            cart.setTargetUserProtein(userDto.getProteinPerDay());
+            cart.setTargetUserCarbohydrate(userDto.getCarbohydratePerDay());
+            cart.setTargetUserFat(userDto.getFatPerDay());
             cartService.save(cart).block();
+        } catch (NotFoundException e) {
+        } finally {
+            return Mono.just(userDto);
         }
-
-        return Mono.just(userDto);
     }
 
     Mono<Token> findToken(String userId) {

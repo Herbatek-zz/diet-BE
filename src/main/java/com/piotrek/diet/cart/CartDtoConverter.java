@@ -19,7 +19,8 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
 
     @Override
     public CartDto toDto(Cart entity) {
-        var cartDto = new CartDto(entity.getUserId(), entity.getDate(), entity.getTargetUserCalories());
+        var cartDto = new CartDto(entity.getUserId(), entity.getDate(), entity.getTargetUserCalories(), entity.getTargetUserCarbohydrate(),
+                entity.getTargetUserProtein(), entity.getTargetUserFat());
         cartDto.setId(entity.getId());
         cartDto.setMeals(mealDtoConverter.listToDto(entity.getMeals()));
         cartDto.setProducts(productDtoConverter.listToDto(entity.getProducts()));
@@ -35,7 +36,8 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
 
     @Override
     public Cart fromDto(CartDto dto) {
-        var cart = new Cart(dto.getUserId(), dto.getDate(), dto.getTargetUserCalories());
+        var cart = new Cart(dto.getUserId(), dto.getDate(), dto.getTargetUserCalories(), dto.getTargetUserCarbohydrate(),
+                dto.getTargetUserProtein(), dto.getTargetUserFat());
         cart.setId(dto.getId());
         cart.setMeals(mealDtoConverter.listFromDto(dto.getMeals()));
         cart.setProducts(productDtoConverter.listFromDto(dto.getProducts()));

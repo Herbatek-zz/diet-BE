@@ -52,6 +52,12 @@ public class UserDto {
 
     private int caloriesPerDay;
 
+    private int proteinPerDay;
+
+    private int carbohydratePerDay;
+
+    private int fatPerDay;
+
     public UserDto(String id, String username, String email, String firstName, String lastName, String picture_url,
                    Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay) {
         this.id = id;

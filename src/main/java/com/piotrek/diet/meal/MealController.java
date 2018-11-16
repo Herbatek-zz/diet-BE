@@ -11,7 +11,6 @@ import javax.validation.Valid;
 import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/meals")
@@ -21,7 +20,6 @@ public class MealController {
     private final MealService mealService;
 
     @GetMapping
-    @ResponseStatus(OK)
     Mono<Page<MealDto>> findAll(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
@@ -29,13 +27,11 @@ public class MealController {
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(OK)
     Mono<MealDto> findById(@PathVariable String id) {
         return mealService.findDtoById(id);
     }
 
     @GetMapping("/search")
-    @ResponseStatus(OK)
     Mono<Page<MealDto>> searchByName(
             @RequestParam(defaultValue = FIRST_PAGE_NUM) int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
@@ -44,7 +40,6 @@ public class MealController {
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(OK)
     Mono<MealDto> editMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
         return mealService.updateMeal(id, mealDto);
     }
