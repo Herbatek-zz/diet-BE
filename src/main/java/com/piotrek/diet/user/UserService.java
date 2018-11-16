@@ -1,8 +1,6 @@
 package com.piotrek.diet.user;
 
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
-import com.piotrek.diet.meal.MealDto;
-import com.piotrek.diet.product.enums.Macronutrient;
+import com.piotrek.diet.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;

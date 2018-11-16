@@ -1,5 +1,6 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.helpers.BaseDto;
 import com.piotrek.diet.product.ProductDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,13 +12,12 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class MealDto {
-
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class MealDto extends BaseDto {
 
     @NotNull
     @Size(min = 2, max = 60)
@@ -63,11 +63,7 @@ public class MealDto {
     private String userId;
 
     public MealDto(String id) {
-        this.id = id;
+        super(id);
     }
 
-    @Override
-    public String toString() {
-        return "{id=" + id + ", name=" + name + ", description=" + description + ", recipe=" + recipe + ", protein=" + protein + ", carbohydrate=" + carbohydrate + ", fat=" + fat + ", fibre=" + fibre + ", kcal=" + kcal + ", amount=" + amount + ", carbohydrateExchange=" + carbohydrateExchange + ", proteinAndFatEquivalent=" + proteinAndFatEquivalent + ", imageUrl=" + imageUrl + ", products=" + products + ", userId=" + userId + "}";
-    }
 }

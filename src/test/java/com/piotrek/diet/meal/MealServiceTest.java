@@ -3,7 +3,7 @@ package com.piotrek.diet.meal;
 import com.piotrek.diet.helpers.MealSample;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.product.ProductDtoConverter;
 import org.decimal4j.util.DoubleRounder;
 import org.junit.jupiter.api.BeforeEach;

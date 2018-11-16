@@ -1,4 +1,4 @@
-package com.piotrek.diet.helpers.loggers;
+package com.piotrek.diet.loggers;
 
 import com.piotrek.diet.meal.MealDto;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 
-import static com.piotrek.diet.helpers.loggers.Constants.LOGGER_PREFIX;
+import static com.piotrek.diet.loggers.Constants.LOGGER_PREFIX;
 
 @Slf4j
 @Aspect

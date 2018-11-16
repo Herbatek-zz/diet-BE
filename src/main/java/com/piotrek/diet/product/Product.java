@@ -1,19 +1,15 @@
 package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.BaseEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 
-@Getter
-@Setter
-@ToString
+@Data
 @Document
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Product extends BaseEntity {
 
     @NotNull

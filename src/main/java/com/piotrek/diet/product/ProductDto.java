@@ -1,5 +1,6 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.helpers.BaseDto;
 import lombok.*;
 
 import javax.validation.constraints.Max;
@@ -10,10 +11,8 @@ import javax.validation.constraints.Size;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class ProductDto {
-
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class ProductDto extends BaseDto {
 
     @NotNull
     @Size(min = 2, max = 60)

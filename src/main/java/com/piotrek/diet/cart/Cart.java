@@ -4,21 +4,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.piotrek.diet.helpers.BaseEntity;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.product.Product;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-@Getter
-@Setter
-@ToString
+import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
+
+@Data
 @Document
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Cart extends BaseEntity {
 
     @NotNull
@@ -37,7 +35,7 @@ public class Cart extends BaseEntity {
     private int targetUserFat;
 
     @NotNull
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = DATE_FORMAT)
     private LocalDate date;
 
     private ArrayList<Meal> meals = new ArrayList<>();

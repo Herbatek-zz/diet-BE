@@ -1,4 +1,4 @@
-package com.piotrek.diet.helpers.exceptions;
+package com.piotrek.diet.exceptions;
 
 public class NotFoundException extends RuntimeException {
 

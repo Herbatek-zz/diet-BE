@@ -1,5 +1,6 @@
 package com.piotrek.diet.user;
 
+import com.piotrek.diet.helpers.BaseDto;
 import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Sex;
 import lombok.Data;
@@ -13,10 +14,8 @@ import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class UserDto {
-
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class UserDto extends BaseDto {
 
     @NotNull
     @Size(max = 15)
@@ -60,7 +59,7 @@ public class UserDto {
 
     public UserDto(String id, String username, String email, String firstName, String lastName, String picture_url,
                    Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay) {
-        this.id = id;
+        super(id);
         this.username = username;
         this.email = email;
         this.firstName = firstName;

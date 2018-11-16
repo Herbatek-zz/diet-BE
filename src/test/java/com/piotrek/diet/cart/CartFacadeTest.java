@@ -4,7 +4,7 @@ import com.piotrek.diet.helpers.CartSample;
 import com.piotrek.diet.helpers.MealSample;
 import com.piotrek.diet.helpers.ProductSample;
 import com.piotrek.diet.helpers.UserSample;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealService;

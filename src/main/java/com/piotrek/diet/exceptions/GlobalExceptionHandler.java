@@ -1,4 +1,4 @@
-package com.piotrek.diet.helpers.exceptions;
+package com.piotrek.diet.exceptions;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;

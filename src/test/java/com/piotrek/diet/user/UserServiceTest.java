@@ -1,14 +1,13 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.helpers.UserSample;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.exceptions.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

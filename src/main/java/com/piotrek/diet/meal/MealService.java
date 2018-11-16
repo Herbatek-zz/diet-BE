@@ -1,7 +1,7 @@
 package com.piotrek.diet.meal;
 
 import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDtoConverter;
 import lombok.RequiredArgsConstructor;

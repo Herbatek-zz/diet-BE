@@ -9,11 +9,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 
-@Getter
-@Setter
-@ToString
+@Data
 @Document
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Meal extends BaseEntity {
 
     @NotNull

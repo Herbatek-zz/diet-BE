@@ -1,6 +1,7 @@
 package com.piotrek.diet.cart;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.piotrek.diet.helpers.BaseDto;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.product.ProductDto;
 import lombok.Data;
@@ -11,12 +12,12 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
+
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-public class CartDto {
-
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class CartDto extends BaseDto {
 
     @NotNull
     private String userId;
@@ -34,7 +35,7 @@ public class CartDto {
     private int targetUserFat;
 
     @NotNull
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = DATE_FORMAT)
     private LocalDate date;
 
     private int itemCounter;
@@ -62,7 +63,7 @@ public class CartDto {
     }
 
     public CartDto(String id, String userId, int targetUserCalories, LocalDate date) {
-        this.id = id;
+        super(id);
         this.userId = userId;
         this.targetUserCalories = targetUserCalories;
         this.date = date;

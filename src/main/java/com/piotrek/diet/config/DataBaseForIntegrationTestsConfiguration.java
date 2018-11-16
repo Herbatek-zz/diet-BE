@@ -1,4 +1,4 @@
-package com.piotrek.diet.helpers.config;
+package com.piotrek.diet.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;

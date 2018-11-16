@@ -3,7 +3,7 @@ package com.piotrek.diet.user;
 import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;

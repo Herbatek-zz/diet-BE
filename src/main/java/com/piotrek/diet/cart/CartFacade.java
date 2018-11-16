@@ -1,6 +1,6 @@
 package com.piotrek.diet.cart;
 
-import com.piotrek.diet.helpers.exceptions.NotFoundException;
+import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealService;
 import com.piotrek.diet.product.Product;

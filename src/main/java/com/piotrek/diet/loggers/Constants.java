@@ -1,4 +1,4 @@
-package com.piotrek.diet.helpers.loggers;
+package com.piotrek.diet.loggers;
 
 class Constants {
 

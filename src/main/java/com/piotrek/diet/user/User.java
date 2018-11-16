@@ -5,10 +5,7 @@ import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.user.enums.Activity;
 import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.user.enums.Sex;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,11 +14,10 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 
-@Getter
-@Setter
-@ToString
+@Data
 @Document
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class User extends BaseEntity {
 
     @NotNull
