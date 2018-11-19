@@ -12,8 +12,8 @@ class ProductDtoConverterTest {
 
     private ProductDtoConverter productDtoConverter = new ProductDtoConverter();
 
-    private Product product = bananaWithId();
-    private ProductDto productDto = bananaWithIdDto();
+    private Product product = banana();
+    private ProductDto productDto = bananaDto();
 
     @Test
     void toDto() {
@@ -29,23 +29,23 @@ class ProductDtoConverterTest {
 
     @Test
     void listToDto() {
-        var products = List.of(bananaWithId(), breadWithId());
+        var products = List.of(banana(), bread());
         var convertedList = productDtoConverter.listToDto(products);
 
         assertAll(
-                () -> assertProductFields(bananaWithIdDto(), convertedList.get(0)),
-                () -> assertProductFields(breadWithIdDto(), convertedList.get(1))
+                () -> assertProductFields(bananaDto(), convertedList.get(0)),
+                () -> assertProductFields(breadDto(), convertedList.get(1))
         );
     }
 
     @Test
     void listFromDto() {
-        var productDtos = List.of(bananaWithIdDto(), breadWithIdDto());
+        var productDtos = List.of(bananaDto(), breadDto());
         var convertedList = productDtoConverter.listFromDto(productDtos);
 
         assertAll(
-                () -> assertProductFields(bananaWithId(), convertedList.get(0)),
-                () -> assertProductFields(breadWithId(), convertedList.get(1))
+                () -> assertProductFields(banana(), convertedList.get(0)),
+                () -> assertProductFields(bread(), convertedList.get(1))
         );
     }
 

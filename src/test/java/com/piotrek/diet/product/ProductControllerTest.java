@@ -3,23 +3,26 @@ package com.piotrek.diet.product;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piotrek.diet.DietApplication;
-import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.helpers.PrincipalProvider;
-import com.piotrek.diet.helpers.ProductSample;
 import com.piotrek.diet.config.DataBaseForIntegrationTestsConfiguration;
 import com.piotrek.diet.exceptions.GlobalExceptionHandler;
 import com.piotrek.diet.exceptions.NotFoundException;
+import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.PrincipalProvider;
+import com.piotrek.diet.helpers.ProductSample;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.piotrek.diet.product.enums.Macronutrient.Fat;
+import static com.piotrek.diet.product.enums.Macronutrient.Protein;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 @ExtendWith(SpringExtension.class)
@@ -61,18 +64,19 @@ class ProductControllerTest {
     @Test
     @DisplayName("Find product by id, when found, then return")
     void findById_whenFound_thenReturn() throws JsonProcessingException {
-        final var URI = "/products/" + product.getId();
+        final var URI = "/products/" + productDto.getId();
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(product));
+                .expectBody().json(objectMapper.writeValueAsString(productDto));
     }
 
     @Test
     @DisplayName("Find product by id, when not found, then throw NotFoundException")
     void findById_whenNotFound_thenThrowNotFoundException() {
-        final var URI = "/products/" + UUID.randomUUID().toString();
+        var ID = UUID.randomUUID().toString();
+        final var URI = "/products/" + ID;
         webTestClient.get().uri(URI)
                 .exchange()
                 .expectStatus().isNotFound()
@@ -202,6 +206,56 @@ class ProductControllerTest {
     }
 
     @Test
+    void updateProduct_whenUpdateIsCorrect_thenUpdateProduct() throws JsonProcessingException {
+        final var URI = "/products/" + productDto.getId();
+        PrincipalProvider.provide(productDto.getUserId());
+
+        final var update = ProductSample.bananaDto();
+        update.setName("Inny banan");
+        update.setFat(25);
+        update.setFibre(15);
+        update.setCarbohydrate(50);
+        update.setProtein(2);
+        update.setCarbohydrateExchange((update.getCarbohydrate() - update.getFibre()) / 10);
+        update.setProteinAndFatEquivalent(((update.getProtein() * Protein.getKcal()) + (update.getFat() * Fat.getKcal())) / 100);
+        update.setDescription("Dobry banan, ale jakiś inny");
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON_UTF8)
+                .expectBody().json(objectMapper.writeValueAsString(update));
+    }
+
+    @Test
+    void updateProduct_whenNameIsNull_thenThrowException() {
+        final var URI = "/products/" + productDto.getId();
+        PrincipalProvider.provide(productDto.getUserId());
+
+        final var update = ProductSample.bananaDto();
+        update.setName(null);
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void updateProduct_whenWrongAuth_thenThrowUnauthorized() {
+        final var URI = "/products/" + productDto.getId();
+        final var update = ProductSample.bananaDto();
+
+        PrincipalProvider.provide("something");
+
+        webTestClient.put().uri(URI)
+                .body(BodyInserters.fromObject(update))
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
     void deleteById() {
         PrincipalProvider.provide(product.getUserId());
         final var URI = "/products/" + product.getId();
@@ -216,9 +270,18 @@ class ProductControllerTest {
                 .expectBody(NotFoundException.class);
     }
 
+    @Test
+    void deleteById_whenBadAuth_thenThrowUnauthorized() {
+        PrincipalProvider.provide("randomWord");
+        final var URI = "/products/" + product.getId();
+        webTestClient.delete().uri(URI)
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
     private void createProducts() {
-        product = ProductSample.bananaWithId();
-        product2 = ProductSample.breadWithId();
+        product = ProductSample.banana();
+        product2 = ProductSample.bread();
 
         productDto = productService.save(product).block();
         productDto2 = productService.save(product2).block();

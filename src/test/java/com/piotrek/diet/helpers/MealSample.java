@@ -24,7 +24,7 @@ public class MealSample {
         return meal;
     }
 
-    public static Meal dumplingsWithId() {
+    public static Meal dumplings() {
         var meal = dumplingsWithoutId();
         meal.setId(DUMPLINGS_ID);
         return meal;
@@ -42,7 +42,7 @@ public class MealSample {
         return meal;
     }
 
-    public static MealDto dumplingsWithIdDto() {
+    public static MealDto dumplingsDto() {
         var meal = dumplingsWithoutIdDto();
         meal.setId(DUMPLINGS_ID);
         return meal;
@@ -57,11 +57,11 @@ public class MealSample {
         );
         meal.setRecipe("Rób tą kawę");
         meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
-        meal.setUserId(UserSample.johnWithId().getId());
+        meal.setUserId(UserSample.john().getId());
         return meal;
     }
 
-    public static Meal coffeeWithId() {
+    public static Meal coffee() {
         var meal = coffeeWithoutId();
         meal.setId(COFFEE_ID);
         return meal;
@@ -76,11 +76,11 @@ public class MealSample {
         );
         meal.setRecipe("Rób tą kawę");
         meal.setImageUrl("https://www.elle.pl/uploads/media/default/0003/69/5-najlepszych-przepisow-na-kawe-fot-fotolia.jpeg");
-        meal.setUserId(UserSample.johnWithId().getId());
+        meal.setUserId(UserSample.john().getId());
         return meal;
     }
 
-    public static MealDto coffeeWithIdDto() {
+    public static MealDto coffeeDto() {
         var meal = coffeeWithoutIdDto();
         meal.setId(COFFEE_ID);
         return meal;

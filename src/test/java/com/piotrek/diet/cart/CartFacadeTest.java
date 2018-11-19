@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertCartFields;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertMealFields;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
-import static com.piotrek.diet.helpers.MealSample.dumplingsWithId;
-import static com.piotrek.diet.helpers.MealSample.dumplingsWithIdDto;
-import static com.piotrek.diet.helpers.ProductSample.bananaWithId;
-import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
+import static com.piotrek.diet.helpers.MealSample.dumplings;
+import static com.piotrek.diet.helpers.MealSample.dumplingsDto;
+import static com.piotrek.diet.helpers.ProductSample.banana;
+import static com.piotrek.diet.helpers.ProductSample.bananaDto;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -66,13 +66,13 @@ class CartFacadeTest {
 
     @BeforeEach
     void beforeEach() {
-        mealDto = dumplingsWithIdDto();
-        meal = dumplingsWithId();
+        mealDto = dumplingsDto();
+        meal = dumplings();
 
-        productDto = bananaWithIdDto();
-        product = bananaWithId();
+        productDto = bananaDto();
+        product = banana();
 
-        user = UserSample.johnWithId();
+        user = UserSample.john();
 
         cartDto = CartSample.cartDto1();
         cart = CartSample.cart1();
@@ -173,9 +173,9 @@ class CartFacadeTest {
 
         cart.getMeals().add(meal);
         cartDto.getMeals().add(mealDto);
-        cartDto.getMeals().add(MealSample.dumplingsWithIdDto());
+        cartDto.getMeals().add(MealSample.dumplingsDto());
         cartDto.getAllProducts().addAll(mealDto.getProducts());
-        cartDto.getAllProducts().addAll(MealSample.dumplingsWithIdDto().getProducts());
+        cartDto.getAllProducts().addAll(MealSample.dumplingsDto().getProducts());
 
         var block = cartFacade.addMealToCart(user.getId(), meal.getId(), cart.getDate(), 100).block();
 
@@ -305,9 +305,9 @@ class CartFacadeTest {
 
         cart.getProducts().add(product);
         cartDto.getProducts().add(productDto);
-        cartDto.getProducts().add(ProductSample.breadWithIdDto());
+        cartDto.getProducts().add(ProductSample.breadDto());
         cartDto.getAllProducts().add(productDto);
-        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.breadDto());
 
         var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 
@@ -333,7 +333,7 @@ class CartFacadeTest {
         cart.getProducts().add(product);
         cartDto.getProducts().add(productDto);
         cartDto.getAllProducts().add(productDto);
-        cartDto.getAllProducts().add(ProductSample.breadWithIdDto());
+        cartDto.getAllProducts().add(ProductSample.breadDto());
 
         var block = cartFacade.addProductToCart(user.getId(), product.getId(), cart.getDate(), 100).block();
 

@@ -6,13 +6,13 @@ import com.piotrek.diet.cart.CartDto;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static com.piotrek.diet.helpers.UserSample.johnWithId;
+import static com.piotrek.diet.helpers.UserSample.john;
 
 public class CartSample {
 
     private static final String CART1_ID = UUID.randomUUID().toString();
-    private static final String CART1_USER_ID = johnWithId().getId();
-    private static final int USER1_CALORIES_TARGET = johnWithId().getCaloriesPerDay();
+    private static final String CART1_USER_ID = john().getId();
+    private static final int USER1_CALORIES_TARGET = john().getCaloriesPerDay();
 
     public static Cart cart1() {
         return new Cart(CART1_ID, CART1_USER_ID, USER1_CALORIES_TARGET, LocalDate.now());

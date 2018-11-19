@@ -14,7 +14,16 @@ public class CartCalculator {
 
     private final DoubleRounder doubleRounder;
 
-    void calculateCartInfo(CartDto cartDto) {
+    CartDto calculateCartInfo(CartDto cartDto) {
+        var productsFromMeals = retrieveProductsFromMeals(cartDto.getMeals());
+
+        var allProducts = new ArrayList<ProductDto>();
+        allProducts.addAll(cartDto.getProducts());
+        allProducts.addAll(productsFromMeals);
+
+        var allProductsWithoutDuplicates = reduceDuplicates(allProducts);
+        cartDto.setAllProducts(allProductsWithoutDuplicates);
+
         cartDto.getAllProducts()
                 .forEach(productDto -> {
                     cartDto.setProtein(doubleRounder.round(cartDto.getProtein() + productDto.getProtein()));
@@ -22,49 +31,46 @@ public class CartCalculator {
                     cartDto.setFat(doubleRounder.round(cartDto.getFat() + productDto.getFat()));
                     cartDto.setKcal(doubleRounder.round(cartDto.getKcal() + productDto.getKcal()));
                 });
+
+        return cartDto;
     }
 
-    ArrayList<ProductDto> retrieveProductsFromMeals(ArrayList<MealDto> mealDtos) {
+    private ArrayList<ProductDto> retrieveProductsFromMeals(ArrayList<MealDto> mealDtos) {
         var productsFromMeals = new ArrayList<ProductDto>();
         mealDtos.forEach(mealDto -> productsFromMeals.addAll(mealDto.getProducts()));
         return productsFromMeals;
     }
 
-    ArrayList<ProductDto> sumProductsAndProductsFromMeals(ArrayList<ProductDto> products, ArrayList<ProductDto> productsFromMeals) {
-        var allProducts = new ArrayList<ProductDto>();
-        allProducts.addAll(products);
-        allProducts.addAll(productsFromMeals);
-
+    private ArrayList<ProductDto> reduceDuplicates(ArrayList<ProductDto> allProducts) {
         var productsWithoutDuplicates = new ArrayList<ProductDto>();
 
         allProducts.forEach(productToAdd -> {
             if (productsWithoutDuplicates.contains(productToAdd))
-                sumAmountDuplicatedProduct(productsWithoutDuplicates, productToAdd);
-            else
-                productsWithoutDuplicates.add(productToAdd);
+                productToAdd = calculateDuplicatedProduct(productsWithoutDuplicates, productToAdd);
+            productsWithoutDuplicates.add(productToAdd);
         });
         return productsWithoutDuplicates;
     }
 
-    private void sumAmountDuplicatedProduct(ArrayList<ProductDto> mainProductList, ProductDto productToAdd) {
-        int indexOfDuplicatedProduct = mainProductList.indexOf(productToAdd);
-        var duplicatedProduct = mainProductList.remove(indexOfDuplicatedProduct);
+    private ProductDto calculateDuplicatedProduct(ArrayList<ProductDto> withoutDuplicates, ProductDto duplicated) {
+        int indexOfDuplicatedProduct = withoutDuplicates.indexOf(duplicated);
+        var duplicatedProduct = withoutDuplicates.remove(indexOfDuplicatedProduct);
 
-        var sumDuplicated = new ProductDto();
-        sumDuplicated.setAmount(duplicatedProduct.getAmount() + productToAdd.getAmount());
-        sumDuplicated.setProtein(duplicatedProduct.getProtein() + productToAdd.getProtein());
-        sumDuplicated.setCarbohydrateExchange(duplicatedProduct.getCarbohydrateExchange() + productToAdd.getCarbohydrateExchange());
-        sumDuplicated.setCarbohydrate(duplicatedProduct.getCarbohydrate() + productToAdd.getCarbohydrate());
-        sumDuplicated.setFat(duplicatedProduct.getFat() + productToAdd.getFat());
-        sumDuplicated.setFibre(duplicatedProduct.getFibre() + productToAdd.getFibre());
-        sumDuplicated.setDescription(productToAdd.getDescription());
-        sumDuplicated.setUserId(productToAdd.getUserId());
-        sumDuplicated.setProteinAndFatEquivalent(duplicatedProduct.getProteinAndFatEquivalent() + productToAdd.getProteinAndFatEquivalent());
-        sumDuplicated.setId(productToAdd.getId());
-        sumDuplicated.setImageUrl(productToAdd.getImageUrl());
-        sumDuplicated.setKcal(duplicatedProduct.getKcal() + productToAdd.getKcal());
-        sumDuplicated.setName(productToAdd.getName());
+        var productToAdd = new ProductDto();
+        productToAdd.setAmount(duplicatedProduct.getAmount() + duplicated.getAmount());
+        productToAdd.setProtein(duplicatedProduct.getProtein() + duplicated.getProtein());
+        productToAdd.setCarbohydrateExchange(duplicatedProduct.getCarbohydrateExchange() + duplicated.getCarbohydrateExchange());
+        productToAdd.setCarbohydrate(duplicatedProduct.getCarbohydrate() + duplicated.getCarbohydrate());
+        productToAdd.setFat(duplicatedProduct.getFat() + duplicated.getFat());
+        productToAdd.setFibre(duplicatedProduct.getFibre() + duplicated.getFibre());
+        productToAdd.setDescription(duplicated.getDescription());
+        productToAdd.setUserId(duplicated.getUserId());
+        productToAdd.setProteinAndFatEquivalent(duplicatedProduct.getProteinAndFatEquivalent() + duplicated.getProteinAndFatEquivalent());
+        productToAdd.setId(duplicated.getId());
+        productToAdd.setImageUrl(duplicated.getImageUrl());
+        productToAdd.setKcal(duplicatedProduct.getKcal() + duplicated.getKcal());
+        productToAdd.setName(duplicated.getName());
 
-        mainProductList.add(sumDuplicated);
+        return productToAdd;
     }
 }

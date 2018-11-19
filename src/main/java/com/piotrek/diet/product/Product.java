@@ -46,4 +46,8 @@ public class Product extends BaseEntity {
 
     @NotNull
     private String userId;
+
+    public Product(String id) {
+        super(id);
+    }
 }

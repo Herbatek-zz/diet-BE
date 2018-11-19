@@ -22,13 +22,7 @@ public class CartDtoConverter implements DtoConverter<Cart, CartDto> {
         cartDto.setMeals(mealDtoConverter.listToDto(entity.getMeals()));
         cartDto.setProducts(productDtoConverter.listToDto(entity.getProducts()));
         cartDto.setItemCounter(entity.getMeals().size() + entity.getProducts().size());
-
-        var productsFromMeals = cartCalculator.retrieveProductsFromMeals(cartDto.getMeals());
-        var allProducts = cartCalculator.sumProductsAndProductsFromMeals(cartDto.getProducts(), productsFromMeals);
-        cartDto.setAllProducts(allProducts);
-        cartCalculator.calculateCartInfo(cartDto);
-
-        return cartDto;
+        return cartCalculator.calculateCartInfo(cartDto);
     }
 
     @Override

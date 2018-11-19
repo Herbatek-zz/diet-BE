@@ -56,20 +56,4 @@ public class UserDto extends BaseDto {
     private int carbohydratePerDay;
 
     private int fatPerDay;
-
-    public UserDto(String id, String username, String email, String firstName, String lastName, String picture_url,
-                   Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay) {
-        super(id);
-        this.username = username;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.picture_url = picture_url;
-        this.sex = sex;
-        this.activity = activity;
-        this.age = age;
-        this.height = height;
-        this.weight = weight;
-        this.caloriesPerDay = caloriesPerDay;
-    }
 }

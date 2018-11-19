@@ -15,8 +15,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-import static com.piotrek.diet.helpers.UserSample.johnWithId;
-import static com.piotrek.diet.helpers.UserSample.johnWithIdDto;
+import static com.piotrek.diet.helpers.UserSample.john;
+import static com.piotrek.diet.helpers.UserSample.johnDto;
 import static com.piotrek.diet.security.helpers.SecurityConstants.SECRET;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,8 +30,8 @@ class TokenServiceTest {
     private TokenService tokenService;
 
     private Token token;
-    private User user = johnWithId();
-    private UserDto userDto = johnWithIdDto();
+    private User user = john();
+    private UserDto userDto = johnDto();
 
     @BeforeEach
     void beforeEach() {

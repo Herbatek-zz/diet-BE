@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.piotrek.diet.helpers.MealSample.*;
-import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
-import static com.piotrek.diet.helpers.ProductSample.breadWithIdDto;
+import static com.piotrek.diet.helpers.ProductSample.bananaDto;
+import static com.piotrek.diet.helpers.ProductSample.breadDto;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -248,17 +248,17 @@ class MealControllerTest {
         // prepare update
         final var productDtos = new ArrayList<ProductDto>(2);
 
-        final var firstProduct = bananaWithIdDto();
+        final var firstProduct = bananaDto();
         firstProduct.setAmount(FIRST_PRODUCT_AMOUNT);
         firstProduct.setUserId("someId");
         productDtos.add(firstProduct);
 
-        final var secondProduct = breadWithIdDto();
+        final var secondProduct = breadDto();
         secondProduct.setAmount(SECOND_PRODUCT_AMOUNT);
         secondProduct.setUserId("id");
         productDtos.add(secondProduct);
 
-        final MealDto update = dumplingsWithIdDto();
+        final MealDto update = dumplingsDto();
         update.setName("updated name");
         update.setRecipe("updated recipe");
         update.setDescription("updated description");
@@ -296,7 +296,7 @@ class MealControllerTest {
         expectedSecondProduct.setCarbohydrate(doubleRounder.round(expectedSecondProduct.getCarbohydrate() * SECOND_DIVIDER));
         expectedSecondProduct.setCarbohydrateExchange(doubleRounder.round(expectedSecondProduct.getCarbohydrateExchange() * SECOND_DIVIDER));
 
-        final MealDto expected = dumplingsWithIdDto();
+        final MealDto expected = dumplingsDto();
         expected.setName("updated name");
         expected.setRecipe("updated recipe");
         expected.setDescription("updated description");
@@ -324,7 +324,7 @@ class MealControllerTest {
     void updateMeal_whenUpdateHasNoName_throwBadRequestException() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
 
-        final var update = dumplingsWithIdDto();
+        final var update = dumplingsDto();
         update.setName(null);
 
         webTestClient.put().uri(URI)
@@ -344,7 +344,7 @@ class MealControllerTest {
     void updateMeal_whenUpdateHasNoRecipe_throwBadRequestException() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
 
-        final var update = dumplingsWithIdDto();
+        final var update = dumplingsDto();
         update.setRecipe(null);
 
         webTestClient.put().uri(URI)
@@ -364,7 +364,7 @@ class MealControllerTest {
     void updateMeal_whenUpdateHasNoDescription_throwBadRequestException() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
 
-        final var update = dumplingsWithIdDto();
+        final var update = dumplingsDto();
         update.setDescription(null);
 
         webTestClient.put().uri(URI)
@@ -384,7 +384,7 @@ class MealControllerTest {
     void updateMeal_whenUpdateHasNoImageUrl_throwBadRequestException() throws JsonProcessingException {
         final var URI = "/meals/" + meal1.getId();
 
-        final var update = dumplingsWithIdDto();
+        final var update = dumplingsDto();
         update.setImageUrl(null);
 
         webTestClient.put().uri(URI)
@@ -416,8 +416,8 @@ class MealControllerTest {
     }
 
     private void createMeals() {
-        meal1 = mealService.save(dumplingsWithId()).block();
-        meal2 = mealService.save(coffeeWithId()).block();
+        meal1 = mealService.save(dumplings()).block();
+        meal2 = mealService.save(coffee()).block();
 
         mealDto1 = mealDtoConverter.toDto(meal1);
         mealDto2 = mealDtoConverter.toDto(meal2);

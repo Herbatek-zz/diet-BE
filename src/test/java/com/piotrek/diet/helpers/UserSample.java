@@ -7,7 +7,6 @@ import com.piotrek.diet.user.enums.Role;
 import com.piotrek.diet.user.enums.Sex;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.UUID;
 
 public class UserSample {
@@ -25,19 +24,55 @@ public class UserSample {
     private final static int JOHN_HEIGHT = 178;
     private final static int JOHN_WEIGHT = 90;
     private final static int JOHN_CALORIES = 3000;
+    private final static int JOHN_PROTEIN = 160;
+    private final static int JOHN_CARBO = 340;
+    private final static int JOHN_FAT = 95;
 
     private final static String BAILEY_ID = UUID.randomUUID().toString();
     private final static Long BAILEY_FACEBOOK_ID = 987654321332L;
 
-    public static User johnWithId() {
-        return new User(JOHN_ID, JOHN_FACEBOOK_ID, JOHN_USERNAME, JOHN_EMAIL, JOHN_FIRST_NAME, JOHN_LAST_NAME,
-                JOHN_PICTURE_URL, JOHN_SEX, JOHN_ACTIVITY, JOHN_AGE, JOHN_HEIGHT, JOHN_WEIGHT, JOHN_CALORIES,
-                LocalDateTime.now(), LocalDateTime.now(), Role.ROLE_USER);
+    public static User john() {
+        User user = new User();
+        user.setId(JOHN_ID);
+        user.setFacebookId(JOHN_FACEBOOK_ID);
+        user.setUsername(JOHN_USERNAME);
+        user.setEmail(JOHN_EMAIL);
+        user.setFirstName(JOHN_FIRST_NAME);
+        user.setLastName(JOHN_LAST_NAME);
+        user.setPictureUrl(JOHN_PICTURE_URL);
+        user.setSex(JOHN_SEX);
+        user.setActivity(JOHN_ACTIVITY);
+        user.setAge(JOHN_AGE);
+        user.setHeight(JOHN_HEIGHT);
+        user.setWeight(JOHN_WEIGHT);
+        user.setCaloriesPerDay(JOHN_CALORIES);
+        user.setProteinPerDay(JOHN_PROTEIN);
+        user.setCarbohydratePerDay(JOHN_CARBO);
+        user.setFatPerDay(JOHN_FAT);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setLastVisit(LocalDateTime.now());
+        user.setRole(Role.ROLE_USER);
+        return user;
     }
 
-    public static UserDto johnWithIdDto() {
-        return new UserDto(JOHN_ID, JOHN_USERNAME, JOHN_EMAIL, JOHN_FIRST_NAME, JOHN_LAST_NAME, JOHN_PICTURE_URL,
-                JOHN_SEX, JOHN_ACTIVITY, JOHN_AGE, JOHN_HEIGHT, JOHN_WEIGHT, JOHN_CALORIES);
+    public static UserDto johnDto() {
+        UserDto user = new UserDto();
+        user.setId(JOHN_ID);
+        user.setUsername(JOHN_USERNAME);
+        user.setEmail(JOHN_EMAIL);
+        user.setFirstName(JOHN_FIRST_NAME);
+        user.setLastName(JOHN_LAST_NAME);
+        user.setPicture_url(JOHN_PICTURE_URL);
+        user.setSex(JOHN_SEX);
+        user.setActivity(JOHN_ACTIVITY);
+        user.setAge(JOHN_AGE);
+        user.setHeight(JOHN_HEIGHT);
+        user.setWeight(JOHN_WEIGHT);
+        user.setCaloriesPerDay(JOHN_CALORIES);
+        user.setProteinPerDay(JOHN_PROTEIN);
+        user.setCarbohydratePerDay(JOHN_CARBO);
+        user.setFatPerDay(JOHN_FAT);
+        return user;
     }
 
     public static User baileyWithId() {

@@ -13,7 +13,7 @@ class CaloriesCalculatorTest {
 
     @Test
     void calculateCaloriesPerDay_whenManAndAverageActivity_thenCalculate() {
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setAge(23);
         user.setWeight(81);
         user.setHeight(175);
@@ -29,7 +29,7 @@ class CaloriesCalculatorTest {
     @Test
     void calculateCaloriesPerDay_whenNoAge_thenReturn0() {
         final int EXPECTED = 0;
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setWeight(81);
         user.setAge(0);
         user.setHeight(175);
@@ -44,7 +44,7 @@ class CaloriesCalculatorTest {
     @Test
     void calculateCaloriesPerDay_whenNoWeight_thenReturn0() {
         final int EXPECTED = 0;
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setWeight(0);
         user.setAge(23);
         user.setHeight(175);
@@ -59,7 +59,7 @@ class CaloriesCalculatorTest {
     @Test
     void calculateCaloriesPerDay_whenNoHeight_thenReturn0() {
         final int EXPECTED = 0;
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setWeight(81);
         user.setAge(23);
         user.setHeight(0);
@@ -74,7 +74,7 @@ class CaloriesCalculatorTest {
     @Test
     void calculateCaloriesPerDay_whenNoSex_thenReturn0() {
         final int EXPECTED = 0;
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setWeight(81);
         user.setAge(23);
         user.setHeight(175);
@@ -89,7 +89,7 @@ class CaloriesCalculatorTest {
     @Test
     void calculateCaloriesPerDay_whenNoActivity_thenReturn0() {
         final int EXPECTED = 0;
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setWeight(81);
         user.setAge(23);
         user.setHeight(175);
@@ -103,7 +103,7 @@ class CaloriesCalculatorTest {
 
     @Test
     void calculateCaloriesPerDay_whenWomanAndAverageActivity_thenCalculate() {
-        UserDto user = UserSample.johnWithIdDto();
+        UserDto user = UserSample.johnDto();
         user.setAge(45);
         user.setWeight(101);
         user.setHeight(169);

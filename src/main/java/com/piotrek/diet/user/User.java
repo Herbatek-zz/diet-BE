@@ -80,25 +80,4 @@ public class User extends BaseEntity {
         this.role = Role.ROLE_USER;
         this.createdAt = LocalDateTime.now();
     }
-
-    public User(String id, Long facebookId, String username, String email, String firstName, String lastName,
-                String pictureUrl, Sex sex, Activity activity, int age, int height, int weight, int caloriesPerDay,
-                LocalDateTime createdAt, LocalDateTime lastVisit, Role role) {
-        super(id);
-        this.facebookId = facebookId;
-        this.username = username;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.pictureUrl = pictureUrl;
-        this.sex = sex;
-        this.activity = activity;
-        this.age = age;
-        this.height = height;
-        this.weight = weight;
-        this.caloriesPerDay = caloriesPerDay;
-        this.createdAt = createdAt;
-        this.lastVisit = lastVisit;
-        this.role = role;
-    }
 }

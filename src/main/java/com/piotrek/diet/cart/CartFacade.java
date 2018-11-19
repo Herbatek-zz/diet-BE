@@ -104,7 +104,7 @@ public class CartFacade {
     @PreAuthorize("#userId.equals(principal)")
     public Mono<CartDto> deleteProductFromCart(String userId, String productId, LocalDate date) {
         Cart cart = cartService.findByUserIdAndDate(userId, date).block();
-        Product product = productService.findById(productId).block();
+        Product product = new Product(productId);
         if (cart.getProducts().contains(product)) {
             cart.getProducts().remove(product);
             cart = cartService.save(cart).block();

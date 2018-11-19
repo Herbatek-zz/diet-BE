@@ -15,7 +15,7 @@ public class ProductSample {
     public final static String BANANA = "banana";
     public final static String BREAD = "bread";
 
-    public static Product bananaWithId() {
+    public static Product banana() {
         var product = bananaWithoutId();
         product.setId(BANANA_ID);
         return product;
@@ -25,20 +25,20 @@ public class ProductSample {
         var product = new Product();
         product.setName("Banana");
         product.setDescription("Very yellow, so sweet, such tasty");
-        product.setImageUrl("http://bananaWithId-so-good.com");
+        product.setImageUrl("http://banana-so-good.com");
         product.setProtein(1.0);
         product.setCarbohydrate(21.8);
         product.setFat(0.3);
         product.setFibre(1.7);
         product.setKcal(97.0);
         product.setAmount(100);
-        product.setUserId(UserSample.johnWithId().getId());
+        product.setUserId(UserSample.john().getId());
         product.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre()));
         product.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat()));
         return product;
     }
 
-    public static ProductDto bananaWithIdDto() {
+    public static ProductDto bananaDto() {
         var product = bananaWithoutIdDto();
         product.setId(BANANA_ID);
         return product;
@@ -48,20 +48,20 @@ public class ProductSample {
         var productDto = new ProductDto();
         productDto.setName("Banana");
         productDto.setDescription("Very yellow, so sweet, such tasty");
-        productDto.setImageUrl("http://bananaWithId-so-good.com");
+        productDto.setImageUrl("http://banana-so-good.com");
         productDto.setProtein(1.0);
         productDto.setCarbohydrate(21.8);
         productDto.setFat(0.3);
         productDto.setFibre(1.7);
         productDto.setKcal(97.0);
         productDto.setAmount(100);
-        productDto.setUserId(UserSample.johnWithId().getId());
+        productDto.setUserId(UserSample.john().getId());
         productDto.setCarbohydrateExchange(diabetesCalculator.calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre()));
         productDto.setProteinAndFatEquivalent(diabetesCalculator.calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat()));
         return productDto;
     }
 
-    public static Product breadWithId() {
+    public static Product bread() {
         var product = breadWithoutId();
         product.setId(BREAD_ID);
         return product;
@@ -83,7 +83,7 @@ public class ProductSample {
         return product;
     }
 
-    public static ProductDto breadWithIdDto() {
+    public static ProductDto breadDto() {
         var product = breadWithoutIdDto();
         product.setId(BREAD_ID);
         return product;

@@ -6,6 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 import static com.piotrek.diet.helpers.Page.DEFAULT_PAGE_SIZE;
 import static com.piotrek.diet.helpers.Page.FIRST_PAGE_NUM;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -39,7 +41,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    Mono<ProductDto> updateProduct(@PathVariable String id, @RequestBody ProductDto productUpdate) {
+    Mono<ProductDto> updateProduct(@PathVariable String id, @RequestBody @Valid ProductDto productUpdate) {
         return productService.updateProduct(id, productUpdate);
     }
 

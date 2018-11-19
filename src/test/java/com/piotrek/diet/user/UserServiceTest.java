@@ -40,8 +40,8 @@ class UserServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        user = UserSample.johnWithId();
-        userDto = UserSample.johnWithIdDto();
+        user = UserSample.john();
+        userDto = UserSample.johnDto();
         MockitoAnnotations.initMocks(this);
     }
 
@@ -174,7 +174,7 @@ class UserServiceTest {
     @Test
     void findAll_whenTwoUsers_thenReturnFluxWithTwoUsers() {
         final var expectedList = new ArrayList<User>(2);
-        expectedList.add(UserSample.johnWithId());
+        expectedList.add(UserSample.john());
         expectedList.add(UserSample.baileyWithId());
 
         when(userRepository.findAll()).thenReturn(Flux.fromIterable(expectedList));
@@ -219,7 +219,7 @@ class UserServiceTest {
 
     @Test
     void update_whenUpdate_thenUserHasUpdatedFields() {
-        final var userDto = UserSample.johnWithIdDto();
+        final var userDto = UserSample.johnDto();
         userDto.setUsername("Mr Kawek");
         userDto.setFirstName("Janusz");
         userDto.setLastName("Cisowki");
@@ -230,7 +230,7 @@ class UserServiceTest {
         userDto.setWeight(80);
         userDto.setCaloriesPerDay(2765);
 
-        final var user = UserSample.johnWithId();
+        final var user = UserSample.john();
         user.setUsername("Mr Kawek");
         user.setFirstName("Janusz");
         user.setLastName("Cisowki");

@@ -8,6 +8,8 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
+
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -17,7 +19,7 @@ public class CartService {
 
     public Mono<Cart> findByUserIdAndDate(String userId, LocalDate localDate) {
         final var EXCEPTION_MESSAGE = "Not found cart for user [id = " + userId + " and date: " +
-                localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "]";
+                localDate.format(DateTimeFormatter.ofPattern(DATE_FORMAT)) + "]";
 
         return cartRepository.findByUserIdAndDate(userId, localDate)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException(EXCEPTION_MESSAGE))));

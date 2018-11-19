@@ -48,8 +48,8 @@ class MealServiceTest {
     void beforeEach() {
         MockitoAnnotations.initMocks(this);
         mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, doubleRounder);
-        meal = dumplingsWithId();
-        mealDto = dumplingsWithIdDto();
+        meal = dumplings();
+        mealDto = dumplingsDto();
     }
 
     @Test
@@ -129,7 +129,7 @@ class MealServiceTest {
         final var page = 0;
         final var pageSize = 10;
         final var totalElements = 2;
-        final var query = coffeeWithId().getName();
+        final var query = coffee().getName();
         final var mealList = createMealList(totalElements, COFFEE);
         final var mealDtoList = createMealDtoList(totalElements, COFFEE);
         final var expected = new Page<>(mealDtoList
@@ -138,13 +138,13 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList));
-        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+        when(mealDtoConverter.toDto(coffee())).thenReturn(coffeeDto());
 
         final var actualPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
 
         assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
+        verify(mealDtoConverter, times(2)).toDto(coffee());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
@@ -154,7 +154,7 @@ class MealServiceTest {
         final var page = 0;
         final var pageSize = 10;
         final var totalElementsMatchesToQuery = 12;
-        final var query = coffeeWithId().getName();
+        final var query = coffee().getName();
 
         final var mealList = createMealList(totalElementsMatchesToQuery, COFFEE);
         mealList.addAll(createMealList(10, DUMPLINGS));
@@ -169,13 +169,13 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElementsMatchesToQuery);
 
         when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList.subList(0, totalElementsMatchesToQuery)));
-        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+        when(mealDtoConverter.toDto(coffee())).thenReturn(coffeeDto());
 
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
 
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(mealDtoConverter, times(pageSize)).toDto(coffeeWithId());
+        verify(mealDtoConverter, times(pageSize)).toDto(coffee());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
@@ -185,7 +185,7 @@ class MealServiceTest {
         final var page = 1;
         final var pageSize = 10;
         final var totalElementsMatchesToQuery = 12;
-        final var query = coffeeWithId().getName();
+        final var query = coffee().getName();
 
         final var mealList = createMealList(totalElementsMatchesToQuery, COFFEE);
         mealList.addAll(createMealList(10, DUMPLINGS));
@@ -200,13 +200,13 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElementsMatchesToQuery);
 
         when(mealRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(mealList.subList(0, totalElementsMatchesToQuery)));
-        when(mealDtoConverter.toDto(coffeeWithId())).thenReturn(coffeeWithIdDto());
+        when(mealDtoConverter.toDto(coffee())).thenReturn(coffeeDto());
 
         final var firstPage = mealService.searchByName(PageRequest.of(page, pageSize), query).block();
 
         assertEquals(expected, firstPage);
         verify(mealRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(mealDtoConverter, times(2)).toDto(coffeeWithId());
+        verify(mealDtoConverter, times(2)).toDto(coffee());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
@@ -223,17 +223,17 @@ class MealServiceTest {
                 .skip(page * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
-        final var user = UserSample.johnWithId();
+        final var user = UserSample.john();
 
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(mealList));
-        when(mealDtoConverter.toDto(MealSample.dumplingsWithId())).thenReturn(MealSample.dumplingsWithIdDto());
+        when(mealDtoConverter.toDto(MealSample.dumplings())).thenReturn(MealSample.dumplingsDto());
 
         final var actualPage = mealService.findAllByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertNotNull(actualPage);
         assertEquals(expected, actualPage);
         verify(mealRepository, times(1)).findAllByUserId(user.getId());
-        verify(mealDtoConverter, times(totalElements)).toDto(MealSample.dumplingsWithId());
+        verify(mealDtoConverter, times(totalElements)).toDto(MealSample.dumplings());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
@@ -248,7 +248,7 @@ class MealServiceTest {
                 .skip(page * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList()), page, pageSize, totalElements);
-        final var user = UserSample.johnWithId();
+        final var user = UserSample.john();
 
         when(mealRepository.findAllByUserId(user.getId())).thenReturn(Flux.empty());
 
@@ -275,13 +275,13 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
-        when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
+        when(mealDtoConverter.toDto(dumplings())).thenReturn(dumplingsDto());
 
         final var actualFirstPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, actualFirstPage);
         verify(mealRepository, times(1)).findAll();
-        verify(mealDtoConverter, times(10)).toDto(dumplingsWithId());
+        verify(mealDtoConverter, times(10)).toDto(dumplings());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
@@ -300,13 +300,13 @@ class MealServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(mealRepository.findAll()).thenReturn(Flux.fromIterable(mealList));
-        when(mealDtoConverter.toDto(dumplingsWithId())).thenReturn(dumplingsWithIdDto());
+        when(mealDtoConverter.toDto(dumplings())).thenReturn(dumplingsDto());
 
         final var actualSecondPage = mealService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, actualSecondPage);
         verify(mealRepository, times(1)).findAll();
-        verify(mealDtoConverter, times(10)).toDto(dumplingsWithId());
+        verify(mealDtoConverter, times(10)).toDto(dumplings());
         verifyNoMoreInteractions(mealRepository, mealDtoConverter, productDtoConverter);
     }
 
@@ -380,7 +380,7 @@ class MealServiceTest {
     @Test
     @DisplayName("Update meal, when empty list of products, then return meal with empty list")
     void updateMeal_whenEmptyListWithProducts_thenReturnMealWithEmptyList() {
-        final var expectedMeal = dumplingsWithIdDto();
+        final var expectedMeal = dumplingsDto();
         expectedMeal.setProducts(new ArrayList<>());
 
         when(mealRepository.findById(meal.getId())).thenReturn(Mono.just(meal));
@@ -400,14 +400,14 @@ class MealServiceTest {
     @Test
     @DisplayName("Update meal, when update object has different fields, then update the meal")
     void updateMeal_whenSomeInformationAreChanged_thenReturnMealUpdated() {
-        final var expectedDto = dumplingsWithIdDto();
+        final var expectedDto = dumplingsDto();
         expectedDto.setName("Update name");
         expectedDto.setDescription("Update description");
         expectedDto.setRecipe("Update recipe");
         expectedDto.setImageUrl("some updated image");
         expectedDto.setProducts(new ArrayList<>());
 
-        final var expected = dumplingsWithId();
+        final var expected = dumplings();
         expected.setName("Update name");
         expected.setDescription("Update description");
         expected.setRecipe("Update recipe");
@@ -431,11 +431,11 @@ class MealServiceTest {
     @Test
     @DisplayName("Update meal, when the only change is 2 products added, then return the meal calculated with 2 products")
     void updateMeal_whenOnlyListIsChanged_thenReturnMealWith2Products() {
-        var products = new ArrayList<>(Arrays.asList(breadWithId(), bananaWithId()));
-        var productDtos = new ArrayList<>(Arrays.asList(breadWithIdDto(), bananaWithIdDto()));
+        var products = new ArrayList<>(Arrays.asList(bread(), banana()));
+        var productDtos = new ArrayList<>(Arrays.asList(breadDto(), bananaDto()));
 
-        final var expected = dumplingsWithId();
-        final var expectedDto = dumplingsWithIdDto();
+        final var expected = dumplings();
+        final var expectedDto = dumplingsDto();
 
         expected.setProducts(products);
         expected.setProtein(productDtos.get(0).getProtein() + productDtos.get(1).getProtein());
@@ -476,11 +476,11 @@ class MealServiceTest {
         switch (meal) {
             case DUMPLINGS:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(dumplingsWithId());
+                    arrayList.add(dumplings());
                 break;
             case COFFEE:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(coffeeWithId());
+                    arrayList.add(coffee());
                 break;
         }
         return arrayList;
@@ -492,11 +492,11 @@ class MealServiceTest {
         switch (meal) {
             case DUMPLINGS:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(dumplingsWithIdDto());
+                    arrayList.add(dumplingsDto());
                 break;
             case COFFEE:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(coffeeWithIdDto());
+                    arrayList.add(coffeeDto());
                 break;
         }
         return arrayList;

@@ -15,8 +15,8 @@ class UserDtoConverterTest {
 
     @BeforeEach
     void beforeEach() {
-        user = UserSample.johnWithId();
-        userDto = UserSample.johnWithIdDto();
+        user = UserSample.john();
+        userDto = UserSample.johnDto();
     }
 
     @Test

@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertMealFields;
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
 import static com.piotrek.diet.helpers.MealSample.*;
-import static com.piotrek.diet.helpers.ProductSample.bananaWithId;
-import static com.piotrek.diet.helpers.ProductSample.bananaWithIdDto;
+import static com.piotrek.diet.helpers.ProductSample.banana;
+import static com.piotrek.diet.helpers.ProductSample.bananaDto;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -77,7 +77,7 @@ class UserFacadeTest {
     void beforeEach() {
         initProducts();
         initMeals();
-        user = UserSample.johnWithId();
+        user = UserSample.john();
         MockitoAnnotations.initMocks(this);
     }
 
@@ -431,31 +431,31 @@ class UserFacadeTest {
     }
 
     private void initMeals() {
-        mealDto = dumplingsWithIdDto();
-        meal = dumplingsWithId();
-        mealDto2 = coffeeWithIdDto();
-        meal2 = coffeeWithId();
+        mealDto = dumplingsDto();
+        meal = dumplings();
+        mealDto2 = coffeeDto();
+        meal2 = coffee();
     }
 
     private ArrayList<MealDto> createMealDtoList(int size) {
         var arrayList = new ArrayList<MealDto>();
 
         for (int i = 0; i < size; i++)
-            arrayList.add(dumplingsWithIdDto());
+            arrayList.add(dumplingsDto());
 
         return arrayList;
     }
 
     private void initProducts() {
-        productDto = bananaWithIdDto();
-        product = bananaWithId();
+        productDto = bananaDto();
+        product = banana();
     }
 
     private ArrayList<ProductDto> createProductDtoList(int size) {
         var arrayList = new ArrayList<ProductDto>();
 
         for (int i = 0; i < size; i++)
-            arrayList.add(bananaWithIdDto());
+            arrayList.add(bananaDto());
 
         return arrayList;
     }

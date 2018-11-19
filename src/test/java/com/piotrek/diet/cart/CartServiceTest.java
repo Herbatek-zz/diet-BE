@@ -37,7 +37,7 @@ class CartServiceTest {
         MockitoAnnotations.initMocks(this);
         cart = CartSample.cart1();
         cartDto = CartSample.cartDto1();
-        user = UserSample.johnWithId();
+        user = UserSample.john();
     }
 
     @Test

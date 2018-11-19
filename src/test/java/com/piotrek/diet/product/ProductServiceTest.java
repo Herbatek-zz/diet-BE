@@ -1,8 +1,8 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
-import com.piotrek.diet.exceptions.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,8 +41,8 @@ class ProductServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        product = bananaWithId();
-        productDto = bananaWithIdDto();
+        product = banana();
+        productDto = bananaDto();
         MockitoAnnotations.initMocks(this);
     }
 
@@ -123,18 +123,18 @@ class ProductServiceTest {
         final var page = 0;
         final var pageSize = 10;
         final var totalElements = 2;
-        final var query = bananaWithId().getName();
+        final var query = banana().getName();
         final var productList = createProductList(totalElements, BANANA);
         final var expected = new Page<>(createProductDtoList(totalElements, BANANA), page, pageSize, totalElements);
 
         when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productDtoConverter.toDto(banana())).thenReturn(bananaDto());
 
         final var actualPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(productDtoConverter, times(totalElements)).toDto(bananaWithId());
+        verify(productDtoConverter, times(totalElements)).toDto(banana());
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
@@ -143,7 +143,7 @@ class ProductServiceTest {
         final var page = 0;
         final var pageSize = 10;
         final var totalElements = 22;
-        final var query = bananaWithId().getName();
+        final var query = banana().getName();
         final var productList = createProductList(22, BANANA);
         final var productDtoList = createProductDtoList(22, BANANA);
         final var expected = new Page<>(productDtoList
@@ -153,13 +153,49 @@ class ProductServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(productRepository.findAllByNameIgnoreCaseContaining(query)).thenReturn(Flux.fromIterable(productList));
-        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productDtoConverter.toDto(banana())).thenReturn(bananaDto());
 
         final var actualFirstPage = productService.searchByName(PageRequest.of(page, pageSize), query).block();
 
         assertEquals(expected, actualFirstPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verify(productDtoConverter, times(pageSize)).toDto(bananaWithId());
+        verify(productDtoConverter, times(pageSize)).toDto(banana());
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+    }
+
+    @Test
+    @DisplayName("Update product, when not no product, then return NotFoundException")
+    void updateProduct_whenOk_thenUpdateProduct() {
+        productDto.setName("updated");
+        productDto.setProtein(33);
+        productDto.setCarbohydrate(50);
+        productDto.setFibre(2);
+        productDto.setFat(15);
+
+        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
+        when(productRepository.save(product)).thenReturn(Mono.just(product));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+
+        var actual = productService.updateProduct(product.getId(), productDto).block();
+
+        assertProductFields(productDto, actual);
+        verify(productRepository, times(1)).findById(product.getId());
+        verify(diabetesCalculator, times(1))
+                .calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat());
+        verify(diabetesCalculator, times(1))
+                .calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre());
+        verify(productRepository, times(1)).save(product);
+        verify(productDtoConverter, times(1)).toDto(product);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+    }
+
+    @Test
+    @DisplayName("Update product, when not no product, then return NotFoundException")
+    void updateProduct_whenNotFound_thenReturnNotFoundException() {
+        when(productRepository.findById(product.getId())).thenReturn(Mono.empty());
+
+        assertThrows(NotFoundException.class, () -> productService.updateProduct(product.getId(), productDto).block());
+        verify(productRepository, times(1)).findById(product.getId());
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
@@ -194,13 +230,13 @@ class ProductServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
-        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productDtoConverter.toDto(banana())).thenReturn(bananaDto());
 
         final var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
         verify(productRepository, times(1)).findAll();
-        verify(productDtoConverter, times(10)).toDto(bananaWithId());
+        verify(productDtoConverter, times(10)).toDto(banana());
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
@@ -219,13 +255,13 @@ class ProductServiceTest {
                 .collect(Collectors.toList()), page, pageSize, totalElements);
 
         when(productRepository.findAll()).thenReturn(Flux.fromIterable(productList));
-        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productDtoConverter.toDto(banana())).thenReturn(bananaDto());
 
         final var firstPage = productService.findAllPageable(PageRequest.of(page, pageSize)).block();
 
         assertEquals(expected, firstPage);
         verify(productRepository, times(1)).findAll();
-        verify(productDtoConverter, times(10)).toDto(bananaWithId());
+        verify(productDtoConverter, times(10)).toDto(banana());
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
@@ -257,17 +293,17 @@ class ProductServiceTest {
         final var productList = createProductList(totalElements, BANANA);
         final var productDtoList = createProductDtoList(totalElements, BANANA);
         final var expected = new Page<>(productDtoList, page, pageSize, totalElements);
-        final var user = UserSample.johnWithId();
+        final var user = UserSample.john();
 
         when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.fromIterable(productList));
-        when(productDtoConverter.toDto(bananaWithId())).thenReturn(bananaWithIdDto());
+        when(productDtoConverter.toDto(banana())).thenReturn(bananaDto());
 
         final var block = productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize)).block();
 
         assertNotNull(block);
         assertEquals(expected, block);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
-        verify(productDtoConverter, times(totalElements)).toDto(bananaWithId());
+        verify(productDtoConverter, times(totalElements)).toDto(banana());
         verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
     }
 
@@ -278,7 +314,7 @@ class ProductServiceTest {
         final var pageSize = 10;
         final var totalElements = 0;
         final var expected = new Page<>(new ArrayList<ProductDto>(), page, pageSize, totalElements);
-        final var user = UserSample.johnWithId();
+        final var user = UserSample.john();
 
         when(productRepository.findAllByUserId(user.getId())).thenReturn(Flux.empty());
 
@@ -346,11 +382,11 @@ class ProductServiceTest {
         switch (product) {
             case BANANA:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(bananaWithId());
+                    arrayList.add(banana());
                 break;
             case BREAD:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(breadWithId());
+                    arrayList.add(bread());
                 break;
         }
         return arrayList;
@@ -362,11 +398,11 @@ class ProductServiceTest {
         switch (product) {
             case BANANA:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(bananaWithIdDto());
+                    arrayList.add(bananaDto());
                 break;
             case BREAD:
                 for (int i = 0; i < size; i++)
-                    arrayList.add(breadWithIdDto());
+                    arrayList.add(breadDto());
                 break;
         }
         return arrayList;

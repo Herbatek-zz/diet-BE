@@ -27,11 +27,11 @@ class MealDtoConverterTest {
     void setup() {
         mealDtoConverter = new MealDtoConverter(new ProductDtoConverter());
 
-        meal = dumplingsWithId();
-        meal.setProducts(new ArrayList<>(List.of(breadWithId(), bananaWithId())));
+        meal = dumplings();
+        meal.setProducts(new ArrayList<>(List.of(bread(), banana())));
 
-        mealDto = dumplingsWithIdDto();
-        mealDto.setProducts(new ArrayList<>(List.of(breadWithIdDto(), bananaWithIdDto())));
+        mealDto = dumplingsDto();
+        mealDto.setProducts(new ArrayList<>(List.of(breadDto(), bananaDto())));
     }
 
     @Test
@@ -51,8 +51,8 @@ class MealDtoConverterTest {
     @Test
     @DisplayName("Convert meal list to dto list")
     void listToDto() {
-        final var expected = List.of(dumplingsWithIdDto(), coffeeWithIdDto());
-        final var convertedList = mealDtoConverter.listToDto(List.of(dumplingsWithId(), coffeeWithId()));
+        final var expected = List.of(dumplingsDto(), coffeeDto());
+        final var convertedList = mealDtoConverter.listToDto(List.of(dumplings(), coffee()));
 
         assertAll(
                 () -> assertMealFields(expected.get(0), convertedList.get(0)),
@@ -63,8 +63,8 @@ class MealDtoConverterTest {
     @Test
     @DisplayName("Convert entity meal list from dto list")
     void listFromDto() {
-        final var expected = new ArrayList<>(Arrays.asList(dumplingsWithId(), coffeeWithId()));
-        final var afterConvert = mealDtoConverter.listFromDto(List.of(dumplingsWithIdDto(), coffeeWithIdDto()));
+        final var expected = new ArrayList<>(Arrays.asList(dumplings(), coffee()));
+        final var afterConvert = mealDtoConverter.listFromDto(List.of(dumplingsDto(), coffeeDto()));
 
         assertAll(
                 () -> assertMealFields(expected.get(0), afterConvert.get(0)),

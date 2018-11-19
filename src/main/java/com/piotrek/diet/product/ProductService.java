@@ -1,9 +1,10 @@
 package com.piotrek.diet.product;
 
-import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.exceptions.NotFoundException;
+import com.piotrek.diet.helpers.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.decimal4j.util.DoubleRounder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductDtoConverter productDtoConverter;
     private final DiabetesCalculator diabetesCalculator;
+    private final DoubleRounder doubleRounder;
 
     public Mono<Product> findById(String id) {
         return productRepository.findById(id)
@@ -44,8 +46,19 @@ public class ProductService {
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
     }
 
+    @PreAuthorize("@productService.findById(#id).block().getUserId().equals(principal)")
     Mono<ProductDto> updateProduct(String id, ProductDto productUpdate) {
-        return null;
+        return findById(id)
+                .doOnNext(product -> product.setName(productUpdate.getName()))
+                .doOnNext(product -> product.setDescription(productUpdate.getDescription()))
+                .doOnNext(product -> product.setDescription(productUpdate.getDescription()))
+                .doOnNext(product -> product.setImageUrl(productUpdate.getImageUrl()))
+                .doOnNext(product -> product.setProtein(productUpdate.getProtein()))
+                .doOnNext(product -> product.setCarbohydrate(productUpdate.getCarbohydrate()))
+                .doOnNext(product -> product.setFat(productUpdate.getFat()))
+                .doOnNext(product -> product.setFibre(productUpdate.getFibre()))
+                .doOnNext(product -> product.setKcal(productUpdate.getKcal()))
+                .flatMap(this::save);
     }
 
     Mono<Page<ProductDto>> findAllPageable(Pageable pageable) {
@@ -84,6 +97,8 @@ public class ProductService {
         var proteinAndFatEquivalent = diabetesCalculator.calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         product.setProteinAndFatEquivalent(proteinAndFatEquivalent);
 
+        product.setAmount(100);
+
         return productRepository.save(product).map(productDtoConverter::toDto);
     }
 
@@ -104,13 +119,13 @@ public class ProductService {
         double divider = (double) product.getAmount() / 100;
 
         var calculatedProduct = new Product();
-        calculatedProduct.setProtein(product.getProtein() * divider);
-        calculatedProduct.setCarbohydrate(product.getCarbohydrate() * divider);
-        calculatedProduct.setFat(product.getFat() * divider);
-        calculatedProduct.setFibre(product.getFibre() * divider);
-        calculatedProduct.setKcal(product.getKcal() * divider);
-        calculatedProduct.setCarbohydrateExchange(product.getCarbohydrateExchange() * divider);
-        calculatedProduct.setProteinAndFatEquivalent(product.getProteinAndFatEquivalent() * divider);
+        calculatedProduct.setProtein(doubleRounder.round(product.getProtein() * divider));
+        calculatedProduct.setCarbohydrate(doubleRounder.round(product.getCarbohydrate() * divider));
+        calculatedProduct.setFat(doubleRounder.round(product.getFat() * divider));
+        calculatedProduct.setFibre(doubleRounder.round(product.getFibre() * divider));
+        calculatedProduct.setKcal(doubleRounder.round(product.getKcal() * divider));
+        calculatedProduct.setCarbohydrateExchange(doubleRounder.round(product.getCarbohydrateExchange() * divider));
+        calculatedProduct.setProteinAndFatEquivalent(doubleRounder.round(product.getProteinAndFatEquivalent() * divider));
         calculatedProduct.setAmount(product.getAmount());
         calculatedProduct.setUserId(product.getUserId());
         calculatedProduct.setId(product.getId());
