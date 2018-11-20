@@ -8,4 +8,8 @@ public interface MealRepository extends ReactiveMongoRepository<Meal, String> {
     Flux<Meal> findAllByUserId(String userId);
 
     Flux<Meal> findAllByNameIgnoreCaseContaining(String name);
+
+    Flux<Meal> findFirst10ByOrderByFavouriteCounterDesc();
+
+    Flux<Meal> findFirst10ByOrderByCreatedAtDesc();
 }

@@ -42,7 +42,6 @@ public class UserFacade {
 
         String tokenValue = tokenService.generateToken(userDto);
         tokenService.update(tokenValue, tokenService.findByUserId(userId).block().getId()).block();
-
         try {
             Cart cart = cartService.findByUserIdAndDate(userDto.getId(), LocalDate.now()).block();
             cart.setTargetUserCalories(userDto.getCaloriesPerDay());
@@ -104,6 +103,8 @@ public class UserFacade {
         return userService.findById(userId)
                 .flatMap(user -> mealService.findById(mealId)
                         .doOnNext(meal -> user.getFavouriteMeals().add(meal))
+                        .doOnNext(meal -> meal.getFavouriteCounter().getAndIncrement())
+                        .flatMap(mealService::save)
                         .flatMap(meal -> userService.save(user)))
                 .then();
     }
@@ -113,6 +114,9 @@ public class UserFacade {
         return userService.findById(userId)
                 .doOnNext(user -> user.getFavouriteMeals().remove(new Meal(mealId)))
                 .flatMap(userService::save)
+                .flatMap(user -> mealService.findById(mealId))
+                .doOnSuccess(meal -> meal.getFavouriteCounter().decrementAndGet())
+                .flatMap(mealService::save)
                 .then();
     }
 

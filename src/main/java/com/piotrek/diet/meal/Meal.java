@@ -7,7 +7,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Data
 @Document
@@ -47,6 +49,8 @@ public class Meal extends BaseEntity {
 
     @NotNull
     private String userId;
+
+    private AtomicLong favouriteCounter = new AtomicLong(0);
 
     public Meal(String id) {
         super(id);

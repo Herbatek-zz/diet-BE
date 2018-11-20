@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -43,6 +44,16 @@ public class MealService {
                         .map(mealDtoConverter::toDto)
                         .collect(Collectors.toList()),
                         pageable.getPageNumber(), pageable.getPageSize(), list.size()));
+    }
+
+    Flux<MealDto> find10MostFavourites() {
+        return mealRepository.findFirst10ByOrderByFavouriteCounterDesc()
+                .map(mealDtoConverter::toDto);
+    }
+
+    Flux<MealDto> find10LatestCreate() {
+        return mealRepository.findFirst10ByOrderByCreatedAtDesc()
+                .map(mealDtoConverter::toDto);
     }
 
     Mono<Page<MealDto>> findAllPageable(Pageable pageable) {

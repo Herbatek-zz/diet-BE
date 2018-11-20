@@ -61,9 +61,6 @@ public class User extends BaseEntity {
     private int fatPerDay;
 
     @NotNull
-    private LocalDateTime createdAt;
-
-    @NotNull
     private LocalDateTime lastVisit;
 
     @NotNull
@@ -78,6 +75,5 @@ public class User extends BaseEntity {
         this.lastName = lastName;
         this.username = firstName + " " + lastName;
         this.role = Role.ROLE_USER;
-        this.createdAt = LocalDateTime.now();
     }
 }

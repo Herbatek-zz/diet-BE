@@ -4,6 +4,7 @@ import com.piotrek.diet.helpers.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -37,6 +38,16 @@ public class MealController {
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
             @RequestParam(defaultValue = "") String query) {
         return mealService.searchByName(PageRequest.of(page, size), query);
+    }
+
+    @GetMapping("/top-favourites")
+    Flux<MealDto> findTopFavourites() {
+        return mealService.find10MostFavourites();
+    }
+
+    @GetMapping("/latest")
+    Flux<MealDto> findLatestCreate() {
+        return mealService.find10LatestCreate();
     }
 
     @PutMapping("/{id}")
