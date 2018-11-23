@@ -31,7 +31,6 @@ class UserDtoConverterTest {
     void fromDto() {
         user.setFacebookId(0);
         user.setLastVisit(null);
-        user.setCreatedAt(LocalDateTime.now());
         user.setRole(null);
         var convertedUser = userDtoConverter.fromDto(userDto);
         assertUserFields(user, convertedUser);

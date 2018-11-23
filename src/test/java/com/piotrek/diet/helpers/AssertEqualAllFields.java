@@ -156,7 +156,6 @@ public class AssertEqualAllFields {
                 () -> assertEquals(expected.getProteinPerDay(), actual.getProteinPerDay(), "protein per day is not equal"),
                 () -> assertEquals(expected.getCarbohydratePerDay(), actual.getCarbohydratePerDay(), "carbohydrate per day is not equal"),
                 () -> assertEquals(expected.getFatPerDay(), actual.getFatPerDay(), "fat per day is not equal"),
-                () -> assertEquals(expected.getCreatedAt(), actual.getCreatedAt(), "created at is not equal"),
                 () -> assertEquals(expected.getLastVisit(), actual.getLastVisit(), "last visit is not equal"),
                 () -> assertEquals(expected.getRole(), actual.getRole(), "role is not equal"),
                 () -> assertEquals(expected.getFavouriteMeals().size(), actual.getFavouriteMeals().size(), "favourites list is not equal")
