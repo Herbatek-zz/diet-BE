@@ -394,7 +394,6 @@ class CartFacadeTest {
 
         assertCartFields(expected, block);
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).save(cart);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
@@ -411,7 +410,6 @@ class CartFacadeTest {
         CartDto actual = cartFacade.deleteProductFromCart(user.getId(), product.getId(), cart.getDate()).block();
 
         assertCartFields(cartDto, actual);
-        verify(productService, times(1)).findById(product.getId());
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);

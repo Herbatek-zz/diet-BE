@@ -21,12 +21,12 @@ public abstract class BaseEntity implements Serializable {
     @NotNull
     private LocalDateTime createdAt;
 
-    public BaseEntity() {
+    protected BaseEntity() {
         this.createdAt = LocalDateTime.now();
     }
 
     public BaseEntity(String id) {
+        this();
         this.id = id;
-        this.createdAt = LocalDateTime.now();
     }
 }

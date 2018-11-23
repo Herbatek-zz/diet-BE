@@ -102,9 +102,9 @@ public class UserFacade {
     Mono<Void> addToFavourite(String userId, String mealId) {
         return userService.findById(userId)
                 .flatMap(user -> mealService.findById(mealId)
-                        .doOnNext(meal -> user.getFavouriteMeals().add(meal))
-                        .doOnNext(meal -> meal.getFavouriteCounter().getAndIncrement())
-                        .flatMap(mealService::save)
+                        .doOnSuccess(meal -> user.getFavouriteMeals().add(meal))
+                        .doOnSuccess(meal -> meal.getFavouriteCounter().getAndIncrement())
+                        .doOnSuccess(mealService::save)
                         .flatMap(meal -> userService.save(user)))
                 .then();
     }
@@ -116,7 +116,8 @@ public class UserFacade {
                 .flatMap(userService::save)
                 .flatMap(user -> mealService.findById(mealId))
                 .doOnSuccess(meal -> meal.getFavouriteCounter().decrementAndGet())
-                .flatMap(mealService::save)
+                .doOnSuccess(mealService::save)
+                .onErrorReturn(new Meal())
                 .then();
     }
 

@@ -45,6 +45,8 @@ class CartDtoConverterTest {
     @Test
     void toDto_emptyCart() {
         when(cartCalculator.calculateCartInfo(cartDto)).thenReturn(cartDto);
+        when(productDtoConverter.listToDto(cart.getProducts())).thenReturn(cartDto.getProducts());
+        when(mealDtoConverter.listToDto(cart.getMeals())).thenReturn(cartDto.getMeals());
 
         final var converted = cartDtoConverter.toDto(cart);
 
@@ -62,6 +64,10 @@ class CartDtoConverterTest {
         cartDto.getAllProducts().add(ProductSample.bananaDto());
         cartDto.setItemCounter(cartDto.getItemCounter() + 1);
 
+        when(productDtoConverter.listToDto(cart.getProducts())).thenReturn(cartDto.getProducts());
+        when(mealDtoConverter.listToDto(cart.getMeals())).thenReturn(cartDto.getMeals());
+        when(cartCalculator.calculateCartInfo(cartDto)).thenReturn(cartDto);
+
         final var converted = cartDtoConverter.toDto(cart);
 
         assertCartFields(cartDto, converted);
@@ -76,8 +82,15 @@ class CartDtoConverterTest {
         addProducts();
         addMeals();
 
+        when(productDtoConverter.listToDto(cart.getProducts())).thenReturn(cartDto.getProducts());
+        when(mealDtoConverter.listToDto(cart.getMeals())).thenReturn(cartDto.getMeals());
+        when(cartCalculator.calculateCartInfo(cartDto)).thenReturn(cartDto);
+
         final var converted = cartDtoConverter.toDto(cart);
         assertCartFields(cartDto, converted);
+        verify(productDtoConverter, times(1)).listToDto(cart.getProducts());
+        verify(mealDtoConverter, times(1)).listToDto(cart.getMeals());
+        verify(cartCalculator, times(1)).calculateCartInfo(cartDto);
         verifyNoMoreInteractions(productDtoConverter, mealDtoConverter, cartCalculator);
     }
 
@@ -117,16 +130,27 @@ class CartDtoConverterTest {
         cartDto.getAllProducts().addAll(cartDto.getProducts());
         cartDto.setItemCounter(cartDto.getItemCounter() + 1);
 
+        when(productDtoConverter.listToDto(cart.getProducts())).thenReturn(cartDto.getProducts());
+        when(mealDtoConverter.listToDto(cart.getMeals())).thenReturn(cartDto.getMeals());
+        when(cartCalculator.calculateCartInfo(cartDto)).thenReturn(cartDto);
+
         final var converted = cartDtoConverter.toDto(cart);
         assertCartFields(cartDto, converted);
+        verify(productDtoConverter, times(1)).listToDto(cart.getProducts());
+        verify(mealDtoConverter, times(1)).listToDto(cart.getMeals());
+        verify(cartCalculator, times(1)).calculateCartInfo(cartDto);
         verifyNoMoreInteractions(productDtoConverter, mealDtoConverter, cartCalculator);
     }
 
 
     @Test
     void fromDto() {
+        when(productDtoConverter.listFromDto(cartDto.getProducts())).thenReturn(cart.getProducts());
+        when(mealDtoConverter.listFromDto(cartDto.getMeals())).thenReturn(cart.getMeals());
         final Cart converted = cartDtoConverter.fromDto(cartDto);
         assertCartFields(cart, converted);
+        verify(productDtoConverter, times(1)).listFromDto(cartDto.getProducts());
+        verify(mealDtoConverter, times(1)).listFromDto(cartDto.getMeals());
         verifyNoMoreInteractions(productDtoConverter, mealDtoConverter, cartCalculator);
     }
 
@@ -135,8 +159,13 @@ class CartDtoConverterTest {
         addMeals();
         addProducts();
 
+        when(productDtoConverter.listFromDto(cartDto.getProducts())).thenReturn(cart.getProducts());
+        when(mealDtoConverter.listFromDto(cartDto.getMeals())).thenReturn(cart.getMeals());
+
         final Cart converted = cartDtoConverter.fromDto(cartDto);
         assertCartFields(cart, converted);
+        verify(productDtoConverter, times(1)).listFromDto(cartDto.getProducts());
+        verify(mealDtoConverter, times(1)).listFromDto(cartDto.getMeals());
         verifyNoMoreInteractions(productDtoConverter, mealDtoConverter, cartCalculator);
     }
 

@@ -223,7 +223,7 @@ class MealControllerTest {
     @DisplayName("Search meals, when there are 2 meals, no query and pageSize=1, then return first page with one meal")
     void searchByName_whenTwoMealsAndNoQueryAndPageSizeOne_thenReturnFirstPageWithOneMeal() throws JsonProcessingException {
         final var URI = "/meals/search?size=1";
-        final var expected = new Page<>(List.of(meal1), 0, 1, 2);
+        final var expected = new Page<>(List.of(mealDto1), 0, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -336,7 +336,7 @@ class MealControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(meal1));
+                .expectBody().json(objectMapper.writeValueAsString(mealDto1));
     }
 
     @Test
@@ -356,7 +356,7 @@ class MealControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(meal1));
+                .expectBody().json(objectMapper.writeValueAsString(mealDto1));
     }
 
     @Test
@@ -376,7 +376,7 @@ class MealControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(meal1));
+                .expectBody().json(objectMapper.writeValueAsString(mealDto1));
     }
 
     @Test
@@ -396,7 +396,7 @@ class MealControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON_UTF8)
-                .expectBody().json(objectMapper.writeValueAsString(meal1));
+                .expectBody().json(objectMapper.writeValueAsString(mealDto1));
     }
 
     @Test

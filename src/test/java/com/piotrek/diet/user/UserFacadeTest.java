@@ -2,6 +2,7 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.cart.CartService;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.PrincipalProvider;
 import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.meal.Meal;
@@ -289,14 +290,16 @@ class UserFacadeTest {
     void addToFavourite_whenNoOtherFavourites_thenListSize1() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
         when(userService.save(user)).thenReturn(Mono.just(user));
 
         userFacade.addToFavourite(user.getId(), meal.getId()).block();
 
         assertEquals(1, user.getFavouriteMeals().size());
         verify(userService, times(1)).findById(user.getId());
-        verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
+        verify(userService, times(1)).save(user);
         verify(mealDtoConverter, times(0)).toDto(meal);
         verifyNoMoreInteractions(cartService, userService, productDtoConverter,
                 productService, mealService, mealDtoConverter, tokenService);
@@ -308,6 +311,7 @@ class UserFacadeTest {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(userService.save(user)).thenReturn(Mono.just(user));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
 
         user.getFavouriteMeals().add(new Meal(UUID.randomUUID().toString()));
         user.getFavouriteMeals().add(new Meal(UUID.randomUUID().toString()));
@@ -318,6 +322,7 @@ class UserFacadeTest {
         verify(userService, times(1)).findById(user.getId());
         verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
         verifyNoMoreInteractions(cartService, userService, productDtoConverter,
                 productService, mealService, mealDtoConverter, tokenService);
     }
@@ -327,6 +332,7 @@ class UserFacadeTest {
     void addToFavourite_whenUserHas2ProductsAndWeAddMealThatIsAlreadyInFavourites_thenListSizeEquals2() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
         when(userService.save(user)).thenReturn(Mono.just(user));
 
         user.getFavouriteMeals().add(new Meal());
@@ -336,8 +342,9 @@ class UserFacadeTest {
 
         assertEquals(2, user.getFavouriteMeals().size());
         verify(userService, times(1)).findById(user.getId());
-        verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
+        verify(userService, times(1)).save(user);
         verifyNoMoreInteractions(cartService, userService, productDtoConverter,
                 productService, mealService, mealDtoConverter, tokenService);
     }
@@ -345,18 +352,43 @@ class UserFacadeTest {
     @Test
     @DisplayName("Delete from favourites, when user ")
     void deleteFromFavourites_whenMethodIsInvoked_thenUserHasNoLongerThisMealInFavouriteList() {
-        final var ID_TO_DELETE = UUID.randomUUID().toString();
-        user.setFavouriteMeals(new HashSet<>(Set.of(new Meal(ID_TO_DELETE),
+        final var ID_TO_DELETE = meal.getId();
+        user.setFavouriteMeals(new HashSet<>(Set.of(meal,
                 new Meal(UUID.randomUUID().toString()), new Meal(UUID.randomUUID().toString()))));
 
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(userService.save(user)).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
 
         userFacade.deleteFromFavourite(user.getId(), ID_TO_DELETE).block();
 
         assertEquals(2, user.getFavouriteMeals().size());
         verify(userService, times(1)).findById(user.getId());
         verify(userService, times(1)).save(user);
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
+        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
+                productService, mealService, mealDtoConverter, tokenService);
+    }
+
+    @Test
+    @DisplayName("Delete from favourites, when user ")
+    void deleteFromFavourites_whenMethodIsInvoked_thenUserHasNoLongerThisMealInFavouriteListaaa() {
+        final var ID_TO_DELETE = meal.getId();
+        user.setFavouriteMeals(new HashSet<>(Set.of(meal,
+                new Meal(UUID.randomUUID().toString()), new Meal(UUID.randomUUID().toString()))));
+
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userService.save(user)).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.error(new NotFoundException("")));
+
+        userFacade.deleteFromFavourite(user.getId(), ID_TO_DELETE).block();
+
+        assertEquals(2, user.getFavouriteMeals().size());
+        verify(userService, times(1)).findById(user.getId());
+        verify(userService, times(1)).save(user);
+        verify(mealService, times(1)).findById(meal.getId());
         verifyNoMoreInteractions(cartService, userService, productDtoConverter,
                 productService, mealService, mealDtoConverter, tokenService);
     }

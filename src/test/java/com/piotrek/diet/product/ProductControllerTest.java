@@ -101,7 +101,7 @@ class ProductControllerTest {
     @DisplayName("Search products by name, when two products and query is missing, then return page with all products")
     void searchByName_whenTwoProductAndNoQuery_thenReturnPageableWithAllProduct() throws JsonProcessingException {
         final var URI = "/products/search";
-        final var expected = new Page<>(List.of(product, product2), 0, 10, 2);
+        final var expected = new Page<>(List.of(productDto, productDto2), 0, 10, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -142,7 +142,7 @@ class ProductControllerTest {
     @DisplayName("Search products by name, when two products, no query and pageSize=1, then return page with one product")
     void searchByName_whenTwoProductsNoQueryAndPageSizeEqualOne_thenReturnPageWithOneProduct() throws JsonProcessingException {
         final var URI = "/products/search?size=1";
-        final var expected = new Page<>(List.of(product), 0, 1, 2);
+        final var expected = new Page<>(List.of(productDto), 0, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -155,7 +155,7 @@ class ProductControllerTest {
     @DisplayName("Search products by name, when two products, no query, pageSize=1 and page=1, then return page with one product")
     void searchByName_whenTwoProductsNoQueryPageSizeEqualOneAndPageTwo_thenReturnSecondPageWithOneProduct() throws JsonProcessingException {
         final var URI = "/products/search?size=1&page=1";
-        final var expected = new Page<>(List.of(product2), 1, 1, 2);
+        final var expected = new Page<>(List.of(productDto2), 1, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -183,7 +183,7 @@ class ProductControllerTest {
     @DisplayName("Find all products, when two products, then return page with two products")
     void findAll_whenTwoProducts_thenReturnPageWithTwoProducts() throws JsonProcessingException {
         final var URI = "/products";
-        final var expected = new Page<>(List.of(product, product2), 0, 10, 2);
+        final var expected = new Page<>(List.of(productDto, productDto2), 0, 10, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
@@ -196,7 +196,7 @@ class ProductControllerTest {
     @DisplayName("Find all products, when two products, pageSize=1 and page=1, then return second page with one product")
     void findAll_whenPageNumberOnePageSizeOneTotalElementsTwo_returnSecondPageWithOneProduct() throws JsonProcessingException {
         final var URI = "/products?page=1&size=1";
-        final var expected = new Page<>(List.of(product2), 1, 1, 2);
+        final var expected = new Page<>(List.of(productDto2), 1, 1, 2);
 
         webTestClient.get().uri(URI)
                 .exchange()
