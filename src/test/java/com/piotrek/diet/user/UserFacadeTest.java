@@ -1,10 +1,10 @@
 package com.piotrek.diet.user;
 
 import com.piotrek.diet.cart.CartService;
-import com.piotrek.diet.helpers.Page;
-import com.piotrek.diet.helpers.PrincipalProvider;
-import com.piotrek.diet.helpers.UserSample;
+import com.piotrek.diet.exceptions.BadRequestException;
 import com.piotrek.diet.exceptions.NotFoundException;
+import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.UserSample;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertMealFields;
@@ -44,9 +45,6 @@ class UserFacadeTest {
 
     @Mock
     private UserService userService;
-
-    @Mock
-    private ProductDtoConverter productDtoConverter;
 
     @Mock
     private ProductService productService;
@@ -73,17 +71,19 @@ class UserFacadeTest {
     private MealDto mealDto2;
 
     private User user;
+    private UserDto userDto;
 
     @BeforeEach
     void beforeEach() {
         initProducts();
         initMeals();
         user = UserSample.john();
+        userDto = UserSample.johnDto();
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    void createProduct_whenPrincipalEqualUserId_thenSuccess() {
+    void createProduct_whenFoundUser_thenSuccessfullyCreate() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(productService.save(productDto)).thenReturn(Mono.just(productDto));
 
@@ -92,22 +92,44 @@ class UserFacadeTest {
         assertProductFields(productDto, created);
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).save(productDto);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    void createProduct_whenUserDoesNotExist_thenThrowNotFoundException() {
+    void createProduct_whenNotFoundUser_thenThrowNotFoundException() {
         when(userService.findById(user.getId())).thenReturn(Mono.error(new NotFoundException("")));
 
         assertThrows(NotFoundException.class, () -> userFacade.createProduct(user.getId(), productDto).block());
         verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    void findAllProductsByUserId_whenUserHas20Products_thenReturnPageWithProducts() {
+    void createMeal_whenFoundUser_thenSuccessfullyCreate() {
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.save(mealDto)).thenReturn(Mono.just(meal));
+        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
+
+        var created = userFacade.createMeal(user.getId(), mealDto).block();
+
+        assertMealFields(mealDto, created);
+        verify(userService, times(1)).findById(user.getId());
+        verify(mealService, times(1)).save(mealDto);
+        verify(mealDtoConverter, times(1)).toDto(meal);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
+    }
+
+    @Test
+    void createMeal_whenNotFoundUser_thenThrowNotFoundException() {
+        doThrow(NotFoundException.class).when(userService).findById(user.getId());
+
+        assertThrows(NotFoundException.class, () -> userFacade.createMeal(user.getId(), mealDto).block());
+        verify(userService, times(1)).findById(user.getId());
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
+    }
+
+    @Test
+    void findAllProductsByUserId_whenUserHas20ProductsPageSize10Page0_thenReturnPageWithProducts() {
         var page = 0;
         var pageSize = 10;
         var totalElements = 20;
@@ -120,13 +142,12 @@ class UserFacadeTest {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize))).thenReturn(Mono.just(expected));
 
-        var actualPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
+        var foundPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
-        assertEquals(expected, actualPage);
+        assertEquals(expected, foundPage);
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize));
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -139,51 +160,23 @@ class UserFacadeTest {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(productService.findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize))).thenReturn(Mono.just(expected));
 
-        var actualPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
+        var foundPage = userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(page, pageSize)).block();
 
-        assertEquals(expected, actualPage);
+        assertEquals(expected, foundPage);
         verify(userService, times(1)).findById(user.getId());
         verify(productService, times(1)).findAllByUserPageable(user.getId(), PageRequest.of(page, pageSize));
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    void findAllProductsByUserId_whenUserDoesNotExist_thenThrowNotFoundException() {
+    void findAllProductsByUserId_whenNotFoundUser_thenThrowNotFoundException() {
         doThrow(NotFoundException.class).when(userService).findById(user.getId());
 
         assertThrows(NotFoundException.class,
                 () -> userFacade.findAllProductsByUserId(user.getId(), PageRequest.of(1, 10)).block());
 
         verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    void createMeal_whenPrincipalEqualUserId_thenSuccess() {
-        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
-        when(mealService.save(mealDto)).thenReturn(Mono.just(meal));
-        when(mealDtoConverter.toDto(meal)).thenReturn(mealDto);
-
-        var created = userFacade.createMeal(user.getId(), mealDto).block();
-
-        assertMealFields(mealDto, created);
-        verify(userService, times(1)).findById(user.getId());
-        verify(mealService, times(1)).save(mealDto);
-        verify(mealDtoConverter, times(1)).toDto(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
-    }
-
-    @Test
-    void createMeal_whenUserDoesNotExist_thenThrowNotFoundException() {
-        doThrow(NotFoundException.class).when(userService).findById(user.getId());
-
-        assertThrows(NotFoundException.class, () -> userFacade.createMeal(user.getId(), mealDto).block());
-        verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -205,8 +198,7 @@ class UserFacadeTest {
         assertEquals(expected, firstPage);
         verify(userService, times(1)).findById(user.getId());
         verify(mealService, times(1)).findAllByUserId(user.getId(), PageRequest.of(page, pageSize));
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -227,20 +219,18 @@ class UserFacadeTest {
         verify(userService, times(1)).findById(user.getId());
         verify(mealService, times(1)).findAllByUserId(user.getId(), PageRequest.of(page, pageSize));
         verify(mealDtoConverter, times(0)).toDto(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    void findAllMealsByUserId_whenUserDoesNotExist_thenThrowNotFoundException() {
+    void findAllMealsByUserId_whenNotFoundUser_thenThrowNotFoundException() {
         doThrow(NotFoundException.class).when(userService).findById(user.getId());
 
         assertThrows(NotFoundException.class,
                 () -> userFacade.findAllMealsByUser(user.getId(), PageRequest.of(1, 10)).block());
 
         verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -259,8 +249,7 @@ class UserFacadeTest {
         assertEquals(expected, block);
         verify(userService, times(1)).findById(user.getId());
         verify(mealDtoConverter, times(0)).toDto(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -281,13 +270,12 @@ class UserFacadeTest {
         assertEquals(expected, block);
         verify(userService, times(1)).findById(user.getId());
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    @DisplayName("Add to favourite list, when user has no other meals in favourite, then list size is 1")
-    void addToFavourite_whenNoOtherFavourites_thenListSize1() {
+    @DisplayName("Add to favourite list, when user has no favourite meals, then list size is one")
+    void addToFavourite_whenUserHasNoFavourites_thenListSizeEqualOne() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(mealService.save(meal)).thenReturn(Mono.just(meal));
@@ -301,13 +289,58 @@ class UserFacadeTest {
         verify(mealService, times(1)).save(meal);
         verify(userService, times(1)).save(user);
         verify(mealDtoConverter, times(0)).toDto(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    @DisplayName("Add to favourite list other meal, when user has 2 meals in favourite, then list is equal 3")
-    void addToFavourite_whenUserHas2ProductsAndWeAddOtherMeal_thenListSizeEquals3() {
+    @DisplayName("Add to favourite list, when user has no favourite meals, then list size is one")
+    void addToFavourite_whenMealIsFirstTimeAddedToFavourites_thenFavouriteCounterEqualOne() {
+        meal.setFavouriteCounter(new AtomicLong(0));
+
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
+        when(userService.save(user)).thenReturn(Mono.just(user));
+
+        userFacade.addToFavourite(user.getId(), meal.getId()).block();
+
+        assertEquals(1, meal.getFavouriteCounter().intValue());
+        verify(userService, times(1)).findById(user.getId());
+        verify(mealService, times(1)).findById(meal.getId());
+        verify(mealService, times(1)).save(meal);
+        verify(userService, times(1)).save(user);
+        verify(mealDtoConverter, times(0)).toDto(meal);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
+    }
+
+    @Test
+    @DisplayName("Add to favourite list, when user has no favourite meals, then list size is one")
+    void addToFavourite_whenMealIsSecondTimeAddedToFavourites_thenFavouriteCounterEqualTwo() {
+        User user2 = UserSample.baileyWithId();
+        meal.setFavouriteCounter(new AtomicLong(0));
+
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(userService.findById(user2.getId())).thenReturn(Mono.just(user2));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+        when(mealService.save(meal)).thenReturn(Mono.just(meal));
+        when(userService.save(user)).thenReturn(Mono.just(user));
+        when(userService.save(user2)).thenReturn(Mono.just(user2));
+
+        userFacade.addToFavourite(user.getId(), meal.getId()).block();
+        userFacade.addToFavourite(user2.getId(), meal.getId()).block();
+
+        assertEquals(2, meal.getFavouriteCounter().intValue());
+        verify(userService, times(2)).findById(anyString());
+        verify(mealService, times(2)).findById(meal.getId());
+        verify(mealService, times(2)).save(meal);
+        verify(userService, times(2)).save(any(User.class));
+        verify(mealDtoConverter, times(0)).toDto(meal);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
+    }
+
+    @Test
+    @DisplayName("Add to favourite list, when user has 2 favourite meals, then list equals 3")
+    void addToFavourite_whenUserHasTwoFavouriteMeals_thenListSizeEqualThree() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
         when(userService.save(user)).thenReturn(Mono.just(user));
@@ -323,35 +356,46 @@ class UserFacadeTest {
         verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).save(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
-    @DisplayName("Add to favourite existing meal, when user has 2 products, then list size is 2")
-    void addToFavourite_whenUserHas2ProductsAndWeAddMealThatIsAlreadyInFavourites_thenListSizeEquals2() {
+    @DisplayName("Add to favourite, when add meal which is already in user favourites, then throw BadRequestException")
+    void addToFavourite_whenUserHasTwoFavouriteMealsAndWeAddMealWhichIsAlreadyInFavourite_thenThrowException() {
         when(userService.findById(user.getId())).thenReturn(Mono.just(user));
         when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
-        when(mealService.save(meal)).thenReturn(Mono.just(meal));
-        when(userService.save(user)).thenReturn(Mono.just(user));
 
         user.getFavouriteMeals().add(new Meal());
         user.getFavouriteMeals().add(meal);
 
-        userFacade.addToFavourite(user.getId(), meal.getId()).block();
+        assertThrows(BadRequestException.class, () -> userFacade.addToFavourite(user.getId(), meal.getId()).block());
 
-        assertEquals(2, user.getFavouriteMeals().size());
         verify(userService, times(1)).findById(user.getId());
         verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).save(meal);
-        verify(userService, times(1)).save(user);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
+    }
+
+    @Test
+    @DisplayName("Add to favourite, when add meal which is already in user favourites, then the meal favouriteCounter has the same value")
+    void addToFavourite_whenAddMealWhichIsAlreadyInFavourite_thenFavouriteCounterHasTheSameValue() {
+        user.getFavouriteMeals().add(new Meal());
+        user.getFavouriteMeals().add(meal);
+        meal.setFavouriteCounter(new AtomicLong(0));
+
+        when(userService.findById(user.getId())).thenReturn(Mono.just(user));
+        when(mealService.findById(meal.getId())).thenReturn(Mono.just(meal));
+
+        assertThrows(BadRequestException.class, () -> userFacade.addToFavourite(user.getId(), meal.getId()).block());
+        assertEquals(0, meal.getFavouriteCounter().intValue());
+
+        verify(userService, times(1)).findById(user.getId());
+        verify(mealService, times(1)).findById(meal.getId());
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
     @DisplayName("Delete from favourites, when user ")
-    void deleteFromFavourites_whenMethodIsInvoked_thenUserHasNoLongerThisMealInFavouriteList() {
+    void deleteFromFavourites_whenUserHasThreeFavouriteMeals_thenUserHasTwoFavouriteMeals() {
         final var ID_TO_DELETE = meal.getId();
         user.setFavouriteMeals(new HashSet<>(Set.of(meal,
                 new Meal(UUID.randomUUID().toString()), new Meal(UUID.randomUUID().toString()))));
@@ -368,8 +412,7 @@ class UserFacadeTest {
         verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealService, times(1)).save(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -389,8 +432,7 @@ class UserFacadeTest {
         verify(userService, times(1)).findById(user.getId());
         verify(userService, times(1)).save(user);
         verify(mealService, times(1)).findById(meal.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -404,8 +446,7 @@ class UserFacadeTest {
         assertEquals(mealDto, block);
         verify(mealService, times(1)).findById(meal.getId());
         verify(mealDtoConverter, times(1)).toDto(meal);
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -415,8 +456,7 @@ class UserFacadeTest {
 
         assertThrows(NotFoundException.class, () -> userFacade.findMealDtoById(meal.getId()).block());
         verify(mealService, times(1)).findById(meal.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -432,8 +472,7 @@ class UserFacadeTest {
 
         assertTrue(block);
         verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -447,8 +486,7 @@ class UserFacadeTest {
 
         assertFalse(block);
         verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     @Test
@@ -458,8 +496,7 @@ class UserFacadeTest {
 
         assertThrows(NotFoundException.class, () -> userFacade.isFavourite(user.getId(), meal.getId()));
         verify(userService, times(1)).findById(user.getId());
-        verifyNoMoreInteractions(cartService, userService, productDtoConverter,
-                productService, mealService, mealDtoConverter, tokenService);
+        verifyNoMoreInteractions(userService, productService, mealService, mealDtoConverter, cartService, tokenService);
     }
 
     private void initMeals() {

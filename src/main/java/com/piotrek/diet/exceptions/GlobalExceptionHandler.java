@@ -17,6 +17,12 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(404, notFoundException.getMessage());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse badRequestHandler(BadRequestException badRequestException) {
+        return new ErrorResponse(400 , badRequestException.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(UNAUTHORIZED)
     public ErrorResponse accessDeniedHandler(AccessDeniedException exception) {

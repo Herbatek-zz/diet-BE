@@ -73,7 +73,7 @@ public class User extends BaseEntity {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.username = firstName + " " + lastName;
+        this.username = firstName + lastName;
         this.role = Role.ROLE_USER;
     }
 }

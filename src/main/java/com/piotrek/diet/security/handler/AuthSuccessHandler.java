@@ -77,8 +77,13 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler im
 
     private User createUser(LinkedHashMap userDetails) {
         String email = userDetails.get("email").toString();
+
         String firstName = userDetails.get("first_name").toString();
+        firstName = firstName.length() > 4 ? firstName.substring(0, 4) : firstName;
+
         String lastName = userDetails.get("last_name").toString();
+        lastName = lastName.length() > 4 ? lastName.substring(0, 4) : lastName;
+
         long facebookId = Long.valueOf(userDetails.get("id").toString());
         User user = new User(facebookId, email, firstName, lastName);
         user.setPictureUrl("https://api.adorable.io/avatars/200/" + email + ".png");

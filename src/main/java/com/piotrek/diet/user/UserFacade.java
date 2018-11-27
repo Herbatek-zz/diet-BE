@@ -2,8 +2,9 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartService;
-import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.exceptions.BadRequestException;
 import com.piotrek.diet.exceptions.NotFoundException;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.meal.Meal;
 import com.piotrek.diet.meal.MealDto;
 import com.piotrek.diet.meal.MealDtoConverter;
@@ -32,6 +33,32 @@ public class UserFacade {
     private final TokenService tokenService;
     private final CartService cartService;
 
+    @PreAuthorize("#userId.equals(principal)")
+    Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
+        return userService.findById(userId)
+                .doOnNext(user -> productDto.setUserId(user.getId()))
+                .map(user -> productDto)
+                .flatMap(productService::save);
+    }
+
+    @PreAuthorize("#userId.equals(principal)")
+    Mono<MealDto> createMeal(String userId, MealDto mealDto) {
+        return userService.findById(userId)
+                .doOnNext(user -> mealDto.setUserId(user.getId()))
+                .flatMap(user -> mealService.save(mealDto))
+                .map(mealDtoConverter::toDto);
+    }
+
+    Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {
+        return userService.findById(userId)
+                .then(productService.findAllByUserPageable(userId, pageable));
+    }
+
+    Mono<Page<MealDto>> findAllMealsByUser(String userId, Pageable pageable) {
+        return userService.findById(userId)
+                .then(mealService.findAllByUserId(userId, pageable));
+    }
+
     Mono<UserDto> findDtoUser(String userId) {
         return userService.findDtoById(userId);
     }
@@ -59,33 +86,6 @@ public class UserFacade {
         return tokenService.findByUserId(userId);
     }
 
-    @PreAuthorize("#userId.equals(principal)")
-    Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
-        return userService.findById(userId)
-                .doOnNext(user -> productDto.setUserId(user.getId()))
-                .map(user -> productDto)
-                .flatMap(productService::save);
-    }
-
-    Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {
-        return userService.findById(userId)
-                .then(productService
-                        .findAllByUserPageable(userId, pageable));
-    }
-
-    @PreAuthorize("#userId.equals(principal)")
-    Mono<MealDto> createMeal(String userId, MealDto mealDto) {
-        return userService.findById(userId)
-                .doOnNext(user -> mealDto.setUserId(user.getId()))
-                .flatMap(user -> mealService.save(mealDto))
-                .map(mealDtoConverter::toDto);
-    }
-
-    Mono<Page<MealDto>> findAllMealsByUser(String userId, Pageable pageable) {
-        return userService.findById(userId).then(mealService
-                .findAllByUserId(userId, pageable));
-    }
-
 
     Mono<Page<MealDto>> findFavouriteMeals(String userId, Pageable pageable) {
         return userService.findById(userId)
@@ -102,22 +102,25 @@ public class UserFacade {
     Mono<Void> addToFavourite(String userId, String mealId) {
         return userService.findById(userId)
                 .flatMap(user -> mealService.findById(mealId)
+                        .flatMap(meal -> user.getFavouriteMeals().contains(meal) ? Mono.error(new BadRequestException("bad request")) : Mono.just(meal))
                         .doOnSuccess(meal -> user.getFavouriteMeals().add(meal))
                         .doOnSuccess(meal -> meal.getFavouriteCounter().getAndIncrement())
-                        .doOnSuccess(mealService::save)
+                        .flatMap(mealService::save)
                         .flatMap(meal -> userService.save(user)))
+
                 .then();
     }
 
     @PreAuthorize("#userId.equals(principal)")
     Mono<Void> deleteFromFavourite(String userId, String mealId) {
         return userService.findById(userId)
-                .doOnNext(user -> user.getFavouriteMeals().remove(new Meal(mealId)))
+                .flatMap(user -> user.getFavouriteMeals().contains(new Meal(mealId)) ? Mono.just(user) : Mono.error(new BadRequestException("bad request")))
+                .doOnSuccess(user -> user.getFavouriteMeals().remove(new Meal(mealId)))
                 .flatMap(userService::save)
                 .flatMap(user -> mealService.findById(mealId))
                 .doOnSuccess(meal -> meal.getFavouriteCounter().decrementAndGet())
-                .doOnSuccess(mealService::save)
-                .onErrorReturn(new Meal())
+                .flatMap(mealService::save)
+                .onErrorResume(error -> error instanceof BadRequestException ? Mono.error(error) : Mono.empty())
                 .then();
     }
 
