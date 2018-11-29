@@ -5,8 +5,11 @@ import com.piotrek.diet.product.Product;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.sql.Blob;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,8 +41,7 @@ public class Meal extends BaseEntity {
 
     private int amount;
 
-    @NotNull
-    private String imageUrl;
+    private MultipartFile imageUrl;
 
     private double carbohydrateExchange;
 

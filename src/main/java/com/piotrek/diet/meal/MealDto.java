@@ -6,10 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.File;
+import java.sql.Blob;
 import java.util.ArrayList;
 
 
@@ -55,8 +58,7 @@ public class MealDto extends BaseDto {
     @Min(0)
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
-    @NotNull
-    private String imageUrl;
+    private MultipartFile imageUrl;
 
     private ArrayList<ProductDto> products = new ArrayList<>();
 

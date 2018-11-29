@@ -121,7 +121,7 @@ public class Bootstrap implements CommandLineRunner {
         kanapkiZJajkiem.setDescription("Dobre kanapki z jajakiem idealne na śniadanie");
         kanapkiZJajkiem.setRecipe("Aby przygotować dwie kanapki z jajkiem:\nUgotuj 2 jajaka(ok. 120g) - tak jak lubisz\n" +
                 "Weź dwie kromki(ok. 100g) - posmaruj je masłem (ok. 15g\nJajka pokój i połóż na chlebie\nGOTOWE!");
-        kanapkiZJajkiem.setImageUrl("https://www.kwestiasmaku.com/sites/kwestiasmaku.com/files/kanapka_jajko_awokado_rzodkiewka_01.jpg");
+//        kanapkiZJajkiem.setImageUrl("https://www.kwestiasmaku.com/sites/kwestiasmaku.com/files/kanapka_jajko_awokado_rzodkiewka_01.jpg");
         kanapkiZJajkiem.setUserId(user.getId());
 
         jajko.setAmount(120);

@@ -49,7 +49,7 @@ public class MealDtoConverter implements DtoConverter<Meal, MealDto> {
         meal.setFibre(mealDto.getFibre());
         meal.setKcal(mealDto.getKcal());
         meal.setAmount(mealDto.getAmount());
-        meal.setImageUrl(mealDto.getImageUrl());
+//        meal.setImageUrl(mealDto.getImageUrl());
         meal.setCarbohydrateExchange(mealDto.getCarbohydrateExchange());
         meal.setProteinAndFatEquivalent(mealDto.getProteinAndFatEquivalent());
         meal.setProducts(productDtoConverter.listFromDto(mealDto.getProducts()));

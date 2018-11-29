@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -77,7 +79,7 @@ public class UserController {
 
     @PostMapping("/{id}/meals")
     @ResponseStatus(CREATED)
-    Mono<MealDto> createMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
+    Mono<MealDto> createMeal(@PathVariable String id, @Valid MealDto mealDto){
         return userFacade.createMeal(id, mealDto);
     }
 

@@ -26,3 +26,5 @@
 /.nb-gradle/
 
 settings.gradle
+/src/main/resources/my.azureauth
+/src/main/resources/application.yml
