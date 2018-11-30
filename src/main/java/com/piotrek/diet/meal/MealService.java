@@ -1,7 +1,8 @@
 package com.piotrek.diet.meal;
 
-import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.cloud.CloudStorageService;
 import com.piotrek.diet.exceptions.NotFoundException;
+import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.product.Product;
 import com.piotrek.diet.product.ProductDtoConverter;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.piotrek.diet.helpers.Constants.IMAGE_CONTAINER_MEALS;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,7 @@ public class MealService {
     private final MealDtoConverter mealDtoConverter;
     private final ProductDtoConverter productDtoConverter;
     private final DoubleRounder doubleRounder;
+    private final CloudStorageService imageStorage;
 
     public Mono<Meal> findById(String id) {
         return mealRepository.findById(id)
@@ -71,6 +76,7 @@ public class MealService {
     }
 
     public Mono<Meal> save(Meal meal) {
+
         return mealRepository.save(meal);
     }
 
@@ -106,7 +112,10 @@ public class MealService {
         Meal meal = findById(mealId).block();
         meal.setName(mealDto.getName());
         meal.setRecipe(mealDto.getRecipe());
-        meal.setImageUrl(mealDto.getImageUrl());
+        if (mealDto.getImageToSave() != null) {
+            String imageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_MEALS, UUID.randomUUID().toString(), mealDto.getImageToSave());
+            meal.setImageUrl(imageUrl);
+        }
         meal.setDescription(mealDto.getDescription());
         addProductsToMeal(meal, mealDto);
 

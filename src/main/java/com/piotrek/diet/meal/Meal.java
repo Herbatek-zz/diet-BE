@@ -41,7 +41,7 @@ public class Meal extends BaseEntity {
 
     private int amount;
 
-    private MultipartFile imageUrl;
+    private String imageUrl;
 
     private double carbohydrateExchange;
 

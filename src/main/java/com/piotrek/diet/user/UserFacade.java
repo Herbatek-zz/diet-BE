@@ -2,6 +2,7 @@ package com.piotrek.diet.user;
 
 import com.piotrek.diet.cart.Cart;
 import com.piotrek.diet.cart.CartService;
+import com.piotrek.diet.cloud.CloudStorageService;
 import com.piotrek.diet.exceptions.BadRequestException;
 import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.helpers.Page;
@@ -20,7 +21,11 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.piotrek.diet.helpers.Constants.IMAGE_CONTAINER_MEALS;
+import static com.piotrek.diet.helpers.Constants.IMAGE_CONTAINER_PRODUCTS;
 
 @Component
 @RequiredArgsConstructor
@@ -32,11 +37,15 @@ public class UserFacade {
     private final MealDtoConverter mealDtoConverter;
     private final TokenService tokenService;
     private final CartService cartService;
+    private final CloudStorageService imageStorage;
 
     @PreAuthorize("#userId.equals(principal)")
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
         return userService.findById(userId)
-                .doOnNext(user -> productDto.setUserId(user.getId()))
+                .doOnSuccess(user -> {
+                    String mealImageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS, UUID.randomUUID().toString(), productDto.getImageToSave());
+                    productDto.setImageUrl(mealImageUrl);
+                })
                 .map(user -> productDto)
                 .flatMap(productService::save);
     }
@@ -44,9 +53,13 @@ public class UserFacade {
     @PreAuthorize("#userId.equals(principal)")
     Mono<MealDto> createMeal(String userId, MealDto mealDto) {
         return userService.findById(userId)
-                .doOnNext(user -> mealDto.setUserId(user.getId()))
+                .doOnSuccess(user -> {
+                    String mealImageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_MEALS, UUID.randomUUID().toString(), mealDto.getImageToSave());
+                    mealDto.setImageUrl(mealImageUrl);
+                })
                 .flatMap(user -> mealService.save(mealDto))
                 .map(mealDtoConverter::toDto);
+
     }
 
     Mono<Page<ProductDto>> findAllProductsByUserId(String userId, Pageable pageable) {

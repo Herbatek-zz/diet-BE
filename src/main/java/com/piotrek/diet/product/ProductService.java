@@ -1,5 +1,6 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.cloud.CloudStorageService;
 import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.helpers.Page;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.piotrek.diet.helpers.Constants.IMAGE_CONTAINER_PRODUCTS;
 
 @Slf4j
 @Service
@@ -22,6 +26,7 @@ public class ProductService {
     private final ProductDtoConverter productDtoConverter;
     private final DiabetesCalculator diabetesCalculator;
     private final DoubleRounder doubleRounder;
+    private final CloudStorageService imageStorage;
 
     public Mono<Product> findById(String id) {
         return productRepository.findById(id)
@@ -52,7 +57,13 @@ public class ProductService {
                 .doOnNext(product -> product.setName(productUpdate.getName()))
                 .doOnNext(product -> product.setDescription(productUpdate.getDescription()))
                 .doOnNext(product -> product.setDescription(productUpdate.getDescription()))
-                .doOnNext(product -> product.setImageUrl(productUpdate.getImageUrl()))
+                .doOnNext(product -> {
+                    if (productUpdate.getImageToSave() != null) {
+                        String imageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS,
+                                UUID.randomUUID().toString(), productUpdate.getImageToSave());
+                        product.setImageUrl(imageUrl);
+                    }
+                })
                 .doOnNext(product -> product.setProtein(productUpdate.getProtein()))
                 .doOnNext(product -> product.setCarbohydrate(productUpdate.getCarbohydrate()))
                 .doOnNext(product -> product.setFat(productUpdate.getFat()))

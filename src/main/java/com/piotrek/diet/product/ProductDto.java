@@ -2,6 +2,7 @@ package com.piotrek.diet.product;
 
 import com.piotrek.diet.helpers.BaseDto;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -22,7 +23,7 @@ public class ProductDto extends BaseDto {
     @Size(min = 10, max = 3000)
     private String description;
 
-    @NotNull
+    private MultipartFile imageToSave;
     private String imageUrl;
 
     @NotNull

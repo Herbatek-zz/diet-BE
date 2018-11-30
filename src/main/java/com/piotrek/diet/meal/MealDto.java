@@ -58,7 +58,8 @@ public class MealDto extends BaseDto {
     @Min(0)
     private double proteinAndFatEquivalent; // <-- 1.0 == 100kcal from fat and protein
 
-    private MultipartFile imageUrl;
+    private MultipartFile imageToSave;
+    private String imageUrl;
 
     private ArrayList<ProductDto> products = new ArrayList<>();
 

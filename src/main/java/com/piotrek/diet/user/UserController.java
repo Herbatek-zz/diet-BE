@@ -17,6 +17,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 import java.time.LocalDate;
 
 import static com.piotrek.diet.helpers.Constants.DATE_FORMAT;
@@ -71,16 +72,16 @@ public class UserController {
         return cartFacade.findDtoCartByUserAndDate(id, date);
     }
 
-    @PostMapping("/{id}/products")
+    @PostMapping("/{userId}/products")
     @ResponseStatus(CREATED)
-    Mono<ProductDto> createProduct(@PathVariable String id, @Valid @RequestBody ProductDto productDto) {
-        return userFacade.createProduct(id, productDto);
+    Mono<ProductDto> createProduct(@PathVariable String userId, @Valid ProductDto productDto) {
+        return userFacade.createProduct(userId, productDto);
     }
 
-    @PostMapping("/{id}/meals")
+    @PostMapping("/{userId}/meals")
     @ResponseStatus(CREATED)
-    Mono<MealDto> createMeal(@PathVariable String id, @Valid MealDto mealDto){
-        return userFacade.createMeal(id, mealDto);
+    Mono<MealDto> createMeal(@PathVariable String userId, @Valid MealDto mealDto){
+        return userFacade.createMeal(userId, mealDto);
     }
 
     @GetMapping("/{id}/meals/favourites")

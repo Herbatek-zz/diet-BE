@@ -51,7 +51,7 @@ public class MealController {
     }
 
     @PutMapping("/{id}")
-    Mono<MealDto> editMeal(@PathVariable String id, @Valid @RequestBody MealDto mealDto) {
+    Mono<MealDto> editMeal(@PathVariable String id, @Valid MealDto mealDto) {
         return mealService.updateMeal(id, mealDto);
     }
 
