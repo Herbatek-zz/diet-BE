@@ -30,4 +30,4 @@ server:
 
 azure:
   storage:
-    connection-string: DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=dietstorage;AccountKey=SS+HvnPlGLmRD292jCPWUm15LfhqCghT+2FyHvx7Bp+9Q1UejNUyH47NKJ1Raup/eUJFiqbtt5X/wKXvfmTvwg==
+    connection-string:
