@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,7 +14,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(of = {"id"})
 public abstract class BaseDto implements Serializable {
 
-    private String id;
+    private String id = UUID.randomUUID().toString();
 
     public BaseDto(String id) {
         this.id = id;

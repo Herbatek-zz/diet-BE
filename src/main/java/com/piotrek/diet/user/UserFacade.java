@@ -43,7 +43,7 @@ public class UserFacade {
     Mono<ProductDto> createProduct(String userId, ProductDto productDto) {
         return userService.findById(userId)
                 .doOnSuccess(user -> {
-                    String mealImageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS, UUID.randomUUID().toString(), productDto.getImageToSave());
+                    String mealImageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS, productDto.getId(), productDto.getImageToSave());
                     productDto.setImageUrl(mealImageUrl);
                 })
                 .map(user -> productDto)
@@ -54,7 +54,7 @@ public class UserFacade {
     Mono<MealDto> createMeal(String userId, MealDto mealDto) {
         return userService.findById(userId)
                 .doOnSuccess(user -> {
-                    String mealImageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_MEALS, UUID.randomUUID().toString(), mealDto.getImageToSave());
+                    String mealImageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_MEALS, mealDto.getId(), mealDto.getImageToSave());
                     mealDto.setImageUrl(mealImageUrl);
                 })
                 .flatMap(user -> mealService.save(mealDto))

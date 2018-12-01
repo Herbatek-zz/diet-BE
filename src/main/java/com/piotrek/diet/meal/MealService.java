@@ -112,10 +112,8 @@ public class MealService {
         Meal meal = findById(mealId).block();
         meal.setName(mealDto.getName());
         meal.setRecipe(mealDto.getRecipe());
-        if (mealDto.getImageToSave() != null) {
-            String imageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_MEALS, UUID.randomUUID().toString(), mealDto.getImageToSave());
-            meal.setImageUrl(imageUrl);
-        }
+        if (mealDto.getImageToSave() != null)
+            imageStorage.uploadImageBlob(IMAGE_CONTAINER_MEALS, mealDto.getId(), mealDto.getImageToSave());
         meal.setDescription(mealDto.getDescription());
         addProductsToMeal(meal, mealDto);
 

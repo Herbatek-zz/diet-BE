@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.Constants.IMAGE_CONTAINER_PRODUCTS;
@@ -58,11 +57,8 @@ public class ProductService {
                 .doOnNext(product -> product.setDescription(productUpdate.getDescription()))
                 .doOnNext(product -> product.setDescription(productUpdate.getDescription()))
                 .doOnNext(product -> {
-                    if (productUpdate.getImageToSave() != null) {
-                        String imageUrl = imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS,
-                                UUID.randomUUID().toString(), productUpdate.getImageToSave());
-                        product.setImageUrl(imageUrl);
-                    }
+                    if (productUpdate.getImageToSave() != null)
+                        imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS, productUpdate.getId(), productUpdate.getImageToSave());
                 })
                 .doOnNext(product -> product.setProtein(productUpdate.getProtein()))
                 .doOnNext(product -> product.setCarbohydrate(productUpdate.getCarbohydrate()))
