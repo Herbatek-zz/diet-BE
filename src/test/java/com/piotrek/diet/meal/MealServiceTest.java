@@ -1,5 +1,6 @@
 package com.piotrek.diet.meal;
 
+import com.piotrek.diet.cloud.CloudStorageService;
 import com.piotrek.diet.helpers.MealSample;
 import com.piotrek.diet.helpers.Page;
 import com.piotrek.diet.helpers.UserSample;
@@ -37,6 +38,9 @@ class MealServiceTest {
     @Mock
     private ProductDtoConverter productDtoConverter;
 
+    @Mock
+    private CloudStorageService imageStorage;
+
     private DoubleRounder doubleRounder = new DoubleRounder(2);
 
     private MealService mealService;
@@ -47,7 +51,7 @@ class MealServiceTest {
     @BeforeEach
     void beforeEach() {
         MockitoAnnotations.initMocks(this);
-        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, doubleRounder);
+        mealService = new MealService(mealRepository, mealDtoConverter, productDtoConverter, doubleRounder, imageStorage);
         meal = dumplings();
         mealDto = dumplingsDto();
     }

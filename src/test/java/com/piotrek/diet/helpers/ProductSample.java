@@ -10,10 +10,12 @@ public class ProductSample {
 
     private static DiabetesCalculator diabetesCalculator = new DiabetesCalculator();
 
-    private final static String BANANA_ID = UUID.randomUUID().toString();
-    private final static String BREAD_ID = UUID.randomUUID().toString();
     public final static String BANANA = "banana";
+    private final static String BANANA_ID = UUID.randomUUID().toString();
+    private final static String BANANA_NAME = "Banana";
+
     public final static String BREAD = "bread";
+    private final static String BREAD_ID = UUID.randomUUID().toString();
 
     public static Product banana() {
         var product = bananaWithoutId();
@@ -23,7 +25,7 @@ public class ProductSample {
 
     public static Product bananaWithoutId() {
         var product = new Product();
-        product.setName("Banana");
+        product.setName(BANANA_NAME);
         product.setDescription("Very yellow, so sweet, such tasty");
         product.setImageUrl("http://banana-so-good.com");
         product.setProtein(1.0);
@@ -46,7 +48,7 @@ public class ProductSample {
 
     public static ProductDto bananaWithoutIdDto() {
         var productDto = new ProductDto();
-        productDto.setName("Banana");
+        productDto.setName(BANANA_NAME);
         productDto.setDescription("Very yellow, so sweet, such tasty");
         productDto.setImageUrl("http://banana-so-good.com");
         productDto.setProtein(1.0);

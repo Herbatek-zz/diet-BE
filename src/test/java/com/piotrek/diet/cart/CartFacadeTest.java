@@ -129,7 +129,6 @@ class CartFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
         verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
@@ -158,7 +157,6 @@ class CartFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(any(Cart.class));
         verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
@@ -183,7 +181,6 @@ class CartFacadeTest {
         verify(cartDtoConverter, times(1)).toDto(cart);
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
-        verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
         verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }
@@ -208,7 +205,6 @@ class CartFacadeTest {
         verify(cartService, times(1)).findByUserIdAndDate(cart.getUserId(), cart.getDate());
         verify(mealService, times(1)).findById(meal.getId());
         verify(cartDtoConverter, times(1)).toDto(cart);
-        verify(mealService, times(1)).calculateMealInformation(meal);
         verify(cartService, times(1)).save(cart);
         verifyNoMoreInteractions(cartService, userService, mealService, productService, cartDtoConverter);
     }

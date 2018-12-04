@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -49,18 +48,20 @@ public class CartFacade {
 
         double divider = (double) 100 / amount;
         double amountDivider = (double) amount / meal.getAmount();
-        Objects.requireNonNull(meal).getProducts()
-                .forEach(productDto -> {
-                    productDto.setAmount((int) (productDto.getAmount() * amountDivider));
-                    productDto.setProtein(productDto.getProtein() / divider);
-                    productDto.setCarbohydrate(productDto.getCarbohydrate() / divider);
-                    productDto.setFat(productDto.getFat() / divider);
-                    productDto.setFibre(productDto.getFibre() / divider);
-                    productDto.setProteinAndFatEquivalent(productDto.getProteinAndFatEquivalent() / divider);
-                    productDto.setCarbohydrateExchange(productDto.getCarbohydrateExchange() / divider);
-                    productDto.setKcal(productDto.getKcal() / divider);
-                });
-        mealService.calculateMealInformation(meal);
+
+        var mealProducts = mealService.createCalculatedProductList(meal.getProducts());
+        mealProducts.forEach(productDto -> {
+            productDto.setAmount((int) (productDto.getAmount() * amountDivider));
+            productDto.setProtein(productDto.getProtein() / divider);
+            productDto.setCarbohydrate(productDto.getCarbohydrate() / divider);
+            productDto.setFat(productDto.getFat() / divider);
+            productDto.setFibre(productDto.getFibre() / divider);
+            productDto.setProteinAndFatEquivalent(productDto.getProteinAndFatEquivalent() / divider);
+            productDto.setCarbohydrateExchange(productDto.getCarbohydrateExchange() / divider);
+            productDto.setKcal(productDto.getKcal() / divider);
+        });
+        mealService.calculateMealInformation(meal, mealProducts);
+        meal.setProducts(mealProducts);
         meal.setAmount(amount);
         cart.getMeals().add(meal);
         return cartService.save(cart).map(cartDtoConverter::toDto);
