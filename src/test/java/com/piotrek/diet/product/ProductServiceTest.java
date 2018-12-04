@@ -1,23 +1,28 @@
 package com.piotrek.diet.product;
 
+import com.piotrek.diet.cloud.CloudStorageService;
 import com.piotrek.diet.exceptions.NotFoundException;
 import com.piotrek.diet.helpers.Page;
+import com.piotrek.diet.helpers.ProductSample;
 import com.piotrek.diet.helpers.UserSample;
+import org.decimal4j.util.DoubleRounder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockMultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.piotrek.diet.helpers.AssertEqualAllFields.assertProductFields;
+import static com.piotrek.diet.helpers.Constants.IMAGE_CONTAINER_PRODUCTS;
 import static com.piotrek.diet.helpers.ProductSample.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -33,7 +38,11 @@ class ProductServiceTest {
     @Mock
     private DiabetesCalculator diabetesCalculator;
 
-    @InjectMocks
+    private DoubleRounder doubleRounder = new DoubleRounder(2);
+
+    @Mock
+    private CloudStorageService imageStorage;
+
     private ProductService productService;
 
     private Product product;
@@ -44,6 +53,7 @@ class ProductServiceTest {
         product = banana();
         productDto = bananaDto();
         MockitoAnnotations.initMocks(this);
+        productService = new ProductService(productRepository, productDtoConverter, diabetesCalculator, doubleRounder, imageStorage);
     }
 
     @Test
@@ -55,7 +65,7 @@ class ProductServiceTest {
 
         assertProductFields(product, actualProduct);
         verify(productRepository, times(1)).findById(this.product.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -66,7 +76,7 @@ class ProductServiceTest {
 
         assertThrows(NotFoundException.class, () -> productService.findById(INVALID_ID).block());
         verify(productRepository, times(1)).findById(INVALID_ID);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -80,7 +90,7 @@ class ProductServiceTest {
         assertProductFields(productDto, actualProductDto);
         verify(productRepository, times(1)).findById(product.getId());
         verify(productDtoConverter, times(1)).toDto(product);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -91,7 +101,7 @@ class ProductServiceTest {
 
         assertThrows(NotFoundException.class, () -> productService.findDtoById(INVALID_ID).block());
         verify(productRepository, times(1)).findById(INVALID_ID);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -114,7 +124,7 @@ class ProductServiceTest {
 
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -135,7 +145,7 @@ class ProductServiceTest {
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(totalElements)).toDto(banana());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -160,11 +170,10 @@ class ProductServiceTest {
         assertEquals(expected, actualFirstPage);
         verify(productRepository, times(1)).findAllByNameIgnoreCaseContaining(query);
         verify(productDtoConverter, times(pageSize)).toDto(banana());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
-    @DisplayName("Update product, when not no product, then return NotFoundException")
     void updateProduct_whenOk_thenUpdateProduct() {
         productDto.setName("updated");
         productDto.setProtein(33);
@@ -186,7 +195,31 @@ class ProductServiceTest {
                 .calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre());
         verify(productRepository, times(1)).save(product);
         verify(productDtoConverter, times(1)).toDto(product);
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
+    }
+
+    @Test
+    void updateProduct_whenImageFileIsNotNull_thenUpdateProductWithImage() {
+        final String IMAGE_URL = "some-fake-image-url.com/so-funny-image";
+        productDto.setImageToSave(new MockMultipartFile("fileName", new byte[23]));
+
+        when(productRepository.findById(product.getId())).thenReturn(Mono.just(product));
+        when(productRepository.save(product)).thenReturn(Mono.just(product));
+        when(productDtoConverter.toDto(product)).thenReturn(productDto);
+        when(imageStorage.uploadImageBlob(IMAGE_CONTAINER_PRODUCTS, productDto.getId(), productDto.getImageToSave())).thenReturn(IMAGE_URL);
+
+        var actual = productService.updateProduct(product.getId(), productDto).block();
+
+
+
+        assertProductFields(productDto, actual);
+        verify(productRepository, times(1)).findById(product.getId());
+        verify(imageStorage, times(1)).uploadImageBlob(IMAGE_CONTAINER_PRODUCTS, productDto.getId(), productDto.getImageToSave());
+        verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(productDto.getProtein(), productDto.getFat());
+        verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(productDto.getCarbohydrate(), productDto.getFibre());
+        verify(productRepository, times(1)).save(product);
+        verify(productDtoConverter, times(1)).toDto(product);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -196,7 +229,7 @@ class ProductServiceTest {
 
         assertThrows(NotFoundException.class, () -> productService.updateProduct(product.getId(), productDto).block());
         verify(productRepository, times(1)).findById(product.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -213,7 +246,7 @@ class ProductServiceTest {
                 () -> assertProductFields(productsList.get(3), actualProducts.get(1))
         );
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -237,7 +270,7 @@ class ProductServiceTest {
         assertEquals(expected, firstPage);
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(banana());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -262,7 +295,7 @@ class ProductServiceTest {
         assertEquals(expected, firstPage);
         verify(productRepository, times(1)).findAll();
         verify(productDtoConverter, times(10)).toDto(banana());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -281,7 +314,7 @@ class ProductServiceTest {
 
         assertEquals(expected, secondPage);
         verify(productRepository, times(1)).findAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -304,7 +337,7 @@ class ProductServiceTest {
         assertEquals(expected, block);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
         verify(productDtoConverter, times(totalElements)).toDto(banana());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -323,7 +356,7 @@ class ProductServiceTest {
         assertNotNull(actualPage);
         assertEquals(expected, actualPage);
         verify(productRepository, times(1)).findAllByUserId(user.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -338,7 +371,7 @@ class ProductServiceTest {
         verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -355,7 +388,7 @@ class ProductServiceTest {
         verify(productDtoConverter, times(1)).toDto(product);
         verify(diabetesCalculator, times(1)).calculateProteinAndFatEquivalent(product.getProtein(), product.getFat());
         verify(diabetesCalculator, times(1)).calculateCarbohydrateExchange(product.getCarbohydrate(), product.getFibre());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -364,7 +397,7 @@ class ProductServiceTest {
 
         assertEquals(Mono.empty().block(), productService.deleteById(product.getId()));
         verify(productRepository, times(1)).deleteById(product.getId());
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
     @Test
@@ -372,7 +405,70 @@ class ProductServiceTest {
         assertEquals(Mono.empty().block(), productService.deleteAll());
 
         verify(productRepository, times(1)).deleteAll();
-        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
+    }
+
+    @Test
+    void calculateProductInfoByAmount_whenProductAmount80_thenCalculate() {
+        Product expected = ProductSample.banana();
+        expected.setAmount(80);
+        expected.setKcal(doubleRounder.round(expected.getKcal() * 0.8));
+        expected.setCarbohydrate(doubleRounder.round(expected.getCarbohydrate() * 0.8));
+        expected.setFat(doubleRounder.round(expected.getFat() * 0.8));
+        expected.setProtein(doubleRounder.round(expected.getProtein() * 0.8));
+        expected.setFibre(doubleRounder.round(expected.getFibre() * 0.8));
+        expected.setProteinAndFatEquivalent(doubleRounder.round(expected.getProteinAndFatEquivalent() * 0.8));
+        expected.setCarbohydrateExchange(doubleRounder.round(expected.getCarbohydrateExchange() * 0.8));
+
+        Product actual = ProductSample.banana();
+        actual.setAmount(80);
+
+        actual = productService.calculateProductInfoByAmount(actual);
+
+        assertProductFields(expected, actual);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
+    }
+
+    @Test
+    void calculateProductInfoByAmount_whenProductAmount0_thenCalculate() {
+        Product expected = ProductSample.banana();
+        expected.setAmount(0);
+        expected.setKcal(0);
+        expected.setCarbohydrate(0);
+        expected.setFat(0);
+        expected.setProtein(0);
+        expected.setFibre(0);
+        expected.setProteinAndFatEquivalent(0);
+        expected.setCarbohydrateExchange(0);
+
+        Product actual = ProductSample.banana();
+        actual.setAmount(0);
+
+        actual = productService.calculateProductInfoByAmount(actual);
+
+        assertProductFields(expected, actual);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
+    }
+
+    @Test
+    void calculateProductInfoByAmount_whenProductAmount380_thenCalculate() {
+        Product expected = ProductSample.banana();
+        expected.setAmount(380);
+        expected.setKcal(doubleRounder.round(expected.getKcal() * 3.8));
+        expected.setCarbohydrate(doubleRounder.round(expected.getCarbohydrate() * 3.8));
+        expected.setFat(doubleRounder.round(expected.getFat() * 3.8));
+        expected.setProtein(doubleRounder.round(expected.getProtein() * 3.8));
+        expected.setFibre(doubleRounder.round(expected.getFibre() * 3.8));
+        expected.setProteinAndFatEquivalent(doubleRounder.round(expected.getProteinAndFatEquivalent() * 3.8));
+        expected.setCarbohydrateExchange(doubleRounder.round(expected.getCarbohydrateExchange() * 3.8));
+
+        Product actual = ProductSample.banana();
+        actual.setAmount(380);
+
+        actual = productService.calculateProductInfoByAmount(actual);
+
+        assertProductFields(expected, actual);
+        verifyNoMoreInteractions(productRepository, productDtoConverter, diabetesCalculator, imageStorage);
     }
 
 

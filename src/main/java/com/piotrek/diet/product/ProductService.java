@@ -39,16 +39,7 @@ public class ProductService {
     }
 
     Mono<Page<ProductDto>> searchByName(Pageable pageable, String query) {
-        return productRepository
-                .findAllByNameIgnoreCaseContaining(query)
-                .collectList()
-                .map(list -> new Page<>(list
-                        .stream()
-                        .skip(pageable.getPageNumber() * pageable.getPageSize())
-                        .limit(pageable.getPageSize())
-                        .map(productDtoConverter::toDto)
-                        .collect(Collectors.toList()),
-                        pageable.getPageNumber(), pageable.getPageSize(), list.size()));
+        return pageableFlux(productRepository.findAllByNameIgnoreCaseContaining(query), pageable);
     }
 
     @PreAuthorize("@productService.findById(#id).block().getUserId().equals(principal)")
@@ -71,17 +62,10 @@ public class ProductService {
                 .flatMap(this::save);
     }
 
+
     Mono<Page<ProductDto>> findAllPageable(Pageable pageable) {
-        return productRepository
-                .findAll()
-                .collectList()
-                .map(list -> new Page<>(list
-                        .stream()
-                        .skip(pageable.getPageNumber() * pageable.getPageSize())
-                        .limit(pageable.getPageSize())
-                        .map(productDtoConverter::toDto)
-                        .collect(Collectors.toList()),
-                        pageable.getPageNumber(), pageable.getPageSize(), list.size()));
+        return pageableFlux(productRepository.findAll(), pageable);
+
     }
 
     public Flux<Product> findAll(long skipNumber, int limitNumber) {
@@ -89,7 +73,11 @@ public class ProductService {
     }
 
     public Mono<Page<ProductDto>> findAllByUserPageable(String userId, Pageable pageable) {
-        return productRepository.findAllByUserId(userId)
+        return pageableFlux(productRepository.findAllByUserId(userId), pageable);
+    }
+
+    private Mono<Page<ProductDto>> pageableFlux(Flux<Product> flux, Pageable pageable) {
+        return flux
                 .collectList()
                 .map(list -> new Page<>(list
                         .stream()

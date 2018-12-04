@@ -102,38 +102,42 @@ public class AssertEqualAllFields {
     public static void assertProductFields(Product expected, Product actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
+                () -> assertEquals(expected.getId(), actual.getId(), "Id is not the same"),
+                () -> assertEquals(expected.getName(), actual.getName(), "Name is not the same"),
+                () -> assertEquals(expected.getDescription(), actual.getDescription(), "Description is not the same"),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl(), "ImageUrl is not the same"),
+                () -> assertEquals(expected.getProtein(), actual.getProtein(), "Protein is not the same"),
+                () -> assertEquals(expected.getFat(), actual.getFat(), "Fat is not the same"),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate(), "Carbohydate is not the same"),
+                () -> assertEquals(expected.getFibre(), actual.getFibre(), "Fibre is not the same"),
+                () -> assertEquals(expected.getKcal(), actual.getKcal(), "Kcal is not the same"),
+                () -> assertEquals(expected.getAmount(), actual.getAmount(), "Amount is not the same"),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()
+                        , "CarbohydateExchange is not the same"),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent(),
+                        "ProteinAndFatEquivalent is not the same"),
+                () -> assertEquals(expected.getUserId(), actual.getUserId(), "UserId is not the same")
         );
     }
 
     public static void assertProductFields(ProductDto expected, ProductDto actual) {
         assertNotNull(actual);
         assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl()),
-                () -> assertEquals(expected.getProtein(), actual.getProtein()),
-                () -> assertEquals(expected.getFat(), actual.getFat()),
-                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
-                () -> assertEquals(expected.getFibre(), actual.getFibre()),
-                () -> assertEquals(expected.getKcal(), actual.getKcal()),
-                () -> assertEquals(expected.getAmount(), actual.getAmount()),
-                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange()),
-                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent()),
-                () -> assertEquals(expected.getUserId(), actual.getUserId())
+                () -> assertEquals(expected.getId(), actual.getId(), "Id is not the same"),
+                () -> assertEquals(expected.getName(), actual.getName(), "Name is not the same"),
+                () -> assertEquals(expected.getDescription(), actual.getDescription(), "Description is not the same"),
+                () -> assertEquals(expected.getImageUrl(), actual.getImageUrl(), "ImageUrl is not the same"),
+                () -> assertEquals(expected.getProtein(), actual.getProtein(), "Protein is not the same"),
+                () -> assertEquals(expected.getFat(), actual.getFat(), "Fat is not the same"),
+                () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate(), "Carbohydate is not the same"),
+                () -> assertEquals(expected.getFibre(), actual.getFibre(), "Fibre is not the same"),
+                () -> assertEquals(expected.getKcal(), actual.getKcal(), "Kcal is not the same"),
+                () -> assertEquals(expected.getAmount(), actual.getAmount(), "Amount is not the same"),
+                () -> assertEquals(expected.getCarbohydrateExchange(), actual.getCarbohydrateExchange(),
+                        "CarbohydateExchange is not the same"),
+                () -> assertEquals(expected.getProteinAndFatEquivalent(), actual.getProteinAndFatEquivalent(),
+                        "ProteinAndFatEquivalent is not the same"),
+                () -> assertEquals(expected.getUserId(), actual.getUserId(), "UserId is not the same")
         );
     }
 
